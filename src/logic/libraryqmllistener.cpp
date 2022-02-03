@@ -1,0 +1,140 @@
+#include "libraryqmllistener.h"
+
+#include "gui/videoplayerwidget.h"
+#include "librarymodel.h"
+#include "logic/searchmanager.h"
+#include "utilities/notify_helper.h"
+#include "customdockwidget.h"
+#include "mainwindow.h"
+
+#include <QDebug>
+#include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include <QDesktopServices>
+#include <QPointer>
+#include "branding.hxx"
+
+
+using namespace utilities;
+
+class FileReleasedDeleteCallback : public NotifyHelper
+{
+public:
+	FileReleasedDeleteCallback(const QPointer<DownloadEntity>& entity)
+		: m_entity(entity)
+	{
+	}
+
+	void slotNoParams() override
+	{
+		if (!m_entity.isNull())
+		{
+			TheSearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << m_entity.data());
+		}
+
+		deleteLater();
+	}
+
+private:
+	QPointer<DownloadEntity> m_entity;
+};
+
+
+LibraryQmlListener::LibraryQmlListener(QObject* parent) :
+	QObject(parent)
+	, m_model(nullptr)
+{
+	qRegisterMetaType< QPointer<DownloadEntity> >("QPointer<DownloadEntity>");
+	VERIFY(connect(this, SIGNAL(handleDeleteAsynchronously(const QPointer<DownloadEntity>&)),
+				   this, SLOT(onHandleDeleteAsynchronously(const QPointer<DownloadEntity>&)), Qt::QueuedConnection));
+}
+
+void LibraryQmlListener::onImageClicked(int index)
+{
+	qDebug() << __FUNCTION__ << " index = " << index;
+}
+
+void LibraryQmlListener::onDeleteClicked(int index)
+{
+	qDebug() << __FUNCTION__ << " index = " << index;
+	if (index >= 0)
+	{
+		int sourceRow = m_proxyModel->mapToSource(m_proxyModel->index(index, 0)).row();
+		QPointer<DownloadEntity> entity = qvariant_cast<DownloadEntity*>(m_model->index(sourceRow).data(LibraryModel::RoleEntity));
+
+		// We need to invoke delete functionality asynchronously because QMessageBox::question() runs message loop
+		emit handleDeleteAsynchronously(entity);
+	}
+}
+
+void LibraryQmlListener::onPlayClicked(int index)
+{
+	qDebug() << __FUNCTION__ << " index = " << index;
+	if (index >= 0)
+	{
+		int sourceRow = m_proxyModel->mapToSource(m_proxyModel->index(index, 0)).row();
+		auto* entity = qvariant_cast<DownloadEntity*>(m_model->index(sourceRow).data(LibraryModel::RoleEntity));
+		Q_ASSERT(entity->getParent() != nullptr);
+		bool isOk = QDesktopServices::openUrl(QUrl::fromUserInput(QFileInfo(entity->filename()).canonicalFilePath()));
+
+		if (!isOk)
+		{
+			qDebug() << "Failed to play '" << QFileInfo(entity->filename()).canonicalFilePath() << "' with default player";
+
+			if (QFile::exists(entity->filename()))
+			{
+				if (QMessageBox::Yes == QMessageBox::question(
+							nullptr,
+							Tr::Tr(PROJECT_FULLNAME_TRANSLATION),
+							tr("Video file cannot be played with default video player.\nDo you want to watch it with internal player?"),
+							QMessageBox::Yes, QMessageBox::No))
+				{
+					VideoPlayerWidgetInstance()->playDownloadEntity(entity);
+                    MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::ShownDocked);
+				}
+			}
+			else
+			{
+				QMessageBox::critical(nullptr, Tr::Tr(PROJECT_FULLNAME_TRANSLATION), tr("File missing"));
+			}
+		}
+	}
+}
+
+void LibraryQmlListener::onPlayInternal(int index)
+{
+	if (index >= 0)
+	{
+		int sourceRow = m_proxyModel->mapToSource(m_proxyModel->index(index, 0)).row();
+		auto* entity = qvariant_cast<DownloadEntity*>(m_model->index(sourceRow).data(LibraryModel::RoleEntity));
+		Q_ASSERT(entity->getParent() != nullptr);
+		VideoPlayerWidgetInstance()->playDownloadEntity(entity);
+        MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::ShownDocked);
+	}
+}
+
+void LibraryQmlListener::onHandleDeleteAsynchronously(const QPointer<DownloadEntity>& entity)
+{
+	if (!entity.isNull())
+	{
+		QString title = entity.data()->videoTitle();
+		int res = QMessageBox::question(utilities::getMainWindow(),
+            Tr::Tr(PROJECT_FULLNAME_TRANSLATION), 
+            tr("Are you sure you want to delete '%1'?").arg(title), 
+            QMessageBox::Yes, QMessageBox::No);
+
+		if (res == QMessageBox::Yes && !entity.isNull())
+		{
+			if (fileIsInUse(VideoPlayerWidgetInstance(), entity.data()))
+			{
+				auto* fileReleasedCallback = new FileReleasedDeleteCallback(entity);
+				VERIFY(connect(VideoPlayerWidgetInstance(), SIGNAL(fileReleased()), fileReleasedCallback, SLOT(slotNoParams())));
+				VideoPlayerWidgetInstance()->stopVideo(true);
+			}
+			else
+			{
+				TheSearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << entity.data());
+			}
+		}
+	}
+}

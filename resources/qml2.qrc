@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml2/LibraryItemDelegate.qml</file>
+        <file>qml2/LibraryView.qml</file>
+        <file>qml2/components/BusyIndicator.qml</file>
+        <file>qml2/components/Button.qml</file>
+        <file>qml2/components/FramedImage.qml</file>
+        <file>qml2/components/TextLine.qml</file>
+        <file>qml2/components/Tooltip.qml</file>
+        <file>qml2/components/TooltipLoader.qml</file>
+        <file>qml2/components/LabelWithTooltip.qml</file>
+    </qresource>
+</RCC>

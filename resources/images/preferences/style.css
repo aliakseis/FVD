@@ -1,0 +1,143 @@
+ QDialog#Preferences{
+	min-width: 430px;
+	min-height: 595px;
+	max-width: 430px;
+	max-height: 595px;
+	background: white;
+ }
+
+ QLabel{
+ 	font-size: 14px;
+ }
+ 
+ QTabWidget::pane { /* The tab widget frame */
+    border: 1px solid #979797;
+    top: -1;
+    max-height: 537px;
+	background: transparent url(:/images/preferences/bckgd_TabBar.png) repeat-x;
+ }
+
+ QTabBar::tab {
+	border: 1px solid #979797;
+	min-height: 24px;
+	min-width: 75px;
+	font-family: "Segoe UI";
+	font-size: 14px;
+	padding: 0px;
+	margin-right: 3px;
+	background: transparent url(:/images/preferences/bckgd_tab_unselected.png) repeat-x;
+ }
+ 
+ QTabBar::tab:selected
+{
+	background: transparent url(:/images/preferences/bckgd_tab_selected.png) repeat-x;
+	border: 1px solid #979797;
+	border-bottom: 1px solid #f6fcff;
+}
+
+QFrame#frame_OutputPath{
+	border: 1px solid #979797;
+}
+
+QToolButton#btnOutputPath{
+	background: #eeeeee;
+	border: 1px solid white;
+}
+
+QLineEdit#lineEditOutputPath{
+	border: 0px;
+	min-height: 19px;
+	max-height: 19px;
+}
+
+QLabel#labelSearch,#labelDownload,#labelUpdate,#labelSite,#labelLang,#labelProxy{
+    color: #0682c0;
+    font-size: 15px;
+}
+
+QLabel#labelAdultSites{
+	color: #0682c0;
+    font-size: 15px;
+    border: 0px;
+    border-top: 1px solid #979797;
+    margin: 0 10px 0 10px;
+    padding: 0px 0 0 0;
+}
+
+QLabel#labelSelectedLang{
+	color: red;
+}
+
+QLabel#imageLanguage{
+	min-width: 40px;
+	min-height: 40px;
+	max-width: 40px;
+	max-height: 40px;
+	background-image: url(:/images/preferences/imgLanguage.png);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+QLabel#imageProxy{
+	min-width: 40px;
+	min-height: 40px;
+	max-width: 40px;
+	max-height: 40px;
+	background-image: url(:/images/preferences/imgProxy.png);
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+QFrame#frame_searc,#frame_downl,#frame_update{
+	border: 0px;
+	border-bottom: 1px solid #979797;
+}
+
+QFrame#frameLang,#frameSites{
+	border: 1px solid #979797;
+	background-color: white;
+}
+
+QCheckBox{
+	font-size: 14px;
+}
+QListWidget{
+	border: 0px;
+	padding: 0px;
+	font-size: 14px;
+	/*border: 1px solid #ff0000;*/
+}
+
+QListWidget#listLang{
+	max-height: 160px;
+	min-height: 160px;
+}
+
+QListWidget::item {
+	max-width: 110px;
+	min-width: 110px;
+	/*margin: 4px 27px 2px 4px;*/
+}
+
+/*QScrollArea#scrollAreaSite{
+	border: 1px solid blue;
+}*/
+
+QWidget#scrollAreaWidgetContents{
+	background-color: white;
+}
+
+QLineEdit#leMaxItemPerSite{
+	min-width: 70px;
+	max-width: 70px;
+}
+
+QLineEdit#leProxyAddress{
+	min-width: 195px;
+	max-width: 195px;
+}
+
+QLineEdit#leProxyPort{
+	min-width: 90px;
+	max-width: 90px;
+}

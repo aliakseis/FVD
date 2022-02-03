@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=@SHORTPRODUCTNAME@
+Type=Application
+Exec=@SHORTPRODUCTNAME@ %U
+Icon=fvdownloader
+Terminal=false
+GenericName=@PRODUCTNAME@
+GenericName[en]=@PRODUCTNAME@
+Comment=Download video files from video sites
+Comment[en]=Download video files from video sites
+Categories=Network;FileTransfer;AudioVideo;Qt;

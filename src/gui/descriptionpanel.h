@@ -1,0 +1,29 @@
+#ifndef DESCRIPTIONPANEL_H
+#define DESCRIPTIONPANEL_H
+
+#include <QWidget>
+#include "entityholder.h"
+
+namespace Ui
+{
+class DescriptionPanel;
+}
+
+class DescriptionPanel : public QWidget
+{
+	Q_OBJECT
+public:
+	DescriptionPanel(QWidget* parent);
+	virtual ~DescriptionPanel();
+
+	void setDescription(const QString& site, const QString& description, const QString& resolution = "");
+	void resetDescription();
+
+protected:
+	void wheelEvent(QWheelEvent* event);
+
+private:
+	Ui::DescriptionPanel* ui;
+};
+
+#endif //DESCRIPTIONPANEL_H

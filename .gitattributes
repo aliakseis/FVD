@@ -1,0 +1,6 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+cmake/* linguist-vendored
+imports/**/* linguist-vendored
+resources/**/* linguist-vendored
+translations/* linguist-vendored

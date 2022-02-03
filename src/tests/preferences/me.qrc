@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+		<file>images/preferences/style.css</file>
+		<file>images/preferences/bckgd_tab_selected.png</file>
+		<file>images/preferences/bckgd_tab_unselected.png</file>
+		<file>images/preferences/bckgd_TabBar.png</file>
+		<file>images/preferences/updateIco.png</file>
+		<file>images/preferences/imgProxy.png</file>
+		<file>images/preferences/imgLanguage.png</file>
+		<file>images/preferences/itemIcoLang.png</file>
+    </qresource>
+</RCC>
