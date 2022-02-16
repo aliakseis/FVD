@@ -157,9 +157,9 @@ void PrintReplyHeader(QNetworkReply* reply)
 {
 	qDebug() << "========Headers========";
 	auto list = reply->rawHeaderList();
-	for (auto it = list.begin(); it != list.end(); ++it)
+	for (auto & it : list)
 	{
-		qDebug() << QString::fromLatin1(*it) << ": " << QString::fromLatin1(reply->rawHeader(*it));
+		qDebug() << QString::fromLatin1(it) << ": " << QString::fromLatin1(reply->rawHeader(it));
 	}
     qDebug() << "=======================";
 }
@@ -208,11 +208,11 @@ QString secondsToString(int seconds)
 		result = "%3:%2:%1";
 		return result.arg(s, 2, 10, QChar('0')).arg(m, 2, 10, QChar('0')).arg(h, 2, 10, QChar('0'));
 	}
-	else
-	{
-		result = "%2:%1";
-		return result.arg(s, 2, 10, QChar('0')).arg(m, 2, 10, QChar('0'));
-	}
+	
+	
+result = "%2:%1";
+return result.arg(s, 2, 10, QChar('0')).arg(m, 2, 10, QChar('0'));
+
 }
 
 
@@ -314,9 +314,11 @@ bool CheckPortAvailable(int targetPort, const char** reason)
 
 QMainWindow* getMainWindow()
 {
-    for (QWidget* widget : QApplication::topLevelWidgets())
-        if (auto *mainWindow = qobject_cast<QMainWindow*>(widget))
+    for (QWidget* widget : QApplication::topLevelWidgets()) {
+        if (auto *mainWindow = qobject_cast<QMainWindow*>(widget)) {
             return mainWindow;
+}
+}
     return nullptr;
 }
 

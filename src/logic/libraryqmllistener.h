@@ -20,8 +20,8 @@ public:
 public slots:
 	static void onImageClicked(int index);
 	void onDeleteClicked(int index);
-	void onPlayClicked(int index);
-	void onPlayInternal(int index);
+	void onPlayClicked(int index) const;
+	void onPlayInternal(int index) const;
 
 private slots:
 	static void onHandleDeleteAsynchronously(const QPointer<DownloadEntity>& entity);

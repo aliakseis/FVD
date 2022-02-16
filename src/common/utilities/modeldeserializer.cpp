@@ -54,7 +54,12 @@ inline bool atot(T& result, const C* begin, const C** end = nullptr)
 template<typename C>
 inline QDateTime parseIsoDateTime(const C* str, bool& ok)
 {
-    int year, month, day, hour, min, sec = 0;
+    int year;
+int month;
+int day;
+int hour;
+int min;
+int sec = 0;
     ok = atot<10>(year, str, &str)
          && '-' == *str++
          && atot<10>(month, str, &str)
@@ -82,7 +87,7 @@ inline const Utf16Char* utf16(const QStringRef& s)
 template<typename T>
 inline QVariant parsePrimitiveType(const QStringRef& s, bool& ok)
 {
-    auto str = utf16(s);
+    const auto *str = utf16(s);
     T result(0);
     const bool isNegative(std::is_signed<T>::value && '-' == *str);
     if (isNegative)
@@ -99,19 +104,19 @@ inline QVariant parsePrimitiveType(const QStringRef& s, bool& ok)
 }
 
 template<>
-inline QVariant parsePrimitiveType<void>(const QStringRef&, bool&)
+inline QVariant parsePrimitiveType<void>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
     return QVariant();
 }
 
 template<>
-inline QVariant parsePrimitiveType<std::nullptr_t>(const QStringRef&, bool&)
+inline QVariant parsePrimitiveType<std::nullptr_t>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
     return QVariant();
 }
 
 template<>
-inline QVariant parsePrimitiveType<QCborSimpleType>(const QStringRef&, bool&)
+inline QVariant parsePrimitiveType<QCborSimpleType>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
     return QVariant();
 }
@@ -126,7 +131,7 @@ inline QVariant parsePrimitiveType<bool>(const QStringRef& s, bool& ok)
     {
         return false;
     }
-    auto str = utf16(s);
+    const auto *str = utf16(s);
     return !((1 == s.length() && '0' == str[0])
              || (5 == s.length() && 'f' == str[0] && 'a' == str[1] && 'l' == str[2] && 's' == str[3] && 'e' == str[4]));
 }
@@ -144,7 +149,7 @@ inline QVariant parsePrimitiveType<float>(const QStringRef& s, bool& ok)
 }
 
 
-typedef PatriciaTrie<QMetaProperty>::TrieNode MetaNode;
+using MetaNode = PatriciaTrie<QMetaProperty>::TrieNode;
 
 // self cleaning containers
 template <typename T>
@@ -202,7 +207,7 @@ inline void setChildren(QObject* object, T& children, F fun)
 
 bool ModelDeserializer::deserializeObjectInternal(QObject* object)
 {
-    if (0 == object)
+    if (nullptr == object)
     {
         return false;
     }
@@ -233,7 +238,7 @@ bool ModelDeserializer::deserializeObjectInternal(QObject* object)
         }
         QString keyValue = m_stream.attributes().value(keyValueAttribute).toString();
 
-        QObject* instance = 0;
+        QObject* instance = nullptr;
 
         QHash<uintptr_t, QPointer<QObject> >::iterator it;
 
@@ -275,19 +280,19 @@ bool ModelDeserializer::deserializeObjectInternal(QObject* object)
             }
         }
 
-        const auto utfName(utf16(name));
+        const auto *const utfName(utf16(name));
         if (keyValue.isEmpty())
         {
-            auto item = tries->children.find(utfName, name.length());
-            if (0 != item && 0 != item->get_value())
+            auto *item = tries->children.find(utfName, name.length());
+            if (nullptr != item && nullptr != item->get_value())
             {
                 children[item].push_back(instance);
             }
         }
         else
         {
-            auto item = tries->mapChildren.find(utfName, name.length());
-            if (0 != item && 0 != item->get_value())
+            auto *item = tries->mapChildren.find(utfName, name.length());
+            if (nullptr != item && nullptr != item->get_value())
             {
                 mapChildren[item][keyValue] = instance;
             }
@@ -308,13 +313,13 @@ bool ModelDeserializer::deserializeObjectInternal(QObject* object)
     for (const auto& attribute : qAsConst(attributes))
     {
         const QStringRef propName(attribute.name());
-        const auto utfPropName(utf16(propName));
-        auto item = tries->properties.find(utfPropName, propName.length());
-        if (0 == item)
+        const auto *const utfPropName(utf16(propName));
+        auto *item = tries->properties.find(utfPropName, propName.length());
+        if (nullptr == item)
         {
             continue;
         }
-        if (0 == item->get_value())
+        if (nullptr == item->get_value())
         {
             continue;
         }
@@ -388,7 +393,7 @@ case QMetaType::TypeName: value = parsePrimitiveType<RealType>(strValue, ok); br
         mapChildren,
         [](MapStringToT<QObjectMap>::iterator it, const int userType)
     {
-        return (qObjectMapId == userType) ? (void*)&*it : 0;
+        return (qObjectMapId == userType) ? (void*)&*it : nullptr;
     });
 
     setChildren(
@@ -396,7 +401,7 @@ case QMetaType::TypeName: value = parsePrimitiveType<RealType>(strValue, ok); br
         children,
         [](MapStringToT<QObjectList>::iterator it, const int userType)
     {
-        return (qObjectListId == userType) ? (void*)&*it : ((qObjectPtrId == userType) ? & (*it)[0] : 0);
+        return (qObjectListId == userType) ? (void*)&*it : ((qObjectPtrId == userType) ? & (*it)[0] : nullptr);
     });
 
     Q_ASSERT_X(children.empty(),  Q_FUNC_INFO, "Document structure has changed");

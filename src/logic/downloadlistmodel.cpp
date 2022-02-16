@@ -146,7 +146,7 @@ QVariant DownloadListModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-QVariant DownloadListModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DownloadListModel::headerData(int section, Qt::Orientation  /*orientation*/, int role) const
 {
 	if (role == Qt::DisplayRole)
 	{

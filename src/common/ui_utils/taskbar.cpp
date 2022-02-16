@@ -15,7 +15,7 @@ unsigned int TaskBar::InitMessage()
     return taskBarCreatedMsg;
 }
 
-TaskBar::TaskBar() : m_taskBar(NULL), isProgressInitialized(false), m_main(NULL), m_maximum(100)
+TaskBar::TaskBar() : m_taskBar(nullptr), isProgressInitialized(false), m_main(NULL), m_maximum(100)
 {
 }
 
@@ -29,7 +29,7 @@ void TaskBar::Uninit()
     if (m_taskBar)
     {
         m_taskBar->Release();
-        m_taskBar = NULL;
+        m_taskBar = nullptr;
     }
 }
 
@@ -58,7 +58,7 @@ void TaskBar::Init(WId main)
         CHANGEFILTERSTRUCT cfs = { sizeof(CHANGEFILTERSTRUCT) };
 
         HMODULE user32 = ::LoadLibrary(_T("user32.dll"));
-        if (user32 != NULL)
+        if (user32 != nullptr)
         {
             auto ChangeWindowMessageFilterEx_ = reinterpret_cast<decltype(ChangeWindowMessageFilterEx)*>(GetProcAddress(user32, "ChangeWindowMessageFilterEx"));
             if (ChangeWindowMessageFilterEx_)
@@ -74,9 +74,9 @@ void TaskBar::Init(WId main)
     }
     if (isVersionOk)
     {
-        if (FAILED(::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&m_taskBar)))
+        if (FAILED(::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_ALL, IID_ITaskbarList3, (void**)&m_taskBar)))
         {
-            m_taskBar = NULL;
+            m_taskBar = nullptr;
         }
     }
 }

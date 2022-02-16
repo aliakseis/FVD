@@ -8,10 +8,7 @@
 #include <QTranslator>
 #include <QRegExp>
 
-namespace utilities
-{
-
-namespace Tr
+namespace utilities::Tr
 {
 
 
@@ -48,7 +45,7 @@ void Retranslate(QObject* obj)
     QVariant variant = obj->property(kProperty);
     if (variant.canConvert<TranslationRules>())
     {
-        TranslationRules rules = variant.value<TranslationRules>();
+        auto rules = variant.value<TranslationRules>();
         for (auto it = rules.begin(); it != rules.end(); ++it)
         {
             it.key()->execute(it.value()->GetText());
@@ -61,13 +58,10 @@ void RetranslateAll(QObject* obj)
     if (!obj) { return; }
     Retranslate(obj);
     auto objects = obj->findChildren<QObject*>();
-    for (auto o : qAsConst(objects))
+    for (auto *o : qAsConst(objects))
     {
         RetranslateAll(o);
     }
 }
-
-} // namespace Tr
-
 
 } // namespace utilities

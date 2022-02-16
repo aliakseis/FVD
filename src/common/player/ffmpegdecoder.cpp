@@ -735,7 +735,7 @@ QRect FFmpegDecoder::setPreferredSize(int scr_width, int scr_height, int scr_xle
 	return targetRect;
 }
 
-QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xleft /* = 0*/, int scr_ytop /* = 0*/)
+QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xleft /* = 0*/, int scr_ytop /* = 0*/) const
 {
 	int width;
 	int height;

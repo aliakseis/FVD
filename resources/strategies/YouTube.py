@@ -11,7 +11,7 @@ def install_and_import(package, url):
         globals()[package] = importlib.import_module(package)
 
 
-install_and_import("pytube", "https://github.com/glubsy/pytube/archive/refs/heads/nfunc_regex_patch.zip") # whichever good
+install_and_import("pytube", "https://github.com/pytube/pytube/archive/refs/heads/master.zip") # whichever good
 
 from pytube import Search, YouTube
 

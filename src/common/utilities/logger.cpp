@@ -8,8 +8,8 @@
 #include <QDateTime>
 #include <QMutex>
 #include <QThread>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <qlogging.h>
 
@@ -24,13 +24,13 @@ const int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
 bool write_to_log_file_ = false;
 
-QtMessageHandler previousMsgHandler = 0;
+QtMessageHandler previousMsgHandler = nullptr;
 void messageOutput(QtMsgType type, const QMessageLogContext& context, const QString& message);
 
 class Logger
 {
 public:
-    Logger();
+    Logger() = default;
     ~Logger();
 
     Logger(const Logger&) = delete;
@@ -45,20 +45,13 @@ public:
     void setLogHandler(utilities::LoggerHandler* handler) { m_handler = handler; }
 
 private:
-    QFile* log_file_;
-    QTextStream* log_stream_;
-    QMutex m_mutex;
-    bool m_isRecursive;
+    QFile* log_file_{nullptr};
+    QTextStream* log_stream_{nullptr};
+    QMutex m_mutex{QMutex::Recursive};
+    bool m_isRecursive{false};
     utilities::LoggerHandler* m_handler{};
 };
 
-Logger::Logger()
-    : log_file_(nullptr)
-    , log_stream_(nullptr)
-    , m_mutex(QMutex::Recursive)
-    , m_isRecursive(false)
-{
-}
 
 Logger::~Logger()
 {
@@ -163,7 +156,7 @@ void Logger::messageOutput(QtMsgType type, const QMessageLogContext& context, co
 
     if (type == QtFatalMsg)
     {
-        qInstallMessageHandler(0);
+        qInstallMessageHandler(nullptr);
         qt_message_output(type, context, msg);
         //abort();
     }
@@ -171,7 +164,7 @@ void Logger::messageOutput(QtMsgType type, const QMessageLogContext& context, co
     {
         fprintf(stderr, "%s\n", msg.toLocal8Bit().constData());
         fflush(stderr);
-        if (previousMsgHandler != 0)
+        if (previousMsgHandler != nullptr)
         {
             previousMsgHandler(type, context, msg);
         }

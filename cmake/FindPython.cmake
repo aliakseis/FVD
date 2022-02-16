@@ -80,8 +80,8 @@ else (PYTHON_INCLUDE_DIR AND PYTHON_LIBRARIES)
   )
   set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR_})
 
-  message(STATUS "Python lib founded: ${PYTHON_LIBRARIES_}")
-  message(STATUS "Python include dir founded: ${PYTHON_INCLUDE_DIR_}")
+  message(STATUS "Python lib found: ${PYTHON_LIBRARIES_}")
+  message(STATUS "Python include dir found: ${PYTHON_INCLUDE_DIR_}")
 
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(PYTHON DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_DIR)

@@ -49,7 +49,7 @@ bool MoveToTrashImpl(const QString& file)
         return false;
     }
     QString absPath = fileinfo.absoluteFilePath() + '\0'; // This string must be double-null terminated
-    SHFILEOPSTRUCTW fileop = {0, FO_DELETE, qUtf16Printable(absPath), 0, FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT};
+    SHFILEOPSTRUCTW fileop = {nullptr, FO_DELETE, qUtf16Printable(absPath), nullptr, FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT};
     int rv = SHFileOperationW(&fileop);
     if (0 != rv)
     {
@@ -256,7 +256,7 @@ QString GetFileName(QNetworkReply* reply)
         if (!filename.isEmpty())
         {
             QString disposition = QString::fromUtf8(filename.constData());
-            QRegExp rx("filename\\s?=\\s?\\\"?([^\\\"]+)");
+            QRegExp rx(R"(filename\s?=\s?\"?([^\"]+))");
             if (rx.indexIn(disposition) != -1)
             {
                 result = rx.cap(1);

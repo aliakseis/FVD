@@ -2,19 +2,16 @@
 
 #include <QIODevice>
 
-namespace utilities
-{
-
-namespace LoggerTag
+namespace utilities::LoggerTag
 {
 
 class NullIODevice : public QIODevice
 {
-	qint64 readData(char*, qint64) override
+	qint64 readData(char* /*data*/, qint64 /*maxlen*/) override
 	{
 		return -1;
 	}
-	qint64 writeData(const char*, qint64 len) override
+	qint64 writeData(const char* /*data*/, qint64 len) override
 	{
 		return len;
 	}
@@ -44,7 +41,5 @@ QDebug filter(const QString& tag)
 	static NullIODevice nullIODevice;
 	return QDebug(&nullIODevice);
 }
-
-} // namespace LoggerTag
 
 } // namespace utilities

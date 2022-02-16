@@ -127,7 +127,7 @@ void SitesCombo::paintEvent(QPaintEvent* /*e*/)
 	painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
 }
 
-void SitesCombo::toggleCheckState(int row, bool programmatically /* = false */)
+void SitesCombo::toggleCheckState(int row, bool  /*programmatically*/ /* = false */)
 {
 	QVariant value = itemData(row, Qt::CheckStateRole);
 	auto state = static_cast<Qt::CheckState>(value.toInt());

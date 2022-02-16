@@ -23,7 +23,7 @@ WindowsFirewall::WindowsFirewall()
 
     try
     {
-        INetFwMgrPtr fwMgr(__uuidof(NetFwMgr), NULL, CLSCTX_INPROC_SERVER);
+        INetFwMgrPtr fwMgr(__uuidof(NetFwMgr), nullptr, CLSCTX_INPROC_SERVER);
         CComPtr<INetFwPolicy> fwPolicy;
 
         Q_ASSERT_X(!fwProfile, Q_FUNC_INFO, "profile initialized twice ???");
@@ -41,8 +41,7 @@ WindowsFirewall::WindowsFirewall()
 }
 
 WindowsFirewall::~WindowsFirewall()
-{
-}
+= default;
 
 bool WindowsFirewall::isEnabled()
 {
@@ -117,7 +116,7 @@ bool WindowsFirewall::addApplicationPolicy(const QString& imageName, const QStri
         CheckError(fwProfile->get_AuthorizedApplications(&fwApps));
 
         // add us to this list
-        INetFwAuthorizedApplicationPtr fwApp(__uuidof(NetFwAuthorizedApplication), NULL, CLSCTX_INPROC_SERVER);
+        INetFwAuthorizedApplicationPtr fwApp(__uuidof(NetFwAuthorizedApplication), nullptr, CLSCTX_INPROC_SERVER);
         CheckError(fwApp->put_ProcessImageFileName(procImgFilename));
         CheckError(fwApp->put_Name(appNameStr));
         CheckError(fwApps->Add(fwApp));

@@ -8,13 +8,14 @@
 #include <functional>
 #include <iterator>
 #include <algorithm>
+#include <utility>
 
 
 class FileReleasedRestartCallback : public NotifyHelper
 {
 public:
-	FileReleasedRestartCallback(const QPointer<DownloadEntity>& entity)
-		: m_entity(entity)
+	FileReleasedRestartCallback(QPointer<DownloadEntity>  entity)
+		: m_entity(std::move(entity))
 	{
 	}
 
@@ -304,7 +305,7 @@ void RemoteVideoEntity::setDownloads(const QObjectList& items)
 {
 	m_downloads.clear();
 
-	for (auto item : items)
+	for (auto *item : items)
 	{
 		auto* entity = dynamic_cast<DownloadEntity*>(item);
 		if (nullptr == entity)

@@ -12,7 +12,7 @@ TabbedDialogCombo::TabbedDialogCombo(QWidget* parent)
 }
 
 
-bool TabbedDialogCombo::eventFilter(QObject* receiver, QEvent* event)
+bool TabbedDialogCombo::eventFilter(QObject*  /*receiver*/, QEvent* event)
 {
     if (event->type() == QEvent::KeyPress)
     {
@@ -46,7 +46,7 @@ bool TabbedDialogCombo::eventFilter(QObject* receiver, QEvent* event)
 
 QTabWidget* TabbedDialogCombo::getTabParent()
 {
-    for (QObject* parentObj = parent(); parentObj != 0; parentObj = parentObj->parent())
+    for (QObject* parentObj = parent(); parentObj != nullptr; parentObj = parentObj->parent())
     {
         if (auto* tabWidget = qobject_cast<QTabWidget*>(parentObj))
         {
@@ -54,7 +54,7 @@ QTabWidget* TabbedDialogCombo::getTabParent()
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 void TabbedDialogCombo::showPopup()

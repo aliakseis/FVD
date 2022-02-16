@@ -60,7 +60,7 @@ qint64 InterceptTimer::nativeBytesAvailable(int socketDescriptor)
     unsigned long  nbytes = 0;
     unsigned long dummy = 0;
     DWORD sizeWritten = 0;
-    if (::WSAIoctl(socketDescriptor, FIONREAD, &dummy, sizeof(dummy), &nbytes, sizeof(nbytes), &sizeWritten, 0, 0) == SOCKET_ERROR)
+    if (::WSAIoctl(socketDescriptor, FIONREAD, &dummy, sizeof(dummy), &nbytes, sizeof(nbytes), &sizeWritten, nullptr, nullptr) == SOCKET_ERROR)
     {
         //WS_ERROR_DEBUG(WSAGetLastError());
         return -1;

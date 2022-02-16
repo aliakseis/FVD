@@ -33,8 +33,7 @@ CustomUtf8Codec::CustomUtf8Codec()
 }
 
 CustomUtf8Codec::~CustomUtf8Codec()
-{
-}
+= default;
 
 QString CustomUtf8Codec::convertToUnicode(const char* chars, int len, ConverterState* state) const
 {
@@ -71,7 +70,7 @@ QString CustomUtf8Codec::convertToUnicode(const char* chars, int len, ConverterS
 	}
 
 	QString result(need + len + 1, Qt::Uninitialized); // worst case
-	ushort* qch = (ushort*)result.unicode();
+	auto* qch = (ushort*)result.unicode();
 	uchar ch;
 	int invalid = 0;
 
@@ -220,7 +219,7 @@ QByteArray CustomUtf8Codec::convertFromUnicode(const QChar* uc, int len, Convert
 	{
 		m_b.resize(rlen);
 	}
-	uchar* cursor = (uchar*)m_b.data();
+	auto* cursor = (uchar*)m_b.data();
 	const QChar* ch = uc;
 	int invalid = 0;
 	if (state && !(state->flags & QTextCodec::IgnoreHeader))
@@ -324,13 +323,13 @@ QByteArray CustomUtf8Codec::convertFromUnicode(const QChar* uc, int len, Convert
 			mb = QByteArray(m_b.constData(), len);
 			return mb;
 		}
-		else if (mb.isDetached())
-		{
-			Q_ASSERT(mb.length() == len);
-			memcpy(mb.data(), m_b.constData(), len);
-			Q_ASSERT(0 == mb.data()[len]);
-			return mb;
-		}
+		if (mb.isDetached())
+{
+Q_ASSERT(mb.length() == len);
+memcpy(mb.data(), m_b.constData(), len);
+Q_ASSERT(0 == mb.data()[len]);
+return mb;
+}
 	}
 
 	QByteArray mb(m_b);
@@ -354,7 +353,7 @@ static CustomUtf8Codec* instance;
 
 CustomUtf8Codec* CustomUtf8Codec::Instance()
 {
-	if (0 == instance)
+	if (nullptr == instance)
 	{
 		// Push the stock UTF-8 codec into cache
 		VERIFY(QTextCodec::codecForMib(106));

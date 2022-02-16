@@ -12,6 +12,7 @@
 #include <QSortFilterProxyModel>
 #include <QDesktopServices>
 #include <QPointer>
+#include <utility>
 #include "branding.hxx"
 
 
@@ -20,8 +21,8 @@ using namespace utilities;
 class FileReleasedDeleteCallback : public NotifyHelper
 {
 public:
-	FileReleasedDeleteCallback(const QPointer<DownloadEntity>& entity)
-		: m_entity(entity)
+	FileReleasedDeleteCallback(QPointer<DownloadEntity>  entity)
+		: m_entity(std::move(entity))
 	{
 	}
 
@@ -67,7 +68,7 @@ void LibraryQmlListener::onDeleteClicked(int index)
 	}
 }
 
-void LibraryQmlListener::onPlayClicked(int index)
+void LibraryQmlListener::onPlayClicked(int index) const
 {
 	qDebug() << __FUNCTION__ << " index = " << index;
 	if (index >= 0)
@@ -101,7 +102,7 @@ void LibraryQmlListener::onPlayClicked(int index)
 	}
 }
 
-void LibraryQmlListener::onPlayInternal(int index)
+void LibraryQmlListener::onPlayInternal(int index) const
 {
 	if (index >= 0)
 	{

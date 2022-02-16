@@ -83,38 +83,38 @@ template<typename T> QString primitiveTypeToString(QVariant& v, StringCache& cac
 }
 
 template<>
-QString primitiveTypeToString<void>(QVariant&, StringCache&)
+QString primitiveTypeToString<void>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
     return QString();
 }
 
 template<>
-QString primitiveTypeToString<std::nullptr_t>(QVariant&, StringCache&)
+QString primitiveTypeToString<std::nullptr_t>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
     return QString();
 }
 
 template<>
-QString primitiveTypeToString<QCborSimpleType>(QVariant&, StringCache&)
+QString primitiveTypeToString<QCborSimpleType>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
     return QString();
 }
 
 template<>
-QString primitiveTypeToString<bool>(QVariant& v, StringCache&)
+QString primitiveTypeToString<bool>(QVariant& v, StringCache& /*unused*/)
 {
     static const QString values[2] = { "0", "1" };
     return values[v.toBool()];
 }
 
 template<>
-QString primitiveTypeToString<float>(QVariant& v, StringCache&)
+QString primitiveTypeToString<float>(QVariant& v, StringCache& /*unused*/)
 {
     return v.toString();
 }
 
 template<>
-QString primitiveTypeToString<double>(QVariant& v, StringCache&)
+QString primitiveTypeToString<double>(QVariant& v, StringCache& /*unused*/)
 {
     return v.toString();
 }
@@ -130,13 +130,13 @@ void ModelSerializer::serializeObjectInternal(
     const QString& name,
     const QString* keyValue /* = 0 */)
 {
-    if (0 == object)
+    if (nullptr == object)
     {
         return;
     }
 
     m_stream.writeStartElement(name);
-    if (keyValue != 0)
+    if (keyValue != nullptr)
     {
         m_stream.writeAttribute(keyValueAttribute, *keyValue);
     }
@@ -181,7 +181,7 @@ void ModelSerializer::serializeObjectInternal(
                 {
                     QMetaEnum qme = prop.enumerator();
                     const char* key = qme.valueToKey(value.toInt());
-                    if (key != 0)
+                    if (key != nullptr)
                     {
                         value = key;
                     }

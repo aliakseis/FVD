@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef QFFMPEGDECODER_H
 #define QFFMPEGDECODER_H
@@ -95,7 +95,7 @@ public:
 
 	QRect setPreferredSize(const QSize& size, int scr_xleft = 0, int scr_ytop = 0);
 	QRect setPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0);
-	QRect getPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0);
+	QRect getPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0) const;
 	inline bool isPlaying() const { return m_isPlaying; }
 	inline bool isPaused() const { return m_isPaused; }
 
