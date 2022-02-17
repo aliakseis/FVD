@@ -144,6 +144,7 @@ set(QT_COMPONENTS_TO_USE
 	Qt5Qml
 	Qt5Quick
 	Qt5QuickControls2
+	Qt5QuickTemplates2
 	)
 
 

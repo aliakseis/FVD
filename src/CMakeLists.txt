@@ -607,7 +607,7 @@ get_filename_component(BINARY_PATH ${BINARY_FILE} PATH)
 # Start to install
 INSTALL_IMAGEFORMATS(${PROJECT_NAME})
 	INSTALL_QT5PLUGINS(${PROJECT_NAME})
-install(TARGETS ${PROJECT_NAME} DESTINATION ${BINARY_INSTALL_DIR})
+install(TARGETS ${PROJECT_NAME} pythonqt DESTINATION ${BINARY_INSTALL_DIR})
 TARGET_BUNDLEFIX(${PROJECT_NAME})
 INSTALL_TRANSLATIONS(${PROJECT_NAME} ${QM_FILES})
 
@@ -652,6 +652,22 @@ if(NOT APPLE AND UNIX)
 	install(FILES ${CMAKE_SOURCE_DIR}/resources/images/fvdownloader.png DESTINATION share/icons/hicolor/256x256/apps/)
 endif(NOT APPLE AND UNIX)
 
+
+# vcpkg
+
+if(MSVC)
+	set(INSTALL_BINARY_FILE "${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.exe")
+
+	get_filename_component(CMAKE_TOOLCHAIN_DIRECTORY ${CMAKE_TOOLCHAIN_FILE} DIRECTORY)
+
+	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	    set( CMAKE_INSTALL_PLATFORM "x64-windows" )
+	else ()
+	    set( CMAKE_INSTALL_PLATFORM "x86-windows" )
+	endif ()
+
+	install(CODE "execute_process(COMMAND \"powershell\" \"-noprofile\" \"-executionpolicy\" \"Bypass\" \"-file\" \"${CMAKE_TOOLCHAIN_DIRECTORY}/msbuild/applocal.ps1\" \"-targetBinary\" \"${INSTALL_BINARY_FILE}\" \"-installedDir\" \"${CMAKE_TOOLCHAIN_DIRECTORY}/../../installed/${CMAKE_INSTALL_PLATFORM}/bin\" \"-OutVariable\" \"out\")")
+endif()
 
 ###################################################
 ###  END OF SECTION Post Build

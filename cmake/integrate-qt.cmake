@@ -356,7 +356,7 @@ macro(INSTALL_QT5QML TARGET_NAME)
 			${CMAKE_COMMAND} -E copy_directory ${qtQmlPath} $<TARGET_FILE_DIR:${TARGET_NAME}>/qml/
 	    	)
 
-		ADD_TO_INSTALL_FILES(${TARGET_NAME} "qml")
+		install(DIRECTORY ${qtQmlPath} DESTINATION qml)
 
 	endif(WIN32 OR APPLE)
 endmacro(INSTALL_QT5QML TARGET_NAME)
