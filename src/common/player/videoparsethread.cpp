@@ -21,7 +21,6 @@ void VideoParseThread::run()
 {
 	TAG("ffmpeg_threads") << "Video thread started";
 	AVPacket packet;
-	double curTime;
 
 	m_ffmpeg->m_videoPTS = (double)AV_NOPTS_VALUE;
 	m_videoStartClock = av_gettime() / 1000000.;
@@ -251,7 +250,8 @@ void VideoParseThread::run()
 			m_videoClock += m_frameDelay;
 
 			// Skipping frames
-			if (!seekDone && m_videoStartClock + pts <= (curTime = av_gettime() / 1000000.))
+            double curTime;
+            if (!seekDone && m_videoStartClock + pts <= (curTime = av_gettime() / 1000000.))
 			{
 				if (m_videoStartClock + pts < curTime - 1.)
 				{
