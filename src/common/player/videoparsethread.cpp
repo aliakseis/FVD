@@ -25,7 +25,6 @@ void VideoParseThread::run()
 	m_ffmpeg->m_videoPTS = (double)AV_NOPTS_VALUE;
 	m_videoStartClock = av_gettime() / 1000000.;
 	m_videoClock = 0;
-	m_nb_frame = 0;
 
 	// Help displaying thread
 	m_ffmpeg->m_mainDisplayThread = new DisplayThread(this);
@@ -125,8 +124,6 @@ void VideoParseThread::run()
             // Seeking part
             if (packet.data == m_ffmpeg->m_seekPacket.data)
             {
-                m_nb_frame = m_ffmpeg->m_seekFrame;
-
                 avcodec_flush_buffers(m_ffmpeg->m_videoCodecContext);
 
                 while (true)
@@ -225,8 +222,6 @@ void VideoParseThread::run()
 		// Did we get a video frame?
 		if (frameFinished)
 		{
-			m_nb_frame++; // FIXME: find ffmpeg API that represents frame number
-
 			int64_t duration_stamp =  m_ffmpeg->m_videoFrame->best_effort_timestamp;
 			double pts = duration_stamp;
 
@@ -307,7 +302,6 @@ void VideoParseThread::run()
 
                 current_frame->m_base = m_videoStartClock;
                 current_frame->m_pts = pts;
-                current_frame->m_frame_number = m_nb_frame;
                 current_frame->m_duration = duration_stamp;
 
                 m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) % (sizeof(m_ffmpeg->m_videoFramesQueue.m_frame) / sizeof(m_ffmpeg->m_videoFramesQueue.m_frame[0]));

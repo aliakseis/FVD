@@ -13,7 +13,6 @@ private:
 	double  m_videoClock;                          ///< pts of last decoded frame / predicted pts of next decoded frame
 	double  m_frameDelay;
 	FFmpegDecoder* m_ffmpeg;
-	int64_t m_nb_frame;
 public:
     std::atomic<double> m_videoStartClock;
 

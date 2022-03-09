@@ -8,7 +8,6 @@ struct VideoFrame
 {
 	double m_base;
 	double m_pts;
-	int64_t	m_frame_number;
 	int64_t m_duration;
 	FPicture m_image;
 };
