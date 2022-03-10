@@ -1,6 +1,4 @@
 #pragma once
-#ifndef DISPLAYTHREAD_H
-#define DISPLAYTHREAD_H
 
 #include "ffmpegdecoder.h"
 
@@ -17,5 +15,3 @@ public:
 private:
 	VideoParseThread* m_parent;
 };
-
-#endif //DISPLAYTHREAD_H

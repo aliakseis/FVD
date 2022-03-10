@@ -1,5 +1,4 @@
-#ifndef LIBRARYMODEL_H
-#define LIBRARYMODEL_H
+#pragma once
 
 #include <QAbstractListModel>
 #include <QFileSystemModel>
@@ -29,9 +28,7 @@ public:
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 	virtual bool removeRows(int row, int count, const QModelIndex&  parent = QModelIndex());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	virtual QHash<int, QByteArray> roleNames() const override;
-#endif
 
 	QStringList m_urls;
 	const SearchList* m_searches;
@@ -43,5 +40,3 @@ public:
 	static int counter;
 	int m_fakeRows;
 };
-
-#endif // LIBRARYMODEL_H

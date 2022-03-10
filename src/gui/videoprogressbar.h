@@ -1,5 +1,4 @@
-#ifndef VIDEOPROGRESSBAR_H
-#define VIDEOPROGRESSBAR_H
+#pragma once
 
 #include <QProgressBar>
 
@@ -58,5 +57,3 @@ public slots:
 
 
 };
-
-#endif // VIDEOPROGRESSBAR_H

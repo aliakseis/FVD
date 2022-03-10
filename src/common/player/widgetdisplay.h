@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef WIDGETDISPLAY_H
-#define WIDGETDISPLAY_H
-
 #include "videodisplay.h"
 #include <QLabel>
 #include <QPixmap>
@@ -40,5 +37,3 @@ protected slots:
 signals:
 	void display();
 };
-
-#endif // WIDGETDISPLAY_H

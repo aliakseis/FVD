@@ -19,15 +19,6 @@ LibraryModel::LibraryModel(QObject* parent) :
 	m_urls.append("http://www.wpclipart.com/space/moon/far_side_of_the_Moon.png");
 	m_urls.append("http://www.google.by/images/srpr/logo3w.png");
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-	QHash<int, QByteArray> roles;
-	roles[RoleThumbnail] = "thumb";
-	roles[RoleTitle] = "title";
-	roles[RoleDate] = "fileCreated";
-	roles[RoleSize] = "fileSize";
-	setRoleNames(roles);
-#endif
-
 	update();
 }
 
@@ -44,13 +35,8 @@ void LibraryModel::update()
 	m_dir = GET_SETTING(saveVideoPath);
 #else
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 	QStringList paths = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);
 	m_dir = !paths.empty() ? paths.at(0) : QString();
-#else
-	m_dir = QDir(QDesktopServices::storageLocation(QDesktopServices::MoviesLocation));
-
-#endif
 
 #endif
 	m_filesList = m_dir.entryInfoList(videoFilesMask);
@@ -167,7 +153,6 @@ bool LibraryModel::removeRows(int row, int count, const QModelIndex& parent)
 	return false;
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 QHash<int, QByteArray> LibraryModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
@@ -177,4 +162,3 @@ QHash<int, QByteArray> LibraryModel::roleNames() const
 	roles[RoleSize] = "fileSize";
 	return roles;
 }
-#endif

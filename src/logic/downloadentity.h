@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef DOWNLOAD_ENTITY_H_
-#define DOWNLOAD_ENTITY_H_
-
 #include <QObject>
 #include <QScopedPointer>
 #include <QString>
@@ -305,6 +302,3 @@ Q_SIGNALS:
 Q_DECLARE_METATYPE(DownloadEntity*)
 
 inline bool isDownloadEntityPersistable(const DownloadEntity* e) { return e->isPersistable(); }
-
-
-#endif // DOWNLOAD_ENTITY_H_

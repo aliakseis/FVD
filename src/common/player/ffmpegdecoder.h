@@ -1,7 +1,4 @@
-﻿#pragma once
-
-#ifndef QFFMPEGDECODER_H
-#define QFFMPEGDECODER_H
+#pragma once
 
 #include <QDebug>
 
@@ -294,5 +291,3 @@ signals:
 	void playingFinished();
 	void fileProbablyNotFull();
 };
-
-#endif // QFFMPEGDECODER_H

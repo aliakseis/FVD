@@ -1,5 +1,4 @@
-#ifndef SCRIPTEXTENSION_H
-#define SCRIPTEXTENSION_H
+#pragma once
 
 #include <QObject>
 #include <QEventLoop>
@@ -38,5 +37,3 @@ private:
 	QNetworkReply* _doSyncRequest(const QString& url, QVariantMap const& headers);
 
 };
-
-#endif // SCRIPTEXTENSION_H

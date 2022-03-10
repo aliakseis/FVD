@@ -1,5 +1,4 @@
-#ifndef VIDEOCONTROL_H
-#define VIDEOCONTROL_H
+#pragma once
 
 #include <QWidget>
 #include "videoplayerwidget.h"
@@ -52,5 +51,3 @@ private:
 
 	void switchVolumeButton(bool volumeOn);
 };
-
-#endif // VIDEOCONTROL_H

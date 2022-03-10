@@ -1,5 +1,4 @@
-#ifndef SEARCHRESULTFORM_H
-#define SEARCHRESULTFORM_H
+#pragma once
 
 #include <QFrame>
 #include <QModelIndex>
@@ -73,5 +72,3 @@ private:
 	int m_searchPage;
 	QString m_lastSearchString;
 };
-
-#endif // SEARCHRESULTFORM_H

@@ -1,5 +1,4 @@
-#ifndef ITEMSDELEGATE_H
-#define ITEMSDELEGATE_H
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -41,5 +40,3 @@ private:
 	bool m_mouseDown;
 	PressedElement m_btnElement;
 };
-
-#endif // ITEMSDELEGATE_H

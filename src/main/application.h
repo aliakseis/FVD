@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef APPLICATION_H_
-#define APPLICATION_H_
-
 #ifdef ALLOW_TRAFFIC_CONTROL
 #include "traffic_limitation/InterceptingApplication.h"
 #else
@@ -44,5 +41,3 @@ public:
 		return QtSingleApplication::eventFilter(target, event);
 	}
 };
-
-#endif // APPLICATION_H_

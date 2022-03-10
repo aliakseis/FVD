@@ -1,5 +1,4 @@
-#ifndef VIDEODISPLAY_H
-#define VIDEODISPLAY_H
+#pragma once
 
 #include <QImage>
 #include <QPixmap>
@@ -29,5 +28,3 @@ public:
 protected:
 	FFmpegDecoder* m_decoder;
 };
-
-#endif // VIDEODISPLAY_H

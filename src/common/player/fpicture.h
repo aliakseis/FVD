@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FPICTURE_H
-#define FPICTURE_H
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -62,5 +60,3 @@ private:
         format = AV_PIX_FMT_NONE;
 	}
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef CUSTOMDOCKWIDGET_H
-#define CUSTOMDOCKWIDGET_H
+#pragma once
 
 #include <QDockWidget>
 #include <QLabel>
@@ -65,5 +64,3 @@ private:
 	VideoWidget* m_display;
 	MainWindow* m_parent;
 };
-
-#endif // CUSTOMDOCWIDGET_H

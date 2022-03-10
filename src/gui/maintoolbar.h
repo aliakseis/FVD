@@ -1,6 +1,4 @@
 #pragma once
-#ifndef MAINTOOLBAR_H
-#define MAINTOOLBAR_H
 
 #include <QWidget>
 #include <utility>
@@ -57,5 +55,3 @@ private:
 	TabId m_activeTabIndex;
 	Ui::MainToolBar* ui;
 };
-
-#endif // MAINTOOLBAR_H

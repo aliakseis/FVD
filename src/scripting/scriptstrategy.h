@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef SCRIPTSTRATEGY_H
-#define SCRIPTSTRATEGY_H
-
 #include <QObject>
 #include <QString>
 #include <QFuture>
@@ -43,5 +40,3 @@ private:
 	QString m_syncResult;
 	bool m_isSafe;
 };
-
-#endif // SCRIPTSTRATEGY_H

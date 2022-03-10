@@ -1,5 +1,4 @@
-#ifndef SPINNER_H
-#define SPINNER_H
+#pragma once
 
 #include <QLabel>
 
@@ -28,5 +27,3 @@ private:
 	int m_currentRotateAngle;
 	int m_timerId;
 };
-
-#endif // SPINNER_H

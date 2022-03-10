@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VIDEOFRAME_H
-#define VIDEOFRAME_H
 
 #include "fpicture.h"
 
@@ -11,5 +9,3 @@ struct VideoFrame
 	int64_t m_duration;
 	FPicture m_image;
 };
-
-#endif

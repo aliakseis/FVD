@@ -1,5 +1,4 @@
-#ifndef SITESCOMBO_H
-#define SITESCOMBO_H
+#pragma once
 
 #include <QComboBox>
 
@@ -48,5 +47,3 @@ private:
 	QString m_displayText;
 	QIcon m_displayIcon;
 };
-
-#endif // SITESCOMBO_H

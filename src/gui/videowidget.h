@@ -1,5 +1,4 @@
-#ifndef VIDEOWIDGET_H
-#define VIDEOWIDGET_H
+#pragma once
 
 #include <QImage>
 #include <QRegion>
@@ -93,5 +92,3 @@ Q_SIGNALS:
 	void leaveFullScreen();
 	void mouseClicked();
 };
-
-#endif // VIDEOWIDGET_H

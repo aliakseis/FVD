@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "libraryqmllistener.h"
 
@@ -28,5 +27,3 @@ private:
 	LibraryQmlListener m_qmlListener;
 	QFileSystemModel m_model;
 };
-
-#endif // MAINWINDOW_H

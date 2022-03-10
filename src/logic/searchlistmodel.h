@@ -1,5 +1,4 @@
-#ifndef VIDEOSLISTMODEL_H
-#define VIDEOSLISTMODEL_H
+#pragma once
 
 #include "basefacademodel.h"
 #include "remotevideoentity.h"
@@ -53,5 +52,3 @@ private Q_SLOTS:
 private:
 	QHeaderView* m_headerView;
 };
-
-#endif // VIDEOSLISTMODEL_H

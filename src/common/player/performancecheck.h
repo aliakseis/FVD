@@ -1,5 +1,4 @@
-#ifndef PERFORMANCECHECK_H
-#define PERFORMANCECHECK_H
+#pragma once
 
 #include "widgetdisplay.h"
 #include "opengldisplay.h"
@@ -76,5 +75,3 @@ int performanceCheck()
 
 	return out_result;
 }
-
-#endif // PERFORMANCECHECK_H

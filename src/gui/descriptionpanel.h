@@ -1,5 +1,4 @@
-#ifndef DESCRIPTIONPANEL_H
-#define DESCRIPTIONPANEL_H
+#pragma once
 
 #include <QWidget>
 #include "entityholder.h"
@@ -25,5 +24,3 @@ protected:
 private:
 	Ui::DescriptionPanel* ui;
 };
-
-#endif //DESCRIPTIONPANEL_H

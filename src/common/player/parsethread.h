@@ -1,6 +1,4 @@
 #pragma once
-#ifndef PARSETHREAD_H
-#define PARSETHREAD_H
 
 #include "ffmpegdecoder.h"
 
@@ -28,5 +26,3 @@ public:
 	static void startAudioThread(FFmpegDecoder* parent);
 	static void startVideoThread(FFmpegDecoder* parent);
 };
-
-#endif //PARSETHREAD_H

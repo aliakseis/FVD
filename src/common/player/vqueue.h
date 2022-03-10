@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VQUEUE_H
-#define VQUEUE_H
 
 // Video frame struct for RGB24 frame (used by displays)
 struct VQueue
@@ -40,4 +38,3 @@ struct VQueue
 		}
 	}
 };
-#endif

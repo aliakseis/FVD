@@ -1,5 +1,5 @@
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
+#pragma once
+
 ////////////////////////////////////////////////////////////////////
 #include <QtCore/QtCore>
 #include <QtNetwork/QtNetwork>
@@ -30,5 +30,3 @@ protected:
 	void run();
 	////////////////////////////////////////////////////////////////////
 };
-
-#endif // TCPCLIENT_H

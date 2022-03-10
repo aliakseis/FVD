@@ -1,5 +1,4 @@
-#ifndef LIBRARYMODEL_H
-#define LIBRARYMODEL_H
+#pragma once
 
 #include <QAbstractListModel>
 #include <QFileSystemModel>
@@ -87,5 +86,3 @@ private:
 	EntityFileNames m_allEntitiesFiles;
 	QList<QPointer<DownloadEntity> > m_missingFiles;
 };
-
-#endif // LIBRARYMODEL_H

@@ -1,5 +1,4 @@
-#ifndef DOWNLOADSCONTROL_H
-#define DOWNLOADSCONTROL_H
+#pragma once
 
 #include <QWidget>
 #include <QTimer>
@@ -73,5 +72,3 @@ private:
 
 	bool isUpdatingState;
 };
-
-#endif // DOWNLOADSCONTROL_H

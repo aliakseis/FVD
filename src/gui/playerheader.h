@@ -1,5 +1,4 @@
-#ifndef PLAYERHEADER_H
-#define PLAYERHEADER_H
+#pragma once
 
 #include <QWidget>
 
@@ -24,5 +23,3 @@ public:
 private:
 	Ui::PlayerHeader* ui;
 };
-
-#endif // PLAYERHEADER_H

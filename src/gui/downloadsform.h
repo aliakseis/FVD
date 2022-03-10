@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef DOWNLOADHISTORYFORM_H
-#define DOWNLOADHISTORYFORM_H
-
 #include <QFrame>
 #include <QAbstractItemModel>
 #include "customdockwidget.h"
@@ -85,5 +82,3 @@ private:
 	VideoPlayerWidget* videoPlayer;
 	DownloadsControl* control;
 };
-
-#endif // DOWNLOADHISTORYFORM_H

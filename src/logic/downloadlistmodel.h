@@ -1,5 +1,4 @@
-#ifndef DOWNLOADLISTMODEL_H
-#define DOWNLOADLISTMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <set>
@@ -68,5 +67,3 @@ private:
 	bool m_reportSM;
 	QMap<int, DownloadListHeaders> m_mapSignalsToHeaders;
 };
-
-#endif // DOWNLOADLISTMODEL_H

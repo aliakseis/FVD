@@ -1,5 +1,4 @@
-#ifndef VIDEOQUALITYDIALOG_H
-#define VIDEOQUALITYDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QEventLoop>
@@ -39,5 +38,3 @@ private:
 	RemoteVideoEntity* m_entity;
 	QPoint m_initPos;
 };
-
-#endif // VIDEOQUALITYDIALOG_H

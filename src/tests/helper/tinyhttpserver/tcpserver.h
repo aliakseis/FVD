@@ -1,5 +1,5 @@
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#pragma once
+
 ////////////////////////////////////////////////////////////////////
 #include <QtCore/QtCore>
 #include <QtNetwork/QtNetwork>
@@ -29,4 +29,3 @@ private slots:
 	void clientDisconnected();
 	////////////////////////////////////////////////////////////////////
 };
-#endif // TCPSERVER_H

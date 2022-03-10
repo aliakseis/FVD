@@ -1,5 +1,4 @@
-#ifndef LIBRARYFORM_H
-#define LIBRARYFORM_H
+#pragma once
 
 #include <QWidget>
 #include "customdockwidget.h"
@@ -42,5 +41,3 @@ private:
 	QSortFilterProxyModel* m_proxyModel;
 	QQuickView* m_view;
 };
-
-#endif // LIBRARYFORM_H

@@ -1,5 +1,5 @@
-#ifndef DOWNLOADSORTFILTERMODEL_H
-#define DOWNLOADSORTFILTERMODEL_H
+#pragma once
+
 #include <vector>
 #include <QSortFilterProxyModel>
 
@@ -44,5 +44,3 @@ private:
 	mutable bool m_isSorted;
 	QHeaderView* m_headerView;
 };
-
-#endif // DOWNLOADSORTFILTERMODEL_H

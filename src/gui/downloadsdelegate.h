@@ -1,5 +1,4 @@
-#ifndef DOWNLOADSDELEGATE_H
-#define DOWNLOADSDELEGATE_H
+#pragma once
 
 #include <QStyledItemDelegate>
 
@@ -14,5 +13,3 @@ public:
 	QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 };
-
-#endif // DOWNLOADSDELEGATE_H

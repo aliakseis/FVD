@@ -1,5 +1,4 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include "utilities/translation.h"
 
@@ -46,5 +45,3 @@ Tr::Translation ABOUT_FEEDBACK					=	Tr::translate("AboutDialog", "Feedback");
 Tr::Translation CREATEDIR_ERROR					=	Tr::translate("MainWindow", "<b>Cannot create directory \"%1\"</b>");
 Tr::Translation CREATEFILE_ERROR				=	Tr::translate("MainWindow", "<b>Cannot create file \"%1\"</b>");
 }
-
-#endif // GLOBALS_H

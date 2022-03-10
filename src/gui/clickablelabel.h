@@ -1,5 +1,4 @@
-#ifndef CLICKABLELABEL_H
-#define CLICKABLELABEL_H
+#pragma once
 
 #include <QLabel>
 
@@ -14,5 +13,3 @@ protected:
 signals:
 	void clicked();
 };
-
-#endif //CLICKABLELABEL_H

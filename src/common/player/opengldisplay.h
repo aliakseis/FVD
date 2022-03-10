@@ -1,5 +1,4 @@
-#ifndef OPENGLDISPLAY_H
-#define OPENGLDISPLAY_H
+#pragma once
 
 // https://github.com/MasterAler/SampleYUVRenderer
 
@@ -47,5 +46,3 @@ public:
      void raise() const override { throw *this; }
      OpenGlException *clone() const override { return new OpenGlException(*this); }
 };
-
-#endif // OPENGLDISPLAY_H

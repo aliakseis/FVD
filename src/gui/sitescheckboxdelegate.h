@@ -1,5 +1,4 @@
-#ifndef CHECKBOXITEMDELEGATE_H
-#define CHECKBOXITEMDELEGATE_H
+#pragma once
 
 #include <QStyledItemDelegate>
 #include <QPen>
@@ -21,5 +20,3 @@ private:
 	const QPen m_hoverPen;
 	const int m_padding;
 };
-
-#endif // CHECKBOXITEMDELEGATE_H

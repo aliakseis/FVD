@@ -1,5 +1,4 @@
-#ifndef LIBRARYQMLLISTENER_H
-#define LIBRARYQMLLISTENER_H
+#pragma once
 
 #include <QObject>
 #include "librarymodel.h"
@@ -18,5 +17,3 @@ public slots:
 	void onPlayClicked(int index);
 
 };
-
-#endif // LIBRARYQMLLISTENER_H

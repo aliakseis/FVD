@@ -1,5 +1,4 @@
-#ifndef WINDOWWIDGET_H
-#define WINDOWWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -25,5 +24,3 @@ private:
 	void setHostedWindowHelper(QWindow* window);
 	QWindow* m_hostedWindow;
 };
-
-#endif // WINDOWWIDGET_H

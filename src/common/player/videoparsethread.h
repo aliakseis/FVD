@@ -1,6 +1,4 @@
 #pragma once
-#ifndef VIDEOPARSETHREAD_H
-#define VIDEOPARSETHREAD_H
 
 #include "ffmpegdecoder.h"
 
@@ -25,5 +23,3 @@ public:
 	virtual void run() override;
 	bool getVideoPacket(AVPacket* packet);
 };
-
-#endif //VIDEOPARSETHREAD_H

@@ -1,5 +1,4 @@
-#ifndef VIDEOPLAYER_H
-#define VIDEOPLAYER_H
+#pragma once
 
 #include "videodisplay.h"
 
@@ -36,5 +35,3 @@ private:
 	VideoDisplay* m_display;
 	VideoState m_state;
 };
-
-#endif // VIDEOPLAYER_H

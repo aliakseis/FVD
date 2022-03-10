@@ -1,6 +1,4 @@
 #pragma once
-#ifndef TIMELIMITERTHREAD_H
-#define TIMELIMITERTHREAD_H
 
 #include "ffmpegdecoder.h"
 
@@ -17,5 +15,3 @@ public:
 	};
 	virtual void run() override;
 };
-
-#endif //TIMELIMITERTHREAD_H

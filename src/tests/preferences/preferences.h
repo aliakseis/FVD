@@ -1,5 +1,4 @@
-#ifndef Preferences_H
-#define Preferences_H
+#pragma once
 
 #include <QDialog>
 
@@ -38,5 +37,3 @@ protected:
 private:
 	Ui::Preferences* ui;
 };
-
-#endif // Preferences_H

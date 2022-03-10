@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef DOWNLOAD_MANAGER_H_
-#define DOWNLOAD_MANAGER_H_
-
-
 #include "utilities/singleton.h"
 #include "utilities/utils.h"
 #include "utilities/errorcode.h"
@@ -125,5 +121,3 @@ public Q_SLOTS:
 };
 
 typedef Singleton<SearchManager> TheSearchManager;
-
-#endif // DOWNLOAD_MANAGER_H_

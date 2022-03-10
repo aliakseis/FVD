@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef REMOTE_VIDEO_ENTITY_H_
-#define REMOTE_VIDEO_ENTITY_H_
-
 #include <QObject>
 #include <QMap>
 #include <QString>
@@ -173,5 +170,3 @@ inline bool operator==(const RemoteVideoEntity& a1, const RemoteVideoEntity& a2)
 {
 	return a1.m_videoInfo.id == a2.m_videoInfo.id;
 }
-
-#endif // REMOTE_VIDEO_ENTITY_H_

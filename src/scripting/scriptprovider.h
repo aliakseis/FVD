@@ -1,5 +1,4 @@
-#ifndef SCRIPTPROVIDER_H
-#define SCRIPTPROVIDER_H
+#pragma once
 
 #include <QString>
 #include <QVariantList>
@@ -30,5 +29,3 @@ private:
     std::unique_ptr<ScriptEngine::ScriptEngine> m_scriptEngine;
     const bool m_isPython;
 };
-
-#endif // SCRIPTPROVIDER_H

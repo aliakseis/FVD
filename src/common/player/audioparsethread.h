@@ -1,6 +1,4 @@
 #pragma once
-#ifndef AUDIOPARSETHREAD_H
-#define AUDIOPARSETHREAD_H
 
 #include "ffmpegdecoder.h"
 
@@ -32,6 +30,3 @@ public:
 	virtual void run() override;
 	bool getAudioPacket(AVPacket* packet);
 };
-
-
-#endif //AUDIOPARSETHREAD_H

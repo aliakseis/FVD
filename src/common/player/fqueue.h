@@ -1,6 +1,4 @@
 #pragma once
-#ifndef FQUEUE_H
-#define FQUEUE_H
 
 #include "threadcontrol.h"
 
@@ -75,5 +73,3 @@ public:
 private:
 	int64_t	m_packetsSize;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef LIBRARYQMLLISTENER_H
-#define LIBRARYQMLLISTENER_H
+#pragma once
 
 #include <QObject>
 #include <QPointer>
@@ -29,5 +28,3 @@ private slots:
 signals:
 	void handleDeleteAsynchronously(const QPointer<DownloadEntity>& entity);
 };
-
-#endif // LIBRARYQMLLISTENER_H

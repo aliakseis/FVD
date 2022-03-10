@@ -1,5 +1,4 @@
-#ifndef ENTITYHOLDER_H
-#define ENTITYHOLDER_H
+#pragma once
 
 class RemoteVideoEntity;
 
@@ -16,5 +15,3 @@ public:
 protected:
 	RemoteVideoEntity* m_currentEntity;
 };
-
-#endif //ENTITYHOLDER_H
