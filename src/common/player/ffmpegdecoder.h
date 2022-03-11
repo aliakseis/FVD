@@ -5,25 +5,17 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/rational.h>
-#include <libavutil/opt.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/time.h>
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
+#include <libavutil/time.h>
 }
 
 #include <QEventLoop>
 
-
-#include <time.h>
-#include <sys/timeb.h>
 #include <QThread>
 #include "threadcontrol.h"
 #include <QQueue>
 #include <QMutex>
-#include <QSemaphore>
 #include <QFile>
 #include <QPixmap>
 #include <QWaitCondition>
@@ -42,8 +34,8 @@ enum
 	MAX_QUEUE_SIZE = (15 * 1024 * 1024),
 	MAX_VIDEO_FRAMES = 8,
 	MAX_AUDIO_FRAMES = 1000,
-	VIDEO_PICTURE_QUEUE_SIZE = 2,		// VideoFrame that will enough for displaying one frame.
-    PLAYBACK_AVPACKET_MAX = 524288		// A macro that defines AVPacket maximum size for downloading items.
+	VIDEO_PICTURE_QUEUE_SIZE = 2,		// enough for displaying one frame.
+    PLAYBACK_AVPACKET_MAX = 524288		// AVPacket maximum size for downloading items.
 };
 
 
@@ -228,7 +220,7 @@ private:
 	AVPixelFormat		m_pixelFormat;
 
 
-	// Video and audio threads things
+	// Video and audio threads stuff
 	FQueue				m_videoPacketsQueue;
 	FQueue				m_audioPacketsQueue;
 
