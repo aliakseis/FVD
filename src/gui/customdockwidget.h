@@ -61,6 +61,6 @@ private:
 	PreviewPanelButton* manageButton;
 	VisibilityState m_state;
 	VisibilityState m_prevState;
-	VideoWidget* m_display;
+    VideoWidget* m_display{};
 	MainWindow* m_parent;
 };

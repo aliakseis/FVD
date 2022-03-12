@@ -91,5 +91,5 @@ private:
 
 private:
 	Ui::Preferences* ui;
-	bool m_dataChanged;
+	bool m_dataChanged = false;
 };

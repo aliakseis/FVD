@@ -111,7 +111,7 @@ private:
 	QPointer<DownloadEntity> m_currentDownload;
 	Spinner* m_spinner;
 	VideoWidget* m_videoWidget;
-	PlayerHeader* m_playerHeader;
+    PlayerHeader* m_playerHeader{};
 };
 
 VideoPlayerWidget* VideoPlayerWidgetInstance();

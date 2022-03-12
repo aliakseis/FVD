@@ -68,7 +68,7 @@ private:
 	SearchListModel* m_model;
 	QSortFilterProxyModel* m_proxyModel;
 
-	QAction* m_openUrl;
+    QAction* m_openUrl{};
 	int m_searchPage;
 	QString m_lastSearchString;
 };

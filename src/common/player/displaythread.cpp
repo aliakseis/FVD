@@ -29,7 +29,7 @@ void DisplayThread::run()
 			return;
 		}
 
-		VideoFrame* current_frame = & ff->m_videoFramesQueue.m_frame[ff->m_videoFramesQueue.m_read_counter];
+		VideoFrame* current_frame = & ff->m_videoFramesQueue.m_frames[ff->m_videoFramesQueue.m_read_counter];
 
 		// Frame skip
 		if (ff->m_videoFramesQueue.m_busy > 1 && current_frame->m_base + current_frame->m_pts < (av_gettime() / 1000000.))

@@ -125,7 +125,7 @@ private:
 
 	// Limit playback by bytes
 	bool				m_fileProbablyNotFull;
-	bool				m_durationRecheckRunned;
+	bool				m_durationRecheckIsRun;
     std::atomic_int64_t	m_bytesLimiter;
     std::atomic_int64_t m_bytesLimiterTotal;
     std::atomic_int64_t	m_bytesCurrent;

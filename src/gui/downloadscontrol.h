@@ -64,7 +64,7 @@ private:
 	Ui::DownloadsControl* ui;
 	QTimer timer;
 	const int timeout;
-	int m_affectedRow;
+    int m_affectedRow{};
 	QPropertyAnimation* m_animation;
 	DownloadSortFilterModel* m_proxyModel;
 	bool dontStopTimer;

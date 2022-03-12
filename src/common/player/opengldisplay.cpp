@@ -49,7 +49,7 @@ struct OpenGLDisplay::OpenGLDisplayImpl
 
 OpenGLDisplay::OpenGLDisplay(QWidget* parent)
     : QOpenGLWidget(parent)
-    , impl(new OpenGLDisplayImpl)
+    , impl(new OpenGLDisplayImpl())
 {
     impl->m_postponedUpdater.setSingleShot(true);
     connect(&impl->m_postponedUpdater, SIGNAL(timeout()), this, SLOT(update()));

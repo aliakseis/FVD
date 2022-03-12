@@ -294,7 +294,7 @@ void VideoParseThread::run()
                 }
 
                 int wrcount = m_ffmpeg->m_videoFramesQueue.m_write_counter;
-                VideoFrame* current_frame = &m_ffmpeg->m_videoFramesQueue.m_frame[wrcount];
+                VideoFrame* current_frame = &m_ffmpeg->m_videoFramesQueue.m_frames[wrcount];
                 m_ffmpeg->frameToImage();
 
                 // If target frame not good, it will be reallocated
@@ -304,7 +304,7 @@ void VideoParseThread::run()
                 current_frame->m_pts = pts;
                 current_frame->m_duration = duration_stamp;
 
-                m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) % (sizeof(m_ffmpeg->m_videoFramesQueue.m_frame) / sizeof(m_ffmpeg->m_videoFramesQueue.m_frame[0]));
+                m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) % std::size(m_ffmpeg->m_videoFramesQueue.m_frames);
 
                 QMutexLocker locker(&m_ffmpeg->m_videoFramesMutex);
                 m_ffmpeg->m_videoFramesQueue.m_busy++;

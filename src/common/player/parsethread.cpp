@@ -223,7 +223,7 @@ void ParseThread::fixDuration()
 			return;
 		}
 
-		parent->m_durationRecheckRunned = true;
+		parent->m_durationRecheckIsRun = true;
 
 		// Reset rechecking vars
 		parent->m_frameTotalCount = 0;

@@ -14,7 +14,7 @@ public:
 	explicit LibraryQmlListener(QObject* parent = 0);
 
 	LibraryModel* m_model;
-	QSortFilterProxyModel* m_proxyModel;
+    QSortFilterProxyModel* m_proxyModel{};
 
 public slots:
 	static void onImageClicked(int index);

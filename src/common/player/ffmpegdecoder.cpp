@@ -114,7 +114,7 @@ void FFmpegDecoder::resetVariables()
 	m_durationLimiter = -1;
 	m_bytesCurrent = 0;
 	m_fileProbablyNotFull = false;
-	m_durationRecheckRunned = false;
+	m_durationRecheckIsRun = false;
 
     m_durationLimiter = 0;
 
@@ -779,12 +779,12 @@ double FFmpegDecoder::audioClock() const
 
 void FFmpegDecoder::finishedDisplayingFrame()
 {
-	m_videoPTS = m_videoFramesQueue.m_frame[m_videoFramesQueue.m_read_counter].m_pts;
+	m_videoPTS = m_videoFramesQueue.m_frames[m_videoFramesQueue.m_read_counter].m_pts;
 	QMutexLocker locker(&m_videoFramesMutex);
 	m_videoFramesQueue.m_busy--;
 	Q_ASSERT(m_videoFramesQueue.m_busy >= 0);
 	// avoiding assert in VideoParseThread::run()
-	m_videoFramesQueue.m_read_counter = (m_videoFramesQueue.m_read_counter + 1) % (sizeof(m_videoFramesQueue.m_frame) / sizeof(m_videoFramesQueue.m_frame[0]));
+	m_videoFramesQueue.m_read_counter = (m_videoFramesQueue.m_read_counter + 1) % std::size(m_videoFramesQueue.m_frames);
 	m_videoFramesCV.wakeAll();
 	locker.unlock();
 }
@@ -797,7 +797,7 @@ void FFmpegDecoder::startLimiterThread()
 		m_mainTimeLimiterThread = new TimeLimiterThread(this);
 
 		// Duration fix was starting and now file duration probably not corrent because of partitional file
-		if (m_durationRecheckRunned)
+		if (m_durationRecheckIsRun)
 		{
 			m_fileProbablyNotFull = true;
 			emit fileProbablyNotFull();

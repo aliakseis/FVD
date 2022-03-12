@@ -8,8 +8,8 @@ class VideoParseThread : public QThread, public ThreadControl
 	friend class DisplayThread;
 private:
     std::atomic_bool m_isSeekingWhilePaused;
-	double  m_videoClock;                          ///< pts of last decoded frame / predicted pts of next decoded frame
-	double  m_frameDelay;
+    double  m_videoClock{};                          ///< pts of last decoded frame / predicted pts of next decoded frame
+    double  m_frameDelay{};
 	FFmpegDecoder* m_ffmpeg;
 public:
     std::atomic<double> m_videoStartClock;

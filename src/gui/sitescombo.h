@@ -43,7 +43,7 @@ private:
 	};
 	bool m_containerMousePress;
 	QStringList m_selectedStrategies;
-	int m_singleRow;
+    int m_singleRow{};
 	QString m_displayText;
 	QIcon m_displayIcon;
 };
