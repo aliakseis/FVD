@@ -50,7 +50,7 @@ Q_SIGNALS:
 protected:
 	QtDeclarativeTopLevelItem(QtDeclarativeTopLevelItemPrivate& dd, QDeclarativeItem* parent = 0);
 
-	virtual void itemChange(ItemChange, const ItemChangeData&) override;
+	void itemChange(ItemChange, const ItemChangeData&) override;
 
 	QScopedPointer<QtDeclarativeTopLevelItemPrivate> d_ptr;
 

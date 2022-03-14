@@ -61,7 +61,7 @@ signals:
 	void entityActivated(RemoteVideoEntity*);
 
 protected:
-	virtual bool eventFilter(QObject* obj, QEvent* event) override;
+	bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
 	Ui::SearchResultForm* ui;

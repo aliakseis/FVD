@@ -41,7 +41,7 @@ public:
 	void updatePlayButton();
 
 protected:
-	virtual void keyPressEvent(QKeyEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 
 	void mousePressEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);

@@ -30,7 +30,7 @@ class Preferences
 public:
 	explicit Preferences(QWidget* parent = 0);
 	~Preferences();
-	virtual void done(int result) override;
+	void done(int result) override;
 	int execSelectFolder();
 
 protected:
@@ -57,7 +57,7 @@ private:
 	static void setContentSize(QListWidget* wdt);
 	static QString getCheckedSites(QListWidget* lWidg);
 
-	virtual void showEvent(QShowEvent*) override;
+	void showEvent(QShowEvent*) override;
 
 	bool createSettingsDir(QString dirPath, const QString& strategyName);
 

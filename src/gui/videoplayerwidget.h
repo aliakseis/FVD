@@ -62,10 +62,10 @@ private:
 	void playFile(const QString& fileName);
 
 protected:
-	virtual void resizeEvent(QResizeEvent* event) override;
-	virtual void wheelEvent(QWheelEvent* event) override;
-	virtual bool eventFilter(QObject* object, QEvent* event) override;
-	virtual void setDefaultDisplay() override;
+	void resizeEvent(QResizeEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	bool eventFilter(QObject* object, QEvent* event) override;
+	void setDefaultDisplay() override;
 
 public slots:
 	void setEntity(RemoteVideoEntity* entity);

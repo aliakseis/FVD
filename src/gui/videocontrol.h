@@ -27,8 +27,8 @@ signals:
 
 protected:
 	bool eventFilter(QObject* obj, QEvent* event);
-	virtual void paintEvent(QPaintEvent* event) override;
-	virtual void resizeEvent(QResizeEvent* event)override;
+	void paintEvent(QPaintEvent* event) override;
+	void resizeEvent(QResizeEvent* event)override;
 
 public slots:
 	void on_btnPlay_clicked();

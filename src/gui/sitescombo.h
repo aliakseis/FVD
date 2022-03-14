@@ -8,10 +8,10 @@ class SitesCombo : public QComboBox
 public:
 	explicit SitesCombo(QWidget* parent = 0);
 
-	virtual void showPopup() override;
-	virtual void hidePopup() override;
+	void showPopup() override;
+	void hidePopup() override;
 
-	virtual bool eventFilter(QObject* receiver, QEvent* event) override;
+	bool eventFilter(QObject* receiver, QEvent* event) override;
 
 	void addSite(const QIcon& icon, const QString& text, const QString& strategyName);
 	void addSection(const QIcon& icon, const QString& text);
@@ -22,10 +22,10 @@ public:
 	void fitContent();
 
 protected:
-	virtual void wheelEvent(QWheelEvent* event) override;
-	virtual void paintEvent(QPaintEvent* event) override;
-	virtual void resizeEvent(QResizeEvent* event) override;
-	virtual void moveEvent(QMoveEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+	void paintEvent(QPaintEvent* event) override;
+	void resizeEvent(QResizeEvent* event) override;
+	void moveEvent(QMoveEvent* event) override;
 
 public Q_SLOTS:
 	void toggleCheckState(int row, bool programmatically = false);

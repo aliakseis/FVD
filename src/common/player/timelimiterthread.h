@@ -13,5 +13,5 @@ public:
 	{
 		setObjectName("TimeLimiterThread");
 	};
-	virtual void run() override;
+	void run() override;
 };

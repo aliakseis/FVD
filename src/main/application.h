@@ -28,7 +28,7 @@ public:
 #endif // ALLOW_TRAFFIC_CONTROL
 	{}
 
-	virtual bool eventFilter(QObject* target, QEvent* event) override
+	bool eventFilter(QObject* target, QEvent* event) override
 	{
 		if (event->type() == QEvent::KeyPress)
 		{

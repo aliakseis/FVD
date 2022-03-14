@@ -78,11 +78,11 @@ private Q_SLOTS:
 	void onDownloadProgressChanged(int progress);
 	void onDownloadFinished(const QString& videoTitle);
 protected:
-	virtual void changeEvent(QEvent* event) override;
-	virtual void keyPressEvent(QKeyEvent* event) override;
-	virtual void closeEvent(QCloseEvent* event) override;
+	void changeEvent(QEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
+	void closeEvent(QCloseEvent* event) override;
 
-	virtual void showHideNotify() override;
+	void showHideNotify() override;
 
 private:
 	void loadModelData();

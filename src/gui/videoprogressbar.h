@@ -13,7 +13,7 @@ public:
 	void resetProgress();
 
 protected:
-	virtual void paintEvent(QPaintEvent* event) override;
+	void paintEvent(QPaintEvent* event) override;
 	bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:

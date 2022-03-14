@@ -27,6 +27,6 @@ public:
 	{
 		setObjectName("AudioParseThread");
 	};
-	virtual void run() override;
+	void run() override;
 	bool getAudioPacket(AVPacket* packet);
 };

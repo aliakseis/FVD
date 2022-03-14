@@ -16,7 +16,7 @@ public:
 	void setSpinning(bool spin);
 
 protected:
-	virtual void timerEvent(QTimerEvent* event) override;
+	void timerEvent(QTimerEvent* event) override;
 
 private:
 	void startSpin();

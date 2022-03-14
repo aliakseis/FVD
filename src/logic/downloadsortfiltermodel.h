@@ -12,14 +12,14 @@ class DownloadSortFilterModel : public QSortFilterProxyModel
 public:
 	typedef QSortFilterProxyModel base_class;
 	explicit DownloadSortFilterModel(QObject* parent = 0);
-	virtual QVariant data(const QModelIndex& index, int role) const override;
-	virtual QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
-	virtual QModelIndex mapFromSource(const QModelIndex& sourceIndex) const override;
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const  override;
-	virtual QMimeData* mimeData(const QModelIndexList& indexes) const override;
-	virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action,	int row, int column, const QModelIndex& parent) override;
-	virtual Qt::DropActions supportedDropActions() const override;
-	virtual bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+	QVariant data(const QModelIndex& index, int role) const override;
+	QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
+	QModelIndex mapFromSource(const QModelIndex& sourceIndex) const override;
+	Qt::ItemFlags flags(const QModelIndex& index) const  override;
+	QMimeData* mimeData(const QModelIndexList& indexes) const override;
+	bool dropMimeData(const QMimeData* data, Qt::DropAction action,	int row, int column, const QModelIndex& parent) override;
+	Qt::DropActions supportedDropActions() const override;
+	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 	void moveItemUp(int row);
 	void moveItemDown(int row);
@@ -29,13 +29,13 @@ public:
 	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 	QModelIndex index(int row, int col, const QModelIndex& index = QModelIndex()) const;
 	void setSourceModel(QAbstractItemModel* sourceModel);
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int mappedRow(const QModelIndex& proxyIndex)const;
 	int mappedRow(int row)const;
 	void setHeader(QHeaderView* headerView);
 
 private:
-	virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+	bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 	// show or hide sort indicator depends on m_isSorted
 	void toggleSortIndicator();
 	// vector of sorted indexes. The indexes can be not truly sorted if user moved items

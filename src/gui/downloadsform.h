@@ -72,8 +72,8 @@ private:
 	void copySelectionToClipboard();
 
 protected:
-	virtual void hideEvent(QHideEvent*) override;
-	virtual bool eventFilter(QObject* obj, QEvent* event) override;
+	void hideEvent(QHideEvent*) override;
+	bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
 	Ui::DownloadsForm* ui;

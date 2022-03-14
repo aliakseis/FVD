@@ -55,10 +55,10 @@ private Q_SLOTS:
 	void onTimeout();
 
 protected:
-	virtual void resizeEvent(QResizeEvent* event)  override;
-	virtual void mouseMoveEvent(QMouseEvent* event) override;
-	virtual void focusInEvent(QFocusEvent* event)  override;
-	virtual void focusOutEvent(QFocusEvent* event) override;
+	void resizeEvent(QResizeEvent* event)  override;
+	void mouseMoveEvent(QMouseEvent* event) override;
+	void focusInEvent(QFocusEvent* event)  override;
+	void focusOutEvent(QFocusEvent* event) override;
 
 private:
 	Ui::DownloadsControl* ui;

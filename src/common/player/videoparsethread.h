@@ -20,6 +20,6 @@ public:
 	{
 		setObjectName("VideoParseThread");
 	};
-	virtual void run() override;
+	void run() override;
 	bool getVideoPacket(AVPacket* packet);
 };
