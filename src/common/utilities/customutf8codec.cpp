@@ -1,8 +1,8 @@
 #include "customutf8codec.h"
 
+#include "utilities/utils.h"       
 
 #include <QVarLengthArray>
-
 
 
 #pragma intrinsic(memcpy)
@@ -324,12 +324,12 @@ QByteArray CustomUtf8Codec::convertFromUnicode(const QChar* uc, int len, Convert
 			return mb;
 		}
 		if (mb.isDetached())
-{
-Q_ASSERT(mb.length() == len);
-memcpy(mb.data(), m_b.constData(), len);
-Q_ASSERT(0 == mb.data()[len]);
-return mb;
-}
+        {
+            Q_ASSERT(mb.length() == len);
+            memcpy(mb.data(), m_b.constData(), len);
+            Q_ASSERT(0 == mb.data()[len]);
+            return mb;
+        }
 	}
 
 	QByteArray mb(m_b);

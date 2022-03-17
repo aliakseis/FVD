@@ -264,7 +264,7 @@ bool ModelDeserializer::deserializeObjectInternal(QObject* object)
         }
         else
         {
-            instance = TheInstantiator::Instance().instantiate(className, object);
+            instance = Instantiator::Instance().instantiate(className, object);
 
             if (!deserializeObjectInternal(instance))
             {

@@ -48,7 +48,7 @@ RemoteVideoEntity::RemoteVideoEntity()
 	: QObject(nullptr), m_preferredResolutionId(0), m_lastErrorCode(Errors::NoError)
 {
     connect(this, &RemoteVideoEntity::handleExtractedLinks, this, &RemoteVideoEntity::onHandleExtractedLinks);
-	VERIFY(connect(this, SIGNAL(signRVEProgressUpdated()), &TheSearchManager::Instance(), SLOT(onDownloadChanged())));
+	VERIFY(connect(this, SIGNAL(signRVEProgressUpdated()), &SearchManager::Instance(), SLOT(onDownloadChanged())));
 }
 
 RemoteVideoEntity::~RemoteVideoEntity()
@@ -58,7 +58,7 @@ RemoteVideoEntity::~RemoteVideoEntity()
 void RemoteVideoEntity::extractLinks()
 {
 	qDebug() << __FUNCTION__;
-	ScriptStrategy* strategy = TheSearchManager::Instance().scriptStrategy(m_videoInfo.strategyName);
+	ScriptStrategy* strategy = SearchManager::Instance().scriptStrategy(m_videoInfo.strategyName);
 	Q_ASSERT(strategy);
 	strategy->extractDirectLinks(m_videoInfo.originalUrl, this);
 }
@@ -405,11 +405,11 @@ bool RemoteVideoEntity::restart(DownloadEntity* entity)
 
 void RemoteVideoEntity::downloadEntitiesAdded(const QList<DownloadEntity*>& entities)
 {
-	TheSearchManager::Instance().onItemsExistNotify(entities);
+	SearchManager::Instance().onItemsExistNotify(entities);
 	connectEntityProgress(entities);
 }
 
 void RemoteVideoEntity::downloadEntitiesRemoved(const QList<DownloadEntity*>& entities)
 {
-	TheSearchManager::Instance().onItemsDeletedNotify(entities);
+	SearchManager::Instance().onItemsDeletedNotify(entities);
 }

@@ -9,17 +9,18 @@
 
 #include <map>
 
-class FileMissingSignaller : public QObject
+class FileMissingSignaller : public QObject, public Singleton<FileMissingSignaller>
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	friend class ImageCache;
+    friend class Singleton<FileMissingSignaller>;
+    friend class ImageCache;
 
 Q_SIGNALS:
-	void fileMissing(const QString& filePath);
+    void fileMissing(const QString& filePath);
+private:
+    FileMissingSignaller() = default;
 };
-
-typedef Singleton<FileMissingSignaller> TheFileMissingSignaller;
 
 
 const char GET_RANDOM_FRAME_OPTION[] = "-getRandomFrame";

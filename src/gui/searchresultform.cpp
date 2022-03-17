@@ -96,8 +96,8 @@ SearchResultForm::SearchResultForm(QWidget* parent) :
 	VERIFY(connect(ui->btnStopSearch, SIGNAL(clicked()), this, SLOT(stopSearch())));
 	VERIFY(connect(delegate, SIGNAL(downloadClicked(int)), this, SLOT(onDownload(int))));
 	VERIFY(connect(delegate, SIGNAL(downloadMenuClicked(int, QPoint)), this, SLOT(onDownloadContextMenu(int, QPoint))));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(searchFinished()), this, SLOT(onSearchFinished())));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(searchFailed(const QString&)), this, SLOT(onSearchFailed(const QString&))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(searchFinished()), this, SLOT(onSearchFinished())));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(searchFailed(const QString&)), this, SLOT(onSearchFailed(const QString&))));
 	// Preview change
 	VERIFY(connect(ui->searchResultView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(onSelectionChanged(QItemSelection, QItemSelection))));
 
@@ -154,7 +154,7 @@ bool SearchResultForm::populateSitesComboHelper(const QStringList& strategiesNam
 void SearchResultForm::populateSitesCombo(bool autoCheckEmpty)
 {
 	ui->cbSites->clear();
-	std::array<QStringList, 2> strategiesNames = TheSearchManager::Instance().allStrategiesNames();
+	std::array<QStringList, 2> strategiesNames = SearchManager::Instance().allStrategiesNames();
 	bool hasSitesChecked = populateSitesComboHelper(strategiesNames[0], QIcon(":/images/fvdownloader.png"), tr("All Video Sites"));
 	if (autoCheckEmpty && !hasSitesChecked)
 	{
@@ -217,7 +217,7 @@ void SearchResultForm::doSearch(QString query, int page)
 
 	m_model->clear();
 	emit entityActivated(nullptr);
-	TheSearchManager::Instance().clearSearchResults();
+	SearchManager::Instance().clearSearchResults();
 
 	if (!(m_lastSearchString.isEmpty() || ui->cbSites->selectedSites().empty()))
 	{
@@ -229,7 +229,7 @@ void SearchResultForm::doSearch(QString query, int page)
 		}
 		updatePrevNextState();
 		QApplication::instance()->processEvents();
-		TheSearchManager::Instance().search(m_lastSearchString, ui->cbSites->selectedSites(), page);
+		SearchManager::Instance().search(m_lastSearchString, ui->cbSites->selectedSites(), page);
 	}
 	m_model->update();
 }
@@ -246,7 +246,7 @@ void SearchResultForm::doSearch()
 
 void SearchResultForm::stopSearch()
 {
-	TheSearchManager::Instance().cancelSearch();
+	SearchManager::Instance().cancelSearch();
 	showSearchButton();
 	updatePrevNextState();
 }

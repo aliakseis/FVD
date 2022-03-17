@@ -271,7 +271,7 @@ void Preferences::initPreferences()
 
     QSettings settings;
 
-	auto siteNames = TheSearchManager::Instance().allStrategiesNames();
+	auto siteNames = SearchManager::Instance().allStrategiesNames();
 	setListSites(settings.value(Sites, Sites_Default).toString(), ui->listSites, siteNames[0]);
 
 	QString Octet = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])";

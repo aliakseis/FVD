@@ -30,7 +30,7 @@ public:
 	{
 		if (!m_entity.isNull())
 		{
-			TheSearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << m_entity.data());
+			SearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << m_entity.data());
 		}
 
 		deleteLater();
@@ -134,7 +134,7 @@ void LibraryQmlListener::onHandleDeleteAsynchronously(const QPointer<DownloadEnt
 			}
 			else
 			{
-				TheSearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << entity.data());
+				SearchManager::Instance().onItemsDeletedNotify(QList<DownloadEntity*>() << entity.data());
 			}
 		}
 	}

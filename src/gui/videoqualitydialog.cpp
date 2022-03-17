@@ -91,7 +91,7 @@ void VideoQualityDialog::onItemClicked(QListWidgetItem* item)
 {
 	Q_ASSERT(item);
 	Q_ASSERT(m_entity);
-	TheSearchManager::Instance().download(m_entity, item->data(Qt::UserRole).toInt(), visNorm);
+	SearchManager::Instance().download(m_entity, item->data(Qt::UserRole).toInt(), visNorm);
 	close();
 }
 

@@ -1,19 +1,20 @@
 #pragma once
 
-#include "utilities/utils.h"
 
-template <class Ty>
-class Singleton : public Ty
+template <typename T>
+class Singleton
 {
 public:
-	static Ty& Instance()
-	{
-		static Ty single_instance;
-		return single_instance;
-	}
+    static T& Instance()
+    {
+        static T instance_;
+        return instance_;
+    }
 
-private:
-	Singleton();
-
-	DISALLOW_COPY_AND_ASSIGN(Singleton);
+protected:
+    Singleton() {}
+    ~Singleton() {}
+public:
+    Singleton(Singleton const &) = delete;
+    Singleton& operator=(Singleton const &) = delete;
 };

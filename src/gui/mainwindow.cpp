@@ -104,8 +104,8 @@ MainWindow::MainWindow(QWidget* parent) :
 	VERIFY(connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(about())));
 	VERIFY(connect(ui->actionConfigure, SIGNAL(triggered()), this, SLOT(openPreferences())));
 
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(downloadProgressChanged(int)), this, SLOT(onDownloadProgressChanged(int))));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(downloadFinished(const QString&)), this, SLOT(onDownloadFinished(const QString&))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(downloadProgressChanged(int)), this, SLOT(onDownloadProgressChanged(int))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(downloadFinished(const QString&)), this, SLOT(onDownloadFinished(const QString&))));
 
 	m_askForSavingModelTimer.setSingleShot(true);
 	VERIFY(connect(&m_askForSavingModelTimer, SIGNAL(timeout()), this, SLOT(condsiderSavingModel())));
@@ -146,7 +146,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
 MainWindow::~MainWindow()
 {
-	TheSearchManager::Instance().clearScriptStrategies();
+	SearchManager::Instance().clearScriptStrategies();
 	delete ui;
 }
 
@@ -193,9 +193,6 @@ void MainWindow::prepareToExit()
 #endif
 }
 
-void MainWindow::onStatisticsSent(QNetworkReply* reply)
-{
-}
 
 void MainWindow::onDownloadProgressChanged(int progress)
 {
@@ -444,7 +441,7 @@ void MainWindow::loadModelData()
 		Q_ASSERT(foundXmlDocumentBegin);
 
 		utilities::ModelDeserializer serializer(stream);
-		serializer.deserialize(&TheSearchManager::Instance() , modelNodeName);
+		serializer.deserialize(&SearchManager::Instance() , modelNodeName);
 		serializer.deserialize(m_downloadsForm->model(), downloadsNodeName);
 		serializer.deserialize(m_libraryForm->model(), libraryNodeName);
 
@@ -504,7 +501,7 @@ void MainWindow::saveModelData()
 		stream.writeStartElement(documentNodeName);
 
 		utilities::ModelSerializer serializer(stream);
-		serializer.serialize(&TheSearchManager::Instance(), modelNodeName);
+		serializer.serialize(&SearchManager::Instance(), modelNodeName);
 		serializer.serialize(m_downloadsForm->model(), downloadsNodeName);
 		serializer.serialize(m_libraryForm->model(), libraryNodeName);
 

@@ -84,7 +84,7 @@ void DownloadEntity::onFileCreated(const QString& filename)
 void DownloadEntity::onError(ErrorCode::ERROR_CODES code, const QString& error)
 {
 	setState(kFailed);
-	qDebug() << __FUNCTION__ << (error.isEmpty() ? utilities::TheErrorCode::Instance().getDescription(code).key : error) << " code:" << code;
+	qDebug() << __FUNCTION__ << (error.isEmpty() ? utilities::ErrorCode::Instance().getDescription(code).key : error) << " code:" << code;
 	emit errorHappened(code, error);
 }
 
@@ -304,9 +304,9 @@ DownloadEntity::DownloaderType* DownloadEntity::downloader()
 #ifdef ALLOW_TRAFFIC_CONTROL
 		m_downloader->setSpeedLimit(global_functions::GetTrafficLimitActual());
 #endif // ALLOW_TRAFFIC_CONTROL
-		VERIFY(connect(this, SIGNAL(downloadStarted(const QString&)), &TheSearchManager::Instance(), SLOT(onDownloadStarted(const QString&))));
-		VERIFY(connect(this, SIGNAL(errorHappened(utilities::ErrorCode::ERROR_CODES, const QString&)), &TheSearchManager::Instance(), SLOT(onDownloadError(utilities::ErrorCode::ERROR_CODES, const QString&))));
-		VERIFY(connect(this, SIGNAL(finished()), &TheSearchManager::Instance(), SLOT(onDownloadFinished())));
+		VERIFY(connect(this, SIGNAL(downloadStarted(const QString&)), &SearchManager::Instance(), SLOT(onDownloadStarted(const QString&))));
+		VERIFY(connect(this, SIGNAL(errorHappened(utilities::ErrorCode::ERROR_CODES, const QString&)), &SearchManager::Instance(), SLOT(onDownloadError(utilities::ErrorCode::ERROR_CODES, const QString&))));
+		VERIFY(connect(this, SIGNAL(finished()), &SearchManager::Instance(), SLOT(onDownloadFinished())));
 
 		m_downloader->setDestinationPath(m_destinationPath);
 		m_downloader->setTotalFileSize(m_totalFileSize);

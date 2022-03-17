@@ -13,7 +13,7 @@
 SearchListModel::SearchListModel(QObject* parent) :
 	QAbstractListModel(parent), m_headerView(nullptr)
 {
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(searchResultFound(QList<RemoteVideoEntity*>)), this, SLOT(onAppendEntities(QList<RemoteVideoEntity*>))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(searchResultFound(QList<RemoteVideoEntity*>)), this, SLOT(onAppendEntities(QList<RemoteVideoEntity*>))));
 }
 
 SearchListModel::~SearchListModel()

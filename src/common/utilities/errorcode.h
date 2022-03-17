@@ -8,8 +8,9 @@
 namespace utilities
 {
 
-class ErrorCode
+class ErrorCode : public Singleton<ErrorCode>
 {
+friend class Singleton<ErrorCode>;
 public:
     enum ERROR_CODES
     {
@@ -25,13 +26,11 @@ public:
     Tr::Translation getDescription(ERROR_CODES code);
     int getTimeout(ERROR_CODES code);
 
+private:
     ErrorCode();
 
-private:
     std::map<ERROR_CODES, std::pair<Tr::Translation, int>> errors_;
 };
-
-typedef Singleton<ErrorCode> TheErrorCode;
 
 static Tr::Translation NETWORK_ERROR_NO_MSG        = Tr::translate("ErrorMsg", "Network error: %1");
 static Tr::Translation NETWORK_ERROR_HTTP_STATUS   = Tr::translate("ErrorMsg", "HTTP status: %1");

@@ -417,7 +417,7 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
 		if (deleteCompletely)
 		{
 			// completely delete entities
-			TheSearchManager::Instance().onItemsDeletedNotify(itemsToDelete);
+			SearchManager::Instance().onItemsDeletedNotify(itemsToDelete);
 		}
 		else
 		{

@@ -12,6 +12,7 @@
 
 #include "player/ffmpegdecoder.h"
 #include "utilities/filesystem_utils.h"
+#include "utilities/utils.h"
 
 #include "settings_declaration.h"
 #include "global_functions.h"
@@ -159,7 +160,7 @@ void ImageCache::get(const QString& id, const QString& url, const QString& fileP
 		}
 		else
 		{
-			emit TheFileMissingSignaller::Instance().fileMissing(filePath);
+			emit FileMissingSignaller::Instance().fileMissing(filePath);
 		}
 	}
 	if (m_isAsync)

@@ -74,7 +74,6 @@ private Q_SLOTS:
 	void onDownloadItemActivated(const DownloadEntity* entity);
 	void prepareToExit();
 	void resetFileSystemWatcher();
-	void onStatisticsSent(QNetworkReply*);
 	void onDownloadProgressChanged(int progress);
 	void onDownloadFinished(const QString& videoTitle);
 protected:

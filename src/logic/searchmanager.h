@@ -21,14 +21,13 @@
 #include "stdint.h"
 
 class ViewModelFacade;
-class SearchManager : public QObject
+class SearchManager : public QObject, public Singleton<SearchManager>
 {
-	Q_OBJECT
-	typedef QSharedPointer<RemoteVideoEntity> EntitiesSetItem_t;
+    Q_OBJECT
+    friend class Singleton<SearchManager>;
+    typedef QSharedPointer<RemoteVideoEntity> EntitiesSetItem_t;
+
 public:
-
-	SearchManager();
-
 	void search(const QString& query, const QStringList& sites, int page = 1);
 	void cancelSearch();
 	void clearSearchResults();
@@ -69,8 +68,10 @@ public:
 	}
 
 private:
-	static DownloadEntity* createLibraryDE(const QString& fileName);
-	void InitializeStrategies();
+    SearchManager();
+
+    static DownloadEntity* createLibraryDE(const QString& fileName);
+    void InitializeStrategies();
 
 private:
 	struct rveHasher
@@ -119,5 +120,3 @@ public Q_SLOTS:
 
 	void onDownloadChanged();
 };
-
-typedef Singleton<SearchManager> TheSearchManager;

@@ -12,13 +12,13 @@ DownloadListModel::DownloadListModel(QObject* parent) :
 {
     qRegisterMetaType<QMap<int, LinkInfo>>("QMap<int,LinkInfo>");
 
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(notifyAddItemsInModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(notifyAddItemsInModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
 
-	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&)), &TheSearchManager::Instance(), SLOT(onItemsRemovedNotify(const QList<DownloadEntity*>&))));
-	VERIFY(connect(this, SIGNAL(notifyFinishedDownloading(const QList<DownloadEntity*>&)), &TheSearchManager::Instance(), SLOT(onItemsExistNotify(const QList<DownloadEntity*>&))));
+	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&)), &SearchManager::Instance(), SLOT(onItemsRemovedNotify(const QList<DownloadEntity*>&))));
+	VERIFY(connect(this, SIGNAL(notifyFinishedDownloading(const QList<DownloadEntity*>&)), &SearchManager::Instance(), SLOT(onItemsExistNotify(const QList<DownloadEntity*>&))));
 
-	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), &TheSearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), &SearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
 
 	mapSignalToHeader("progressChanged(qint64, qint64)", DL_Progress);
 	mapSignalToHeader("speed(qint64)", DL_Speed);

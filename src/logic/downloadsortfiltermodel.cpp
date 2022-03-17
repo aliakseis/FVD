@@ -23,7 +23,7 @@ bool DownloadSortFilterModel::filterAcceptsRow(int source_row, const QModelIndex
 {
 	QRegExp regExp = filterRegExp();
 	auto* model = qobject_cast<DownloadListModel*>(sourceModel());
-	DownloadEntity* downloadEntity = model->item(source_row);//TheSearchManager::Instance().getViewFacade()->getDownloadsItem(source_row);
+	DownloadEntity* downloadEntity = model->item(source_row);//SearchManager::Instance().getViewFacade()->getDownloadsItem(source_row);
 
 	return regExp.isValid() &&
 		   (regExp.indexIn(downloadEntity->videoTitle()) >= 0 /*|| regExp.indexIn(downloadEntity->description()) >= 0*/);

@@ -32,13 +32,13 @@ LibraryModel::LibraryModel(QObject* parent)
 {
 	qRegisterMetaType< QPointer<DownloadEntity> >("QPointer<DownloadEntity>");
 
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(notifyAddItemsInModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(notifyLibraryAddItems(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
-	VERIFY(connect(&TheSearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(notifyAddItemsInModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(notifyLibraryAddItems(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onAddItemsInModel(const QList<DownloadEntity*>&, QObject*))));
+	VERIFY(connect(&SearchManager::Instance(), SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*)), this, SLOT(onRemoveItemsFromModel(const QList<DownloadEntity*>&, QObject*))));
 
-	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&)), &TheSearchManager::Instance(), SLOT(onItemsDeletedNotify(const QList<DownloadEntity*>&))));
+	VERIFY(connect(this, SIGNAL(notifyRemoveItemsFromModel(const QList<DownloadEntity*>&)), &SearchManager::Instance(), SLOT(onItemsDeletedNotify(const QList<DownloadEntity*>&))));
 
-	VERIFY(connect(&TheFileMissingSignaller::Instance(), SIGNAL(fileMissing(const QString&)), this, SLOT(onLibraryFileMissing(const QString&))));
+	VERIFY(connect(&FileMissingSignaller::Instance(), SIGNAL(fileMissing(const QString&)), this, SLOT(onLibraryFileMissing(const QString&))));
 
 	update();
 }
@@ -216,7 +216,7 @@ void LibraryModel::synchronize(bool mandatory)
 	{
 		m_isLibraryAddWorkerRunning = true;
 		EntityFileNames allEntitiesFiles(m_allEntitiesFiles);
-		QObjectList allEntities = TheSearchManager::Instance().getEntities();
+		QObjectList allEntities = SearchManager::Instance().getEntities();
 		Q_FOREACH(QObject * o, allEntities)
 		{
 			if (auto* entity = dynamic_cast<RemoteVideoEntity*>(o))
@@ -324,7 +324,7 @@ void LibraryModel::onLibraryFileMissing(const QString& filePath)
 		}
 	});
 
-	TheSearchManager::Instance().onItemsDeletedNotify(entities);
+	SearchManager::Instance().onItemsDeletedNotify(entities);
 }
 
 void LibraryModel::entityStateChanged(Downloadable::State newState, Downloadable::State oldState)
@@ -364,7 +364,7 @@ void LibraryModel::onIdle()
 
 	if (!allEntitiesFiles.empty())
 	{
-		TheSearchManager::Instance().onLibraryFilesAdded(allEntitiesFiles);
+		SearchManager::Instance().onLibraryFilesAdded(allEntitiesFiles);
 	}
 
 	QList<DownloadEntity*> validEntities;
@@ -382,7 +382,7 @@ void LibraryModel::onIdle()
 	}
 	if (!validEntities.isEmpty())
 	{
-		TheSearchManager::Instance().onItemsDeletedNotify(validEntities);
+		SearchManager::Instance().onItemsDeletedNotify(validEntities);
 	}
 }
 
