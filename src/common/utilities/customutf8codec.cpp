@@ -23,7 +23,7 @@ inline bool isNonCharacter(uint ucs4)
 
 inline bool isSurrogate(uint ucs4)
 {
-	return (ucs4 - 0xd800u < 2048u);
+	return (ucs4 - 0xd800U < 2048U);
 }
 
 
@@ -189,11 +189,11 @@ QByteArray CustomUtf8Codec::convertFromUnicode(const QChar* uc, int len, Convert
 {
 	if (!uc)
 	{
-		return QByteArray();
+		return {};
 	}
 	if (len <= 0)
 	{
-		return QByteArray("");
+		return {""};
 	}
 
 	uchar replacement = '?';

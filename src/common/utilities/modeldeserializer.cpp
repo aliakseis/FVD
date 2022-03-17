@@ -75,7 +75,7 @@ int sec = 0;
 }
 
 
-typedef std::remove_cv_t<std::remove_pointer_t<decltype(std::declval<QString>().utf16())>> Utf16Char;
+using Utf16Char = std::remove_cv_t<std::remove_pointer_t<decltype(std::declval<QString>().utf16())>>;
 
 inline const Utf16Char* utf16(const QStringRef& s)
 {
@@ -106,19 +106,19 @@ inline QVariant parsePrimitiveType(const QStringRef& s, bool& ok)
 template<>
 inline QVariant parsePrimitiveType<void>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
-    return QVariant();
+    return {};
 }
 
 template<>
 inline QVariant parsePrimitiveType<std::nullptr_t>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
-    return QVariant();
+    return {};
 }
 
 template<>
 inline QVariant parsePrimitiveType<QCborSimpleType>(const QStringRef& /*unused*/, bool& /*unused*/)
 {
-    return QVariant();
+    return {};
 }
 
 // Returns true if the variant has type String or ByteArray and its lower-case content is not empty, "0" or "false";

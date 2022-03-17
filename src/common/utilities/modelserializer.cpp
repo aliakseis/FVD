@@ -85,19 +85,19 @@ template<typename T> QString primitiveTypeToString(QVariant& v, StringCache& cac
 template<>
 QString primitiveTypeToString<void>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
-    return QString();
+    return {};
 }
 
 template<>
 QString primitiveTypeToString<std::nullptr_t>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
-    return QString();
+    return {};
 }
 
 template<>
 QString primitiveTypeToString<QCborSimpleType>(QVariant& /*unused*/, StringCache& /*unused*/)
 {
-    return QString();
+    return {};
 }
 
 template<>

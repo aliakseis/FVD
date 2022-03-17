@@ -21,7 +21,7 @@ QT_END_INCLUDE_NAMESPACE
 #include "utilities/utils.h"
 
 #include <functional>
-#include <string.h>
+#include <cstring>
 #include <unordered_map>
 
 namespace {

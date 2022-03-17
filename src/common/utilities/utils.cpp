@@ -126,7 +126,7 @@ QFont GetAdaptedFont(int size, int additional_amount)
 	f.setPixelSize(size + additional_amount);
 	return f;
 #else
-	const float koef = 4 / 3.f;
+	const float koef = 4 / 3.F;
 	QFont f("Segoe UI");
 	f.setPixelSize(size * koef);
 	return f;

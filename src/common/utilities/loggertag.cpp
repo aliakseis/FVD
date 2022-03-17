@@ -35,11 +35,11 @@ QDebug filter(const QString& tag)
 
 	if (tagId != QtRejectedLoggerTagMsg)
 	{
-		return QDebug(tagId);
+		return {tagId};
 	}
 
 	static NullIODevice nullIODevice;
-	return QDebug(&nullIODevice);
+	return {&nullIODevice};
 }
 
 } // namespace utilities
