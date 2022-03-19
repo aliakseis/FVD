@@ -415,7 +415,7 @@ Souhaitez-vous utiliser le lecteur interne ?</translation>
     <message>
         <location filename="../src/gui/mainwindow.cpp" line="222"/>
         <location filename="../src/gui/mainwindow.cpp" line="226"/>
-        <source>&apos; has been download successfully</source>
+        <source>&apos; has been downloaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

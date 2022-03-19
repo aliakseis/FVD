@@ -211,11 +211,11 @@ void MainWindow::onDownloadFinished(const QString& videoTitle)
 			QString truncateTitle(videoTitle);
 			truncateTitle.truncate(maxLen);
 			truncateTitle.append("...");
-			showTrayMessage("'" + truncateTitle + tr("' has been download successfully"));
+			showTrayMessage("'" + truncateTitle + tr("' has been downloaded successfully"));
 		}
 		else
 		{
-			showTrayMessage("'" + videoTitle + tr("' has been download successfully"));
+			showTrayMessage("'" + videoTitle + tr("' has been downloaded successfully"));
 		}
 	}
 }

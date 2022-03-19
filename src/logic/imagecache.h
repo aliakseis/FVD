@@ -34,8 +34,8 @@ class ImageCache : public QObject
 	Q_OBJECT
 
 public:
-	ImageCache(void);
-	~ImageCache(void);
+	ImageCache();
+	~ImageCache();
 
 	void getAsync(const QString& id, const QString& url, const QString& filePath);
 	QImage getSync(const QString& id, const QString& url, const QString& filePath);

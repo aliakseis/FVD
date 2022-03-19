@@ -9,7 +9,7 @@
 #include "strategiescommon.h"
 #include "utilities/utils.h"
 
-#define REDIRECT_LIMIT 10
+enum { REDIRECT_LIMIT = 10 };
 
 ScriptExtension::ScriptExtension(QObject* parent) :
 	QObject(parent),
@@ -22,7 +22,7 @@ ScriptExtension::~ScriptExtension()
 	qDebug() << __FUNCTION__;
 }
 
-QNetworkReply* ScriptExtension::_doSyncRequest(const QString& url, QVariantMap const& headers)
+QNetworkReply* ScriptExtension::doSyncRequest(const QString& url, QVariantMap const& headers)
 {
 	QNetworkRequest request(url);
 
@@ -43,7 +43,7 @@ QString ScriptExtension::httpRequest(const QString& url, const QVariantMap& head
 {
 	qDebug() << "httpRequest" << url;
 	m_redirectCount = 0;
-	QNetworkReply* reply = _doSyncRequest(url, headers);
+	QNetworkReply* reply = doSyncRequest(url, headers);
 	VERIFY(connect(reply, SIGNAL(finished()), this, SLOT(onHttpRequestFinished())));
 	m_requrestWaitLoop.exec();
 	return m_syncResult;
@@ -51,7 +51,7 @@ QString ScriptExtension::httpRequest(const QString& url, const QVariantMap& head
 
 QNetworkReply* ScriptExtension::httpRequestLowApi(const QString& url, const QVariantMap& headers)
 {
-	QNetworkReply* reply = _doSyncRequest(url, headers);
+	QNetworkReply* reply = doSyncRequest(url, headers);
 	VERIFY(connect(reply, SIGNAL(finished()), &m_requrestWaitLoop, SLOT(quit())));
 	m_requrestWaitLoop.exec();
 	reply->deleteLater();

@@ -89,9 +89,9 @@ bool VideoControl::eventFilter(QObject* obj, QEvent* event)
 
 void VideoControl::paintEvent(QPaintEvent* event)
 {
-	Q_UNUSED(event);
-	QPainter painter(this);
-	parent() == nullptr ? qDrawBorderPixmap(&painter, this->rect(), QMargins(0, 0, 0, 0), backgroundfs) : qDrawBorderPixmap(&painter, this->rect(), QMargins(0, 0, 0, 0), background);
+    Q_UNUSED(event);
+    QPainter painter(this);
+    qDrawBorderPixmap(&painter, this->rect(), QMargins(0, 0, 0, 0), (parent() == nullptr) ? backgroundfs : background);
 }
 
 void VideoControl::resizeEvent(QResizeEvent* event)

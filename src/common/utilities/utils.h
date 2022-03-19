@@ -21,10 +21,6 @@ class QMutexLocker;
 	TypeName(const TypeName&); \
 	void operator=(const TypeName&)
 
-#define MUTEX_LOCKER(arg) \
-	QMutexLocker objMutexLocker(arg); \
-	(void)objMutexLocker;
-
 #define STRINGIZE(str) #str
 #define STRINGIZEGIZE(x) STRINGIZE(x)
 

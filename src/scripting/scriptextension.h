@@ -34,6 +34,5 @@ private:
 	QString m_syncResult;
 	int m_redirectCount;
 
-	QNetworkReply* _doSyncRequest(const QString& url, QVariantMap const& headers);
-
+	QNetworkReply* doSyncRequest(const QString& url, QVariantMap const& headers);
 };

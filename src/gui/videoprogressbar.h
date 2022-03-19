@@ -54,6 +54,4 @@ public slots:
 public slots:
 	void displayDownloadProgress(qint64 downloaded, qint64 total);
 	void displayPlayedProgress(qint64 frame, qint64 total);
-
-
 };
