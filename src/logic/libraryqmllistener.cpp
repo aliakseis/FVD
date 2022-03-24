@@ -3,7 +3,9 @@
 #include "gui/videoplayerwidget.h"
 #include "librarymodel.h"
 #include "logic/searchmanager.h"
+#include "settings_declaration.h"
 #include "utilities/notify_helper.h"
+#include "utilities/filesystem_utils.h"
 #include "customdockwidget.h"
 #include "mainwindow.h"
 
@@ -76,29 +78,38 @@ void LibraryQmlListener::onPlayClicked(int index) const
 		int sourceRow = m_proxyModel->mapToSource(m_proxyModel->index(index, 0)).row();
 		auto* entity = qvariant_cast<DownloadEntity*>(m_model->index(sourceRow).data(LibraryModel::RoleEntity));
 		Q_ASSERT(entity->getParent() != nullptr);
-		bool isOk = QDesktopServices::openUrl(QUrl::fromUserInput(QFileInfo(entity->filename()).canonicalFilePath()));
+        const QFileInfo fileInfo(entity->filename());
+        const auto filename = fileInfo.canonicalFilePath();
+        if (QSettings().value(app_settings::OpenInFolder, app_settings::OpenInFolder_Default).toBool())
+        {
+            auto downloadDirectory = fileInfo.dir().canonicalPath();
+            utilities::SelectFile(filename, downloadDirectory);
+        }
+        else
+        {
+            const bool isOk = QDesktopServices::openUrl(QUrl::fromUserInput(filename));
+            if (!isOk)
+            {
+                qDebug() << "Failed to play '" << QFileInfo(entity->filename()).canonicalFilePath() << "' with default player";
 
-		if (!isOk)
-		{
-			qDebug() << "Failed to play '" << QFileInfo(entity->filename()).canonicalFilePath() << "' with default player";
-
-			if (QFile::exists(entity->filename()))
-			{
-				if (QMessageBox::Yes == QMessageBox::question(
-							nullptr,
-							Tr::Tr(PROJECT_FULLNAME_TRANSLATION),
-							tr("Video file cannot be played with default video player.\nDo you want to watch it with internal player?"),
-							QMessageBox::Yes, QMessageBox::No))
-				{
-					VideoPlayerWidgetInstance()->playDownloadEntity(entity);
-                    MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::ShownDocked);
-				}
-			}
-			else
-			{
-				QMessageBox::critical(nullptr, Tr::Tr(PROJECT_FULLNAME_TRANSLATION), tr("File missing"));
-			}
-		}
+                if (QFile::exists(entity->filename()))
+                {
+                    if (QMessageBox::Yes == QMessageBox::question(
+                        nullptr,
+                        Tr::Tr(PROJECT_FULLNAME_TRANSLATION),
+                        tr("Video file cannot be played with default video player.\nDo you want to watch it with internal player?"),
+                        QMessageBox::Yes, QMessageBox::No))
+                    {
+                        VideoPlayerWidgetInstance()->playDownloadEntity(entity);
+                        MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::ShownDocked);
+                    }
+                }
+                else
+                {
+                    QMessageBox::critical(nullptr, Tr::Tr(PROJECT_FULLNAME_TRANSLATION), tr("File missing"));
+                }
+            }
+        }
 	}
 }
 

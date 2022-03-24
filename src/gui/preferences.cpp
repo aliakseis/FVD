@@ -286,6 +286,7 @@ void Preferences::initPreferences()
 	ui->chbClearDownl->setChecked(settings.value(ClearDownloadsOnExit, ClearDownloadsOnExit_Default).toBool());
 
     ui->chbQuitAppWhenClosingWindow->setChecked(settings.value(QuitAppWhenClosingWindow, QuitAppWhenClosingWindow_Default).toBool());
+    ui->chbOpenInFolder->setChecked(settings.value(OpenInFolder, OpenInFolder_Default).toBool());
 
 	ui->chbUseProxy->setChecked(settings.value(UseProxy, UseProxy_Default).toBool());
 	ui->leProxyAddress->setText(settings.value(ProxyAddress).toString());
@@ -365,6 +366,7 @@ bool Preferences::apply()
     settings.setValue(ClearDownloadsOnExit, ui->chbClearDownl->isChecked());
 
     settings.setValue(QuitAppWhenClosingWindow, ui->chbQuitAppWhenClosingWindow->isChecked());
+    settings.setValue(OpenInFolder, ui->chbOpenInFolder->isChecked());
 
     settings.setValue(SearchSortOrder, static_cast<strategies::SortOrder>(ui->cbSelectVideoBy->currentIndex()));
     settings.setValue(UseProxy, ui->chbUseProxy->isChecked());
