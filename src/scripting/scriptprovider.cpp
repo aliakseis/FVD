@@ -1,28 +1,32 @@
 #include "scriptprovider.h"
+
+#include <QDebug>
+#include <QFile>
+
 #include "scriptengine/jsengine.h"
 #include "scriptengine/pythonengine.h"
-#include "utilities/utils.h"
 #include "settings_declaration.h"
-#include <QFile>
-#include <QDebug>
-
+#include "utilities/utils.h"
 
 ScriptProvider::ScriptProvider(const QString& scriptFilename)
-    : m_scriptFilenameForLoading(scriptFilename)
-    , m_isPython(scriptFilename.mid(m_scriptFilenameForLoading.lastIndexOf('.') + 1).toLower() == "py")
+    : m_scriptFilenameForLoading(scriptFilename),
+      m_isPython(scriptFilename.mid(m_scriptFilenameForLoading.lastIndexOf('.') + 1).toLower() == "py")
 {
 }
 
-ScriptProvider::~ScriptProvider()
-= default;
+ScriptProvider::~ScriptProvider() = default;
 
-QVariant ScriptProvider::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments /*= QVariantList()*/)
+QVariant ScriptProvider::invokeFunction(const QString& object, const QString& method,
+                                        const QVariantList& arguments /*= QVariantList()*/)
 {
     if (!m_scriptEngine)
     {
-        if (m_isPython) {
+        if (m_isPython)
+        {
             m_scriptEngine = std::make_unique<ScriptEngine::PythonEngine>();
-        } else {
+        }
+        else
+        {
             m_scriptEngine = std::make_unique<ScriptEngine::JSEngine>();
         }
         m_scriptEngine->loadFile(QStringLiteral(":/strategies/") + m_scriptFilenameForLoading);

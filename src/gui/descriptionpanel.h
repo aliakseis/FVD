@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+
 #include "entityholder.h"
 
 namespace Ui
@@ -10,17 +11,17 @@ class DescriptionPanel;
 
 class DescriptionPanel : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	DescriptionPanel(QWidget* parent);
-	virtual ~DescriptionPanel();
+    DescriptionPanel(QWidget* parent);
+    virtual ~DescriptionPanel();
 
-	void setDescription(const QString& site, const QString& description, const QString& resolution = "");
-	void resetDescription();
+    void setDescription(const QString& site, const QString& description, const QString& resolution = "");
+    void resetDescription();
 
 protected:
-	void wheelEvent(QWheelEvent* event);
+    void wheelEvent(QWheelEvent* event);
 
 private:
-	Ui::DescriptionPanel* ui;
+    Ui::DescriptionPanel* ui;
 };

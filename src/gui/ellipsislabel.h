@@ -4,17 +4,18 @@
 
 class EllipsisLabel : public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	EllipsisLabel(QWidget* parent);
-	virtual ~EllipsisLabel();
+    EllipsisLabel(QWidget* parent);
+    virtual ~EllipsisLabel();
 
-	void setText(const QString& text);
-	QString text();
+    void setText(const QString& text);
+    QString text();
 
 protected:
-	void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent* event);
+
 private:
-	QString title;
-	void cutText();
+    QString title;
+    void cutText();
 };

@@ -2,10 +2,10 @@
 
 // https://github.com/MasterAler/SampleYUVRenderer
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QScopedPointer>
 #include <QException>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QScopedPointer>
 
 #include "videodisplay.h"
 
@@ -32,7 +32,6 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 
-
 private:
     struct OpenGLDisplayImpl;
     QScopedPointer<OpenGLDisplayImpl> impl;
@@ -40,9 +39,9 @@ private:
 
 /***********************************************************************/
 
-class OpenGlException: public QException
+class OpenGlException : public QException
 {
 public:
-     void raise() const override { throw *this; }
-     OpenGlException *clone() const override { return new OpenGlException(*this); }
+    void raise() const override { throw *this; }
+    OpenGlException* clone() const override { return new OpenGlException(*this); }
 };

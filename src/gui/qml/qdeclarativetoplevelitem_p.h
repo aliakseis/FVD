@@ -34,37 +34,37 @@ class QDeclarativeItem;
 class QtDeclarativeTopLevelItem;
 class QtDeclarativeTopLevelItemPrivate : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QtDeclarativeTopLevelItemPrivate();
-	virtual ~QtDeclarativeTopLevelItemPrivate();
+    QtDeclarativeTopLevelItemPrivate();
+    virtual ~QtDeclarativeTopLevelItemPrivate();
 
-	void clearDependencyList();
-	void setZFromSiblings();
+    void clearDependencyList();
+    void setZFromSiblings();
 
-	QDeclarativeItem* targetItem;
-	QList<QDeclarativeItem*> dependencyList;
-	uint transformDirty : 1;
-	uint keepInside: 1;
+    QDeclarativeItem* targetItem;
+    QList<QDeclarativeItem*> dependencyList;
+    uint transformDirty : 1;
+    uint keepInside : 1;
 
 protected:
-	QtDeclarativeTopLevelItem* q_ptr;
+    QtDeclarativeTopLevelItem* q_ptr;
 
 private Q_SLOTS:
-	void initDependencyList();
-	void scheduleUpdateTransform();
-	void updateTransform();
-	void updateOpacity();
-	void updateVisible();
-	void updateWidthFromTarget();
-	void updateHeightFromTarget();
+    void initDependencyList();
+    void scheduleUpdateTransform();
+    void updateTransform();
+    void updateOpacity();
+    void updateVisible();
+    void updateWidthFromTarget();
+    void updateHeightFromTarget();
 
-	void updateParent();
-	// void itemDestroyed();
+    void updateParent();
+    // void itemDestroyed();
 
 private:
-	Q_DECLARE_PUBLIC(QtDeclarativeTopLevelItem);
+    Q_DECLARE_PUBLIC(QtDeclarativeTopLevelItem);
 };
 
-#endif // QTDECLARATIVETOPLEVELITEM_P_H
+#endif  // QTDECLARATIVETOPLEVELITEM_P_H

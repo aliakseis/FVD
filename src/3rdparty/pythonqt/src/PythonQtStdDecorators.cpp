@@ -418,7 +418,7 @@ PythonQtSingleShotTimer::PythonQtSingleShotTimer(int msec, const PythonQtObjectP
   _callable = callable;
   setSingleShot(true);
   setInterval(msec);
-  connect(this, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+  connect(this, SIGNAL(timeout()), SLOT(slotTimeout()));
 }
 
 void PythonQtSingleShotTimer::slotTimeout()

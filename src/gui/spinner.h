@@ -4,26 +4,26 @@
 
 class Spinner : public QLabel
 {
-	Q_OBJECT
-	Q_PROPERTY(bool spin READ isSpinning WRITE setSpinning)
+    Q_OBJECT
+    Q_PROPERTY(bool spin READ isSpinning WRITE setSpinning)
 
 public:
-	explicit Spinner(QWidget* parent = 0);
-	void show();
-	void hide();
+    explicit Spinner(QWidget* parent = 0);
+    void show();
+    void hide();
 
-	bool isSpinning() const;
-	void setSpinning(bool spin);
+    bool isSpinning() const;
+    void setSpinning(bool spin);
 
 protected:
-	void timerEvent(QTimerEvent* event) override;
+    void timerEvent(QTimerEvent* event) override;
 
 private:
-	void startSpin();
-	void stopSpin();
+    void startSpin();
+    void stopSpin();
 
 private:
-	QPixmap m_pixmap;
-	int m_currentRotateAngle;
-	int m_timerId;
+    QPixmap m_pixmap;
+    int m_currentRotateAngle;
+    int m_timerId;
 };

@@ -27,40 +27,37 @@
 #ifndef QTDECLARATIVETOPLEVELITEM_H
 #define QTDECLARATIVETOPLEVELITEM_H
 
-
 #include <QQuickItem>
 #define QDeclarativeItem QQuickItem
 
 class QtDeclarativeTopLevelItemPrivate;
 class QtDeclarativeTopLevelItem : public QDeclarativeItem
 {
-	Q_OBJECT
-	Q_PROPERTY(bool keepInside READ keepInside WRITE setKeepInside NOTIFY keepInsideChanged FINAL)
+    Q_OBJECT
+    Q_PROPERTY(bool keepInside READ keepInside WRITE setKeepInside NOTIFY keepInsideChanged FINAL)
 
 public:
-	QtDeclarativeTopLevelItem(QDeclarativeItem* parent = 0);
-	virtual ~QtDeclarativeTopLevelItem();
+    QtDeclarativeTopLevelItem(QDeclarativeItem* parent = 0);
+    virtual ~QtDeclarativeTopLevelItem();
 
-	bool keepInside() const;
-	void setKeepInside(bool keepInside);
+    bool keepInside() const;
+    void setKeepInside(bool keepInside);
 
 Q_SIGNALS:
-	void keepInsideChanged(bool keepInside);
+    void keepInsideChanged(bool keepInside);
 
 protected:
-	QtDeclarativeTopLevelItem(QtDeclarativeTopLevelItemPrivate& dd, QDeclarativeItem* parent = 0);
+    QtDeclarativeTopLevelItem(QtDeclarativeTopLevelItemPrivate& dd, QDeclarativeItem* parent = 0);
 
-	void itemChange(ItemChange, const ItemChangeData&) override;
+    void itemChange(ItemChange, const ItemChangeData&) override;
 
-	QScopedPointer<QtDeclarativeTopLevelItemPrivate> d_ptr;
+    QScopedPointer<QtDeclarativeTopLevelItemPrivate> d_ptr;
 
 private:
-	Q_DISABLE_COPY(QtDeclarativeTopLevelItem)
-	Q_DECLARE_PRIVATE(QtDeclarativeTopLevelItem)
+    Q_DISABLE_COPY(QtDeclarativeTopLevelItem)
+    Q_DECLARE_PRIVATE(QtDeclarativeTopLevelItem)
 };
 
 QML_DECLARE_TYPE(QtDeclarativeTopLevelItem)
 
-
-
-#endif // QTDECLARATIVETOPLEVELITEM_H
+#endif  // QTDECLARATIVETOPLEVELITEM_H

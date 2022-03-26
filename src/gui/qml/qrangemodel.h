@@ -28,86 +28,88 @@
 #define QRANGEMODEL_H
 
 #include <QtCore/qobject.h>
-#include <qgraphicsitem.h>
 #include <qabstractslider.h>
+#include <qgraphicsitem.h>
 
 class QRangeModelPrivate;
 
 class QRangeModel : public QObject
 {
-	Q_OBJECT
-	Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY valueChanged USER true FINAL)
-	Q_PROPERTY(qreal minimumValue READ minimum WRITE setMinimum NOTIFY rangeChanged FINAL)
-	Q_PROPERTY(qreal maximumValue READ maximum WRITE setMaximum NOTIFY rangeChanged FINAL)
-	Q_PROPERTY(qreal singleStep READ singleStep WRITE setSingleStep FINAL)
-	Q_PROPERTY(qreal pageStep READ pageStep WRITE setPageStep FINAL)
-	Q_PROPERTY(qreal position READ position WRITE setPosition NOTIFY positionChanged FINAL)
-	Q_PROPERTY(qreal positionAtMinimum READ positionAtMinimum WRITE setPositionAtMinimum NOTIFY positionRangeChanged FINAL)
-	Q_PROPERTY(qreal positionAtMaximum READ positionAtMaximum WRITE setPositionAtMaximum NOTIFY positionRangeChanged FINAL)
-	Q_PROPERTY(bool inverted READ inverted WRITE setInverted FINAL)
-	Q_PROPERTY(bool tracking READ isTracking WRITE setTracking FINAL)
+    Q_OBJECT
+    Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY valueChanged USER true FINAL)
+    Q_PROPERTY(qreal minimumValue READ minimum WRITE setMinimum NOTIFY rangeChanged FINAL)
+    Q_PROPERTY(qreal maximumValue READ maximum WRITE setMaximum NOTIFY rangeChanged FINAL)
+    Q_PROPERTY(qreal singleStep READ singleStep WRITE setSingleStep FINAL)
+    Q_PROPERTY(qreal pageStep READ pageStep WRITE setPageStep FINAL)
+    Q_PROPERTY(qreal position READ position WRITE setPosition NOTIFY positionChanged FINAL)
+    Q_PROPERTY(
+        qreal positionAtMinimum READ positionAtMinimum WRITE setPositionAtMinimum NOTIFY positionRangeChanged FINAL)
+    Q_PROPERTY(
+        qreal positionAtMaximum READ positionAtMaximum WRITE setPositionAtMaximum NOTIFY positionRangeChanged FINAL)
+    Q_PROPERTY(bool inverted READ inverted WRITE setInverted FINAL)
+    Q_PROPERTY(bool tracking READ isTracking WRITE setTracking FINAL)
 
 public:
-	QRangeModel(QObject* parent = 0);
-	virtual ~QRangeModel();
+    QRangeModel(QObject* parent = 0);
+    virtual ~QRangeModel();
 
-	void sedate();
-	void awake();
+    void sedate();
+    void awake();
 
-	void setRange(qreal min, qreal max);
-	void setPositionRange(qreal min, qreal max);
+    void setRange(qreal min, qreal max);
+    void setPositionRange(qreal min, qreal max);
 
-	void setSingleStep(qreal step);
-	qreal singleStep() const;
+    void setSingleStep(qreal step);
+    qreal singleStep() const;
 
-	void setPageStep(qreal step);
-	qreal pageStep() const;
+    void setPageStep(qreal step);
+    qreal pageStep() const;
 
-	void setTracking(bool enable);
-	bool isTracking() const;
+    void setTracking(bool enable);
+    bool isTracking() const;
 
-	void setMinimum(qreal min);
-	qreal minimum() const;
+    void setMinimum(qreal min);
+    qreal minimum() const;
 
-	void setMaximum(qreal max);
-	qreal maximum() const;
+    void setMaximum(qreal max);
+    qreal maximum() const;
 
-	void setPositionAtMinimum(qreal posAtMin);
-	qreal positionAtMinimum() const;
+    void setPositionAtMinimum(qreal posAtMin);
+    qreal positionAtMinimum() const;
 
-	void setPositionAtMaximum(qreal posAtMax);
-	qreal positionAtMaximum() const;
+    void setPositionAtMaximum(qreal posAtMax);
+    qreal positionAtMaximum() const;
 
-	void setInverted(bool inverted);
-	bool inverted() const;
+    void setInverted(bool inverted);
+    bool inverted() const;
 
-	qreal value() const;
-	qreal position() const;
+    qreal value() const;
+    qreal position() const;
 
 public Q_SLOTS:
-	void singleStepAdd();
-	void singleStepSub();
-	void pageStepAdd();
-	void pageStepSub();
-	void toMinimum();
-	void toMaximum();
-	void setValue(qreal value);
-	void setPosition(qreal position);
+    void singleStepAdd();
+    void singleStepSub();
+    void pageStepAdd();
+    void pageStepSub();
+    void toMinimum();
+    void toMaximum();
+    void setValue(qreal value);
+    void setPosition(qreal position);
 
 Q_SIGNALS:
-	void valueChanged(qreal value);
-	void positionChanged(qreal position);
+    void valueChanged(qreal value);
+    void positionChanged(qreal position);
 
-	void rangeChanged(qreal min, qreal max);
-	void positionRangeChanged(qreal min, qreal max);
+    void rangeChanged(qreal min, qreal max);
+    void positionRangeChanged(qreal min, qreal max);
 
 protected:
-	QRangeModel(QRangeModelPrivate& dd, QObject* parent);
-	QRangeModelPrivate* d_ptr;
+    QRangeModel(QRangeModelPrivate& dd, QObject* parent);
+    QRangeModelPrivate* d_ptr;
 
 private:
-	Q_DISABLE_COPY(QRangeModel)
-	Q_DECLARE_PRIVATE(QRangeModel)
+    Q_DISABLE_COPY(QRangeModel)
+    Q_DECLARE_PRIVATE(QRangeModel)
 };
 
-#endif // QRANGEMODEL_H
+#endif  // QRANGEMODEL_H

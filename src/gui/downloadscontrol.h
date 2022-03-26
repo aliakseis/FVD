@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QWidget>
-#include <QTimer>
 #include <QEventLoop>
+#include <QTimer>
+#include <QWidget>
 
 class QPropertyAnimation;
 class DownloadSortFilterModel;
@@ -14,61 +14,66 @@ class DownloadsControl;
 
 class DownloadsControl : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit DownloadsControl(QWidget* parent = 0, DownloadSortFilterModel* model = nullptr);
-	~DownloadsControl();
+    explicit DownloadsControl(QWidget* parent = 0, DownloadSortFilterModel* model = nullptr);
+    ~DownloadsControl();
 
-	void showAtCursor(int affectedRow = -1);
-	int affectedRow() const;
-	enum State { Started, Paused };
+    void showAtCursor(int affectedRow = -1);
+    int affectedRow() const;
+    enum State
+    {
+        Started,
+        Paused
+    };
 
-	void setState(State state, bool isUpEnabled, bool isDownEnabled, bool isStopEnabled, bool isStartEnabled, int speedLimit);
+    void setState(State state, bool isUpEnabled, bool isDownEnabled, bool isStopEnabled, bool isStartEnabled,
+                  int speedLimit);
 
 public Q_SLOTS:
-	void show();
-	void hide();
+    void show();
+    void hide();
 
 Q_SIGNALS:
-	void start();
-	void stop();
-	void pause();
-	void reload();
-	void up();
-	void down();
-	void remove();
-	void setSpeedLimit(int);
+    void start();
+    void stop();
+    void pause();
+    void reload();
+    void up();
+    void down();
+    void remove();
+    void setSpeedLimit(int);
 
 private Q_SLOTS:
-	void on_btnStart_clicked();
-	void on_btnPause_clicked();
-	void on_btnStop_clicked();
-	void on_btnRemove_clicked();
-	void on_btnRestart_clicked();
-	void on_btnUp_clicked();
-	void on_btnDown_clicked();
+    void on_btnStart_clicked();
+    void on_btnPause_clicked();
+    void on_btnStop_clicked();
+    void on_btnRemove_clicked();
+    void on_btnRestart_clicked();
+    void on_btnUp_clicked();
+    void on_btnDown_clicked();
 
-	void on_cbTrafficLimit_stateChanged(int);
-	void on_sbTrafficLimit_valueChanged(int);
+    void on_cbTrafficLimit_stateChanged(int);
+    void on_sbTrafficLimit_valueChanged(int);
 
-	void onTimeout();
+    void onTimeout();
 
 protected:
-	void resizeEvent(QResizeEvent* event)  override;
-	void mouseMoveEvent(QMouseEvent* event) override;
-	void focusInEvent(QFocusEvent* event)  override;
-	void focusOutEvent(QFocusEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void focusInEvent(QFocusEvent* event) override;
+    void focusOutEvent(QFocusEvent* event) override;
 
 private:
-	Ui::DownloadsControl* ui;
-	QTimer timer;
-	const int timeout;
+    Ui::DownloadsControl* ui;
+    QTimer timer;
+    const int timeout;
     int m_affectedRow{};
-	QPropertyAnimation* m_animation;
-	DownloadSortFilterModel* m_proxyModel;
-	bool dontStopTimer;
-	QEventLoop exitWaitLoop;
+    QPropertyAnimation* m_animation;
+    DownloadSortFilterModel* m_proxyModel;
+    bool dontStopTimer;
+    QEventLoop exitWaitLoop;
 
-	bool isUpdatingState;
+    bool isUpdatingState;
 };

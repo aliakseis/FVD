@@ -1,29 +1,29 @@
 #pragma once
 
-#include <QObject>
-#include <QRunnable>
 #include <QMap>
-#include <QString>
+#include <QObject>
 #include <QPointer>
+#include <QRunnable>
+#include <QString>
 
 class DownloadEntity;
 
-class LibraryRemoveWorker :  public QObject, public QRunnable
+class LibraryRemoveWorker : public QObject, public QRunnable
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	LibraryRemoveWorker(const QMap<QString, QPointer<DownloadEntity> >& libraryEntities)
-		: m_libraryEntities(libraryEntities)
-	{
-	}
-	~LibraryRemoveWorker();
+    LibraryRemoveWorker(const QMap<QString, QPointer<DownloadEntity> >& libraryEntities)
+        : m_libraryEntities(libraryEntities)
+    {
+    }
+    ~LibraryRemoveWorker();
 
-	void run() override;
+    void run() override;
 
 signals:
-	void libraryFileDeleted(const QPointer<DownloadEntity>& entity);
+    void libraryFileDeleted(const QPointer<DownloadEntity>& entity);
 
 private:
-	QMap<QString, QPointer<DownloadEntity> > m_libraryEntities;
+    QMap<QString, QPointer<DownloadEntity> > m_libraryEntities;
 };

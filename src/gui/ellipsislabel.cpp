@@ -1,32 +1,25 @@
 #include "ellipsislabel.h"
 
-EllipsisLabel::EllipsisLabel(QWidget* parent) : QLabel(parent)
-{
-}
+EllipsisLabel::EllipsisLabel(QWidget* parent) : QLabel(parent) {}
 
-
-EllipsisLabel::~EllipsisLabel()
-= default;
+EllipsisLabel::~EllipsisLabel() = default;
 
 void EllipsisLabel::setText(const QString& text)
 {
-	title = text;
-	cutText();
+    title = text;
+    cutText();
 }
 
-QString EllipsisLabel::text()
-{
-	return title;
-}
+QString EllipsisLabel::text() { return title; }
 
 void EllipsisLabel::resizeEvent(QResizeEvent* event)
 {
-	cutText();
-	QLabel::resizeEvent(event);
+    cutText();
+    QLabel::resizeEvent(event);
 }
 
 void EllipsisLabel::cutText()
 {
-	QFontMetrics metrics(font());
-	QLabel::setText(metrics.elidedText(title, Qt::ElideRight, width() - 2));
+    QFontMetrics metrics(font());
+    QLabel::setText(metrics.elidedText(title, Qt::ElideRight, width() - 2));
 }

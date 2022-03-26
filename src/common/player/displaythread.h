@@ -4,14 +4,13 @@
 
 class DisplayThread : public QThread, public ThreadControl
 {
-	Q_OBJECT
-	friend class FFmpegDecoder;
+    Q_OBJECT
+    friend class FFmpegDecoder;
+
 public:
-	explicit DisplayThread(VideoParseThread* parent) : m_parent(parent)
-	{
-		setObjectName("DisplayThread");
-	}
-	virtual void run();
+    explicit DisplayThread(VideoParseThread* parent) : m_parent(parent) { setObjectName("DisplayThread"); }
+    virtual void run();
+
 private:
-	VideoParseThread* m_parent;
+    VideoParseThread* m_parent;
 };

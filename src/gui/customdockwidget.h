@@ -13,54 +13,53 @@ class MainWindow;
 class ManageWidget
 {
 public:
-	// return child widget which allow manage the widget (hide and show)
-	virtual QWidget* manageWidget() const = 0;
+    // return child widget which allow manage the widget (hide and show)
+    virtual QWidget* manageWidget() const = 0;
 };
 
 class CustomDockWidget : public QDockWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	CustomDockWidget(QWidget* widget);
-	void setDisplayForFullscreen(VideoDisplay* display);
-	void setTitleBarWidget(PlayerHeader* header);
+    CustomDockWidget(QWidget* widget);
+    void setDisplayForFullscreen(VideoDisplay* display);
+    void setTitleBarWidget(PlayerHeader* header);
 
-	enum VisibilityState
-	{
-		ShownDocked = 0,
-		HiddenDocked,
-		FullyHidden,		// on library tab
-		Floating,
-		FullScreen
-	};
+    enum VisibilityState
+    {
+        ShownDocked = 0,
+        HiddenDocked,
+        FullyHidden,  // on library tab
+        Floating,
+        FullScreen
+    };
 
-	void setVisibilityState(VisibilityState state);
-	VisibilityState currentState() const { return m_state; }
-	VisibilityState previousState() const { return m_prevState; }
-	void initState();
+    void setVisibilityState(VisibilityState state);
+    VisibilityState currentState() const { return m_state; }
+    VisibilityState previousState() const { return m_prevState; }
+    void initState();
 
 private:
-	void setTabsManageWidgetsVisible(bool visible = true);
-
+    void setTabsManageWidgetsVisible(bool visible = true);
 
 protected:
-	void closeEvent(QCloseEvent* event) override;
-	bool eventFilter(QObject* obj, QEvent* event) override;
-	void keyPressEvent(QKeyEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 signals:
-	bool enterFullscreen(bool f);
+    bool enterFullscreen(bool f);
 
 public slots:
-	void onLeaveFullScreen();
+    void onLeaveFullScreen();
 
 private slots:
-	void onTopLevelChanged(bool);
+    void onTopLevelChanged(bool);
 
 private:
-	PreviewPanelButton* manageButton;
-	VisibilityState m_state;
-	VisibilityState m_prevState;
+    PreviewPanelButton* manageButton;
+    VisibilityState m_state;
+    VisibilityState m_prevState;
     VideoWidget* m_display{};
-	MainWindow* m_parent;
+    MainWindow* m_parent;
 };

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "utilities/singleton.h"
-
 #include <QEventLoop>
 #include <QImage>
-#include <QObject>
 #include <QNetworkAccessManager>
-
+#include <QObject>
 #include <map>
+
+#include "utilities/singleton.h"
 
 class FileMissingSignaller : public QObject, public Singleton<FileMissingSignaller>
 {
@@ -18,50 +17,47 @@ class FileMissingSignaller : public QObject, public Singleton<FileMissingSignall
 
 Q_SIGNALS:
     void fileMissing(const QString& filePath);
+
 private:
     FileMissingSignaller() = default;
 };
 
-
 const char GET_RANDOM_FRAME_OPTION[] = "-getRandomFrame";
-
 
 int getRandomFrame();
 
-
 class ImageCache : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	ImageCache();
-	~ImageCache();
+    ImageCache();
+    ~ImageCache();
 
-	void getAsync(const QString& id, const QString& url, const QString& filePath);
-	QImage getSync(const QString& id, const QString& url, const QString& filePath);
+    void getAsync(const QString& id, const QString& url, const QString& filePath);
+    QImage getSync(const QString& id, const QString& url, const QString& filePath);
 
-	static bool clear(const QString& id);
-	static void clearAll();
+    static bool clear(const QString& id);
+    static void clearAll();
 
 Q_SIGNALS:
-	void getImageFinished(QImage image);
+    void getImageFinished(QImage image);
 
 private Q_SLOTS:
-	void imageReceived(QNetworkReply* reply);
+    void imageReceived(QNetworkReply* reply);
 
 private:
-
-	QNetworkAccessManager* m_networkImageManager;
-	QEventLoop m_eventLoop;
-	bool m_isAsync;
-	QNetworkReply* m_lastReply;
-	QImage m_image;
+    QNetworkAccessManager* m_networkImageManager;
+    QEventLoop m_eventLoop;
+    bool m_isAsync;
+    QNetworkReply* m_lastReply;
+    QImage m_image;
 
     std::map<QString, QDateTime> m_missingLastModified;
 
-	void get(const QString& id, const QString& url, const QString& filePath);
+    void get(const QString& id, const QString& url, const QString& filePath);
 
-	static QString fileNameFromId(QString id);
+    static QString fileNameFromId(QString id);
 
-	static const QString imagesCacheDir;
+    static const QString imagesCacheDir;
 };

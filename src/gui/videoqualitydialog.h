@@ -12,29 +12,29 @@ class RemoteVideoEntity;
 
 class VideoQualityDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit VideoQualityDialog(RemoteVideoEntity* entity, QWidget* parent = 0);
-	~VideoQualityDialog();
+    explicit VideoQualityDialog(RemoteVideoEntity* entity, QWidget* parent = 0);
+    ~VideoQualityDialog();
 
-	int exec();
+    int exec();
 
-	void move(const QPoint& pos);
+    void move(const QPoint& pos);
 
 public slots:
-	void onLinksExtracted();
+    void onLinksExtracted();
 
 private slots:
-	void onItemClicked(QListWidgetItem* item);
+    void onItemClicked(QListWidgetItem* item);
 
 protected:
-	bool event(QEvent* event);
-	void resizeEvent(QResizeEvent* event);
+    bool event(QEvent* event);
+    void resizeEvent(QResizeEvent* event);
 
 private:
-	Ui::VideoQualityDialog* ui;
-	QEventLoop localEventLoop;
-	RemoteVideoEntity* m_entity;
-	QPoint m_initPos;
+    Ui::VideoQualityDialog* ui;
+    QEventLoop localEventLoop;
+    RemoteVideoEntity* m_entity;
+    QPoint m_initPos;
 };

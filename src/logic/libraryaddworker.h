@@ -1,30 +1,30 @@
 #pragma once
 
+#include <QDateTime>
 #include <QObject>
 #include <QRunnable>
 #include <QString>
 #include <QStringList>
-#include <QDateTime>
 
 #include "entityfilenames.h"
 
-class LibraryAddWorker :  public QObject, public QRunnable
+class LibraryAddWorker : public QObject, public QRunnable
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	LibraryAddWorker(EntityFileNames&& allEntitiesFiles);
-	~LibraryAddWorker();
+    LibraryAddWorker(EntityFileNames&& allEntitiesFiles);
+    ~LibraryAddWorker();
 
-	void run() override;
+    void run() override;
 
 signals:
-	void libraryFileAdded(const QString& path);
+    void libraryFileAdded(const QString& path);
 
 private:
-	EntityFileNames m_allEntitiesFiles;
+    EntityFileNames m_allEntitiesFiles;
 
-	QDateTime m_startTime;
+    QDateTime m_startTime;
 
-	void processAdding(const QString& path);
+    void processAdding(const QString& path);
 };

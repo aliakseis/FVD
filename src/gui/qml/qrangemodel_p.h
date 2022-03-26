@@ -42,37 +42,35 @@
 
 class QRangeModelPrivate
 {
-	Q_DECLARE_PUBLIC(QRangeModel)
+    Q_DECLARE_PUBLIC(QRangeModel)
 public:
-	QRangeModelPrivate(QRangeModel* qq);
-	virtual ~QRangeModelPrivate();
+    QRangeModelPrivate(QRangeModel* qq);
+    virtual ~QRangeModelPrivate();
 
-	void init();
+    void init();
 
-	bool isSedated;
-	bool signalsBlocked;
+    bool isSedated;
+    bool signalsBlocked;
 
-	qreal pos, posatmin, posatmax;
-	qreal minimum, maximum, pageStep, singleStep, value;
+    qreal pos, posatmin, posatmax;
+    qreal minimum, maximum, pageStep, singleStep, value;
 
-	uint tracking : 1;
-	uint inverted : 1;
+    uint tracking : 1;
+    uint inverted : 1;
 
-	QRangeModel* q_ptr;
+    QRangeModel* q_ptr;
 
-	inline qreal positionFromValue(qreal value)
-	{
-		const qreal scale = qreal(maximum - minimum) /
-							qreal(posatmax - posatmin);
-		return value / scale;
-	}
+    inline qreal positionFromValue(qreal value)
+    {
+        const qreal scale = qreal(maximum - minimum) / qreal(posatmax - posatmin);
+        return value / scale;
+    }
 
-	inline qreal valueFromPosition(qreal pos)
-	{
-		const qreal scale = qreal(maximum - minimum) /
-							qreal(posatmax - posatmin);
-		return pos * scale;
-	}
+    inline qreal valueFromPosition(qreal pos)
+    {
+        const qreal scale = qreal(maximum - minimum) / qreal(posatmax - posatmin);
+        return pos * scale;
+    }
 };
 
-#endif // QRANGEMODEL_P_H
+#endif  // QRANGEMODEL_P_H

@@ -1,19 +1,18 @@
 #include "global_functions.h"
 
+#include <QDir>
 
 #include "settings_declaration.h"
-
-#include "utilities/utils.h"
 #include "utilities/filesystem_utils.h"
-
-#include <QDir>
+#include "utilities/utils.h"
 
 namespace global_functions
 {
 
 QStringList GetVideoFileExts()
 {
-    const static auto exts = QStringLiteral(".264,.3g2,.3gp,.3gp2,.3gpp,.3gpp2,.3mm,.3p2,.60d,.787,"
+    const static auto exts = QStringLiteral(
+        ".264,.3g2,.3gp,.3gp2,.3gpp,.3gpp2,.3mm,.3p2,.60d,.787,"
         ".aaf,.aep,.aepx,.aet,.aetx,.ajp,.ale,.amv,.amx,.anim,.arf,.asf,.asx,.avb,.avd,.avi,.avp,.avs,"
         ".axm,.bdm,.bdmv,.bik,.bin,.bix,.bmk,.bnp,.box,.bs4,.bsf,.byu,.camproj,.camrec,.clpi,.cmmp,"
         ".cmmtpl,.cmproj,.cmrec,.cpi,.cst,.cvc,.d2v,.d3v,.dat,.dav,.dce,.dck,.ddat,.dif,.dir,.divx,.dlx,"
@@ -59,9 +58,9 @@ QString GetVideoFolder()
     QString fixedFolder = QSettings().value(app_settings::VideoFolder).toString().trimmed();
     QStringList pathItems = fixedFolder.split(QRegExp("[/\\\\]+"), QString::SkipEmptyParts);
 
-    fixedFolder = fixedFolder.isEmpty() ?
-        utilities::getPathForDownloadFolder() :
-        (fixedFolder.startsWith(QDir::separator()) ? QDir::separator() : QString()) + pathItems.join(QDir::separator());
+    fixedFolder = fixedFolder.isEmpty() ? utilities::getPathForDownloadFolder()
+                                        : (fixedFolder.startsWith(QDir::separator()) ? QDir::separator() : QString()) +
+                                              pathItems.join(QDir::separator());
     return fixedFolder.endsWith(QDir::separator()) ? fixedFolder : fixedFolder + QDir::separator();
 }
 
@@ -69,7 +68,8 @@ int GetTrafficLimitActual()
 {
     QSettings settings;
     return settings.value(app_settings::IsTrafficLimited, app_settings::IsTrafficLimited_Default).toBool()
-        ? settings.value(app_settings::TrafficLimitKbs, app_settings::TrafficLimitKbs_Default).toInt() : 0;
+               ? settings.value(app_settings::TrafficLimitKbs, app_settings::TrafficLimitKbs_Default).toInt()
+               : 0;
 }
 
 bool SaveVideoPathHasWildcards()
@@ -80,4 +80,4 @@ bool SaveVideoPathHasWildcards()
     return (rx.indexIn(GetVideoFolder(), 0) != -1);
 }
 
-} // namespace global_functions
+}  // namespace global_functions

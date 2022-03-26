@@ -8,4 +8,3 @@ inline void InterlockedAdd(std::atomic<double>& clock, double correction)
     {
     }
 }
-

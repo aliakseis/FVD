@@ -4,14 +4,16 @@
 
 class TimeLimiterThread : public QThread, public ThreadControl
 {
-	friend class FFmpegDecoder;
+    friend class FFmpegDecoder;
+
 private:
-	FFmpegDecoder* m_parent;
-	int64_t m_readerBytesCurrent;
+    FFmpegDecoder* m_parent;
+    int64_t m_readerBytesCurrent;
+
 public:
-	explicit TimeLimiterThread(FFmpegDecoder* parent) : m_parent(parent), m_readerBytesCurrent(0)
-	{
-		setObjectName("TimeLimiterThread");
-	};
-	void run() override;
+    explicit TimeLimiterThread(FFmpegDecoder* parent) : m_parent(parent), m_readerBytesCurrent(0)
+    {
+        setObjectName("TimeLimiterThread");
+    };
+    void run() override;
 };

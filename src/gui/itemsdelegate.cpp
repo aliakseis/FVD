@@ -1,40 +1,43 @@
 #include "itemsdelegate.h"
-#include "searchlistmodel.h"
-#include "utilities/translation.h"
-#include "globals.h"
-
-#include <QDebug>
-#include <QPainter>
-#include <QMouseEvent>
-#include <QTreeView>
-#include <QApplication>
-#include <QSortFilterProxyModel>
 
 #include <qdrawutil.h>
 
-enum {
+#include <QApplication>
+#include <QDebug>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QSortFilterProxyModel>
+#include <QTreeView>
+
+#include "globals.h"
+#include "searchlistmodel.h"
+#include "utilities/translation.h"
+
+enum
+{
     MAX_BTN_WIDTH = 200,
     MIN_BTN_WIDTH = 100
 };
 
-ItemsDelegate::ItemsDelegate(QObject* parent) :
-    QStyledItemDelegate(parent),
-    m_pixmap(QPixmap(":/downloadm")),
-    m_btnDisabled(QPixmap(":/downloadm_disabled")),
-    m_pixmapHover(QPixmap(":/downloadm_hover")),
-    m_pixmapDown(QPixmap(":/downloadm_down")),
-    m_pixmapDown2(QPixmap(":/downloadm_down2")),
-    m_pixmapDropdown(QPixmap(":/images/style/progress_dropdown.png")),
-    m_mouseRow(-1),
-    m_mouseColumn(-1),
-    m_mouseDownRow(-1),
-    m_mouseDownColumn(-1),
-    m_mouseDown(false),
-    m_btnElement(None)
+ItemsDelegate::ItemsDelegate(QObject* parent)
+    : QStyledItemDelegate(parent),
+      m_pixmap(QPixmap(":/downloadm")),
+      m_btnDisabled(QPixmap(":/downloadm_disabled")),
+      m_pixmapHover(QPixmap(":/downloadm_hover")),
+      m_pixmapDown(QPixmap(":/downloadm_down")),
+      m_pixmapDown2(QPixmap(":/downloadm_down2")),
+      m_pixmapDropdown(QPixmap(":/images/style/progress_dropdown.png")),
+      m_mouseRow(-1),
+      m_mouseColumn(-1),
+      m_mouseDownRow(-1),
+      m_mouseDownColumn(-1),
+      m_mouseDown(false),
+      m_btnElement(None)
 {
 }
 
-QWidget* ItemsDelegate::createEditor(QWidget* /*parent*/, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+QWidget* ItemsDelegate::createEditor(QWidget* /*parent*/, const QStyleOptionViewItem& /*option*/,
+                                     const QModelIndex& /*index*/) const
 {
     return nullptr;
 }
@@ -80,7 +83,8 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             {
                 qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_btnDisabled);
             }
-            else if (m_mouseDown && m_mouseDownRow == m_mouseRow && m_mouseDownColumn == m_mouseColumn && row == m_mouseRow && column == m_mouseColumn)
+            else if (m_mouseDown && m_mouseDownRow == m_mouseRow && m_mouseDownColumn == m_mouseColumn &&
+                     row == m_mouseRow && column == m_mouseColumn)
             {
                 if (m_btnElement == DownloadButton)
                 {
@@ -125,7 +129,7 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             progressBarOption.rect = option.rect.adjusted(3, 5, -3, -4);
             if (progressBarOption.rect.width() > MAX_BTN_WIDTH)
             {
-                progressBarOption.rect.setWidth(MAX_BTN_WIDTH - 8);    // duno why -8
+                progressBarOption.rect.setWidth(MAX_BTN_WIDTH - 8);  // duno why -8
             }
 
             progressBarOption.fontMetrics = QApplication::fontMetrics();
@@ -173,7 +177,8 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
 
             painter->setOpacity(0.7);
-            painter->drawPixmap(option.rect.right() - 31, option.rect.top() + 9, m_pixmapDropdown.width(), m_pixmapDropdown.height(), m_pixmapDropdown);
+            painter->drawPixmap(option.rect.right() - 31, option.rect.top() + 9, m_pixmapDropdown.width(),
+                                m_pixmapDropdown.height(), m_pixmapDropdown);
             painter->setOpacity(1);
         }
     }
@@ -183,17 +188,18 @@ QSize ItemsDelegate::sizeHint(const QStyleOptionViewItem& /*option*/, const QMod
 {
     if (index.row() == SR_Icon)
     {
-        return { 32, 32 };
+        return {32, 32};
     }
     if (index.row() == SR_Status)
     {
-        return { MIN_BTN_WIDTH, 32 };
+        return {MIN_BTN_WIDTH, 32};
     }
 
-    return { 90, 32 };
+    return {90, 32};
 }
 
-bool ItemsDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
+bool ItemsDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
+                                const QModelIndex& index)
 {
     if (event->type() == QEvent::MouseMove)
     {
@@ -227,8 +233,8 @@ bool ItemsDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const 
             }
             if (index.data().toString().length() != 0)
             {
-                if (utilities::IsInBounds(rect.top() + 9, mouseEvent->pos().y(), rect.bottom() - 5)
-                    && utilities::IsInBounds(5, rect.right() - mouseEvent->pos().x(), 25))
+                if (utilities::IsInBounds(rect.top() + 9, mouseEvent->pos().y(), rect.bottom() - 5) &&
+                    utilities::IsInBounds(5, rect.right() - mouseEvent->pos().x(), 25))
                 {
                     m_btnElement = MenuIndicator;
                     return true;

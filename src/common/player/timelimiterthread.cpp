@@ -2,95 +2,96 @@
 
 void TimeLimiterThread::run()
 {
-	QScopedPointer<FFmpegDecoder> thread_data(new FFmpegDecoder());
-	// This is case when main (ffmpeg thread) closing before thread limitation starts work
-	if (isAbort())
-	{
-		return;
-	}
-	if (m_parent->m_openedFilePath.isEmpty())
-	{
-		return;
-	}
-	if (!thread_data->openFileDecoder(m_parent->m_openedFilePath))
-	{
-		return;
-	}
-	AVPacket packet;
-	int ret;
-	if (m_parent->m_fileProbablyNotFull)
-	{
-		m_parent->m_duration = 0;
-		m_parent->m_frameTotalCount = 0;
-	}
-	while (m_parent->m_bytesLimiter >= 0)
-	{
-		if (isAbort())
-		{
-			return;
-		}
+    QScopedPointer<FFmpegDecoder> thread_data(new FFmpegDecoder());
+    // This is case when main (ffmpeg thread) closing before thread limitation starts work
+    if (isAbort())
+    {
+        return;
+    }
+    if (m_parent->m_openedFilePath.isEmpty())
+    {
+        return;
+    }
+    if (!thread_data->openFileDecoder(m_parent->m_openedFilePath))
+    {
+        return;
+    }
+    AVPacket packet;
+    int ret;
+    if (m_parent->m_fileProbablyNotFull)
+    {
+        m_parent->m_duration = 0;
+        m_parent->m_frameTotalCount = 0;
+    }
+    while (m_parent->m_bytesLimiter >= 0)
+    {
+        if (isAbort())
+        {
+            return;
+        }
 
-		while (m_parent->m_bytesLimiter >= 0 && m_parent->m_bytesLimiter - thread_data->m_bytesCurrent > PLAYBACK_AVPACKET_MAX)
-		{
-			if (isAbort())
-			{
-				return;
-			}
+        while (m_parent->m_bytesLimiter >= 0 &&
+               m_parent->m_bytesLimiter - thread_data->m_bytesCurrent > PLAYBACK_AVPACKET_MAX)
+        {
+            if (isAbort())
+            {
+                return;
+            }
 
-			ret = av_read_frame(thread_data->m_formatContext, &packet);
-			if (ret >= 0)
-			{
-				m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+            ret = av_read_frame(thread_data->m_formatContext, &packet);
+            if (ret >= 0)
+            {
+                m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
 
                 if (packet.pos > 0 && m_parent->m_headerSize == 0)
                 {
                     m_parent->m_headerSize = packet.pos;
                 }
 
-				if (packet.stream_index == thread_data->m_videoStreamNumber)
-				{
-					if (packet.pts != AV_NOPTS_VALUE)
-					{
-						m_parent->m_durationLimiter = packet.pts;
-					}
-					else if (packet.dts != AV_NOPTS_VALUE)
-					{
-						m_parent->m_durationLimiter = packet.dts;
-					}
-					if (m_parent->m_fileProbablyNotFull)
-					{
-						m_parent->m_frameTotalCount++;
-						m_parent->m_duration = m_parent->m_durationLimiter;
-					}
-				}
+                if (packet.stream_index == thread_data->m_videoStreamNumber)
+                {
+                    if (packet.pts != AV_NOPTS_VALUE)
+                    {
+                        m_parent->m_durationLimiter = packet.pts;
+                    }
+                    else if (packet.dts != AV_NOPTS_VALUE)
+                    {
+                        m_parent->m_durationLimiter = packet.dts;
+                    }
+                    if (m_parent->m_fileProbablyNotFull)
+                    {
+                        m_parent->m_frameTotalCount++;
+                        m_parent->m_duration = m_parent->m_durationLimiter;
+                    }
+                }
                 av_packet_unref(&packet);
-			}
-			else
-			{
-				break;
-			}
-		}
+            }
+            else
+            {
+                break;
+            }
+        }
 
-		preciseSleep(0.1);
-	}
+        preciseSleep(0.1);
+    }
 
-	while (m_parent->m_fileProbablyNotFull && (ret = av_read_frame(thread_data->m_formatContext, &packet)) >= 0)
-	{
-		m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
-		if (packet.stream_index == thread_data->m_videoStreamNumber)
-		{
-			if (packet.pts != AV_NOPTS_VALUE)
-			{
-				m_parent->m_durationLimiter = packet.pts;
-			}
-			else if (packet.dts != AV_NOPTS_VALUE)
-			{
-				m_parent->m_durationLimiter = packet.dts;
-			}
-			m_parent->m_frameTotalCount++;
-			m_parent->m_duration = m_parent->m_durationLimiter;
-		}
-	}
+    while (m_parent->m_fileProbablyNotFull && (ret = av_read_frame(thread_data->m_formatContext, &packet)) >= 0)
+    {
+        m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+        if (packet.stream_index == thread_data->m_videoStreamNumber)
+        {
+            if (packet.pts != AV_NOPTS_VALUE)
+            {
+                m_parent->m_durationLimiter = packet.pts;
+            }
+            else if (packet.dts != AV_NOPTS_VALUE)
+            {
+                m_parent->m_durationLimiter = packet.dts;
+            }
+            m_parent->m_frameTotalCount++;
+            m_parent->m_duration = m_parent->m_durationLimiter;
+        }
+    }
 
-	m_parent->m_fileProbablyNotFull = false;
+    m_parent->m_fileProbablyNotFull = false;
 }

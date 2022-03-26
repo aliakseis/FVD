@@ -4,18 +4,24 @@
 
 class PreviewPanelButton : public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	enum Type { LeftArrow, RightArrow, Scale };
+    enum Type
+    {
+        LeftArrow,
+        RightArrow,
+        Scale
+    };
 
-	PreviewPanelButton(QWidget* parent);
-	virtual ~PreviewPanelButton();
-	void setImages(Type type);
+    PreviewPanelButton(QWidget* parent);
+    virtual ~PreviewPanelButton();
+    void setImages(Type type);
+
 protected:
-	void mousePressEvent(QMouseEvent* event);
-	void mouseReleaseEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
+    void mouseReleaseEvent(QMouseEvent* event);
 
 private:
-	QPixmap m_pushedPixmap;
-	QPixmap m_pixmap;
+    QPixmap m_pushedPixmap;
+    QPixmap m_pixmap;
 };

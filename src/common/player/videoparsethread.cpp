@@ -1,49 +1,51 @@
 #include "videoparsethread.h"
+
 #include "displaythread.h"
-#include "utilities/loggertag.h"
-#include "utilities/logger.h"
 #include "interlockedadd.h"
+#include "utilities/logger.h"
+#include "utilities/loggertag.h"
 
 bool VideoParseThread::getVideoPacket(AVPacket* packet)
 {
-	QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);
-	m_ffmpeg->m_packetsQueueCV.wait([this]() { return !m_ffmpeg->m_videoPacketsQueue.empty(); }, &m_ffmpeg->m_packetsQueueMutex);
-	if (!isAbort())
-	{
-		*packet = m_ffmpeg->m_videoPacketsQueue.dequeue();
-		m_ffmpeg->m_packetsQueueCV.wakeAll();
-		return true;
-	}
-	return false;
+    QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);
+    m_ffmpeg->m_packetsQueueCV.wait([this]() { return !m_ffmpeg->m_videoPacketsQueue.empty(); },
+                                    &m_ffmpeg->m_packetsQueueMutex);
+    if (!isAbort())
+    {
+        *packet = m_ffmpeg->m_videoPacketsQueue.dequeue();
+        m_ffmpeg->m_packetsQueueCV.wakeAll();
+        return true;
+    }
+    return false;
 }
 
 void VideoParseThread::run()
 {
-	TAG("ffmpeg_threads") << "Video thread started";
-	AVPacket packet;
+    TAG("ffmpeg_threads") << "Video thread started";
+    AVPacket packet;
 
-	m_ffmpeg->m_videoPTS = (double)AV_NOPTS_VALUE;
-	m_videoStartClock = av_gettime() / 1000000.;
-	m_videoClock = 0;
+    m_ffmpeg->m_videoPTS = (double)AV_NOPTS_VALUE;
+    m_videoStartClock = av_gettime() / 1000000.;
+    m_videoClock = 0;
 
-	// Help displaying thread
-	m_ffmpeg->m_mainDisplayThread = new DisplayThread(this);
-	m_ffmpeg->m_mainDisplayThread->start();
+    // Help displaying thread
+    m_ffmpeg->m_mainDisplayThread = new DisplayThread(this);
+    m_ffmpeg->m_mainDisplayThread->start();
 
     bool frameFinished = false;
     while (true)
-	{
-		if (isAbort())
-		{
-			TAG("ffmpeg_threads") << "Video thread broken";
-			return;
-		}
+    {
+        if (isAbort())
+        {
+            TAG("ffmpeg_threads") << "Video thread broken";
+            return;
+        }
 
-		if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
-		{
-			preciseSleep(0.1);
-			continue;
-		}
+        if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+        {
+            preciseSleep(0.1);
+            continue;
+        }
 
         bool seekDone = false;
 
@@ -65,7 +67,8 @@ void VideoParseThread::run()
                 }
                 {
                     QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-                    m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; }, &m_ffmpeg->m_downloadLockerMutex);
+                    m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                        &m_ffmpeg->m_downloadLockerMutex);
                 }
 
                 while (true)
@@ -90,9 +93,10 @@ void VideoParseThread::run()
                         break;
                     }
 
-                    //qDebug() << "decoding video packet";
+                    // qDebug() << "decoding video packet";
 
-                    if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0) {
+                    if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
+                    {
                         return;
                     }
                     frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
@@ -140,14 +144,15 @@ void VideoParseThread::run()
 
                         if (packet.data == m_ffmpeg->m_downloadingPacket.data)
                         {
-                            //qDebug() << "video downloading mode started [" << &packet << "]";
+                            // qDebug() << "video downloading mode started [" << &packet << "]";
                             if (m_ffmpeg->m_mainAudioThread != nullptr)
                             {
                                 emit m_ffmpeg->downloadPendingStarted();
                             }
                             {
                                 QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-                                m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; }, &m_ffmpeg->m_downloadLockerMutex);
+                                m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                                    &m_ffmpeg->m_downloadLockerMutex);
                             }
                             if (m_ffmpeg->m_mainAudioThread != nullptr)
                             {
@@ -157,10 +162,12 @@ void VideoParseThread::run()
                             continue;
                         }
 
-                        if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0) {
+                        if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
+                        {
                             return;
                         }
-                        frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+                        frameFinished =
+                            avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
                         if (frameFinished)
                         {
                             int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
@@ -174,14 +181,13 @@ void VideoParseThread::run()
                             const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
 
                             QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
-                            //qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
+                            // qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
                             m_ffmpeg->m_seekFlags |= (isAE) ? 0x4 : 0xC;
                             m_ffmpeg->m_seekFlagsCV.wakeAll();
                             if (isAE)
                             {
-                                m_ffmpeg->m_seekFlagsCV.wait(
-                                    [this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
-                                    &m_ffmpeg->m_seekFlagsMtx);
+                                m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
+                                                             &m_ffmpeg->m_seekFlagsMtx);
                             }
 
                             m_videoStartClock = av_gettime() / 1000000. - stamp;
@@ -192,12 +198,11 @@ void VideoParseThread::run()
                             m_ffmpeg->m_seekFlagsCV.wakeAll();
                             if (isAE)
                             {
-                                m_ffmpeg->m_seekFlagsCV.wait(
-                                    [this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
-                                    &m_ffmpeg->m_seekFlagsMtx);
+                                m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
+                                                             &m_ffmpeg->m_seekFlagsMtx);
                             }
 
-                            //qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
+                            // qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
                             m_ffmpeg->m_seekFlags |= (isAE) ? 0x10 : 0x30;
                             m_ffmpeg->m_seekFlagsCV.wakeAll();
 
@@ -206,61 +211,62 @@ void VideoParseThread::run()
                             break;
                         }
                     }
-                } // while
+                }  // while
             }
             else
             {
-                if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0) {
+                if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
+                {
                     return;
                 }
                 frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
             }
 
             av_packet_unref(&packet);
-        } // if (getVideoPacket(&packet))
+        }  // if (getVideoPacket(&packet))
 
-		// Did we get a video frame?
-		if (frameFinished)
-		{
-			int64_t duration_stamp =  m_ffmpeg->m_videoFrame->best_effort_timestamp;
-			double pts = duration_stamp;
+        // Did we get a video frame?
+        if (frameFinished)
+        {
+            int64_t duration_stamp = m_ffmpeg->m_videoFrame->best_effort_timestamp;
+            double pts = duration_stamp;
 
-			/* compute the exact PTS for the picture if it is omitted in the stream
-				* pts1 is the dts of the pkt / pts of the frame */
-			if (pts == AV_NOPTS_VALUE)
-			{
-				pts = m_videoClock;
-			}
-			else
-			{
-				pts *= av_q2d(m_ffmpeg->m_videoStream->time_base);
-				m_videoClock = pts;
-			}
+            /* compute the exact PTS for the picture if it is omitted in the stream
+             * pts1 is the dts of the pkt / pts of the frame */
+            if (pts == AV_NOPTS_VALUE)
+            {
+                pts = m_videoClock;
+            }
+            else
+            {
+                pts *= av_q2d(m_ffmpeg->m_videoStream->time_base);
+                m_videoClock = pts;
+            }
 
-			/* update video clock for next frame */
-			m_frameDelay = av_q2d(m_ffmpeg->m_videoCodecContext->time_base);
-			/* for MPEG2, the frame can be repeated, so we update the
-				clock accordingly */
-			m_frameDelay += m_ffmpeg->m_videoFrame->repeat_pict * (m_frameDelay * 0.5);
-			m_videoClock += m_frameDelay;
+            /* update video clock for next frame */
+            m_frameDelay = av_q2d(m_ffmpeg->m_videoCodecContext->time_base);
+            /* for MPEG2, the frame can be repeated, so we update the
+                    clock accordingly */
+            m_frameDelay += m_ffmpeg->m_videoFrame->repeat_pict * (m_frameDelay * 0.5);
+            m_videoClock += m_frameDelay;
 
-			// Skipping frames
+            // Skipping frames
             double curTime;
             if (!seekDone && m_videoStartClock + pts <= (curTime = av_gettime() / 1000000.))
-			{
-				if (m_videoStartClock + pts < curTime - 1.)
-				{
-                    InterlockedAdd(m_videoStartClock, 1.); // adjust clock
-				}
+            {
+                if (m_videoStartClock + pts < curTime - 1.)
+                {
+                    InterlockedAdd(m_videoStartClock, 1.);  // adjust clock
+                }
 
-				TAG("ffmpeg_sync") << "Hard skip frame";
+                TAG("ffmpeg_sync") << "Hard skip frame";
 
-				// pause
-				if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
-				{
-					continue;
-				}
-			}
+                // pause
+                if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+                {
+                    continue;
+                }
+            }
             else
             {
                 {
@@ -268,13 +274,16 @@ void VideoParseThread::run()
 
                     m_ffmpeg->m_videoFramesCV.wait(
                         [this]()
-                    {
-                        return m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused || m_ffmpeg->m_videoFramesQueue.m_busy < VIDEO_PICTURE_QUEUE_SIZE;
-                    },
+                        {
+                            return m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused ||
+                                   m_ffmpeg->m_videoFramesQueue.m_busy < VIDEO_PICTURE_QUEUE_SIZE;
+                        },
                         &m_ffmpeg->m_videoFramesMutex);
 
-                    Q_ASSERT(isAbort() || m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused ||
-                        !(m_ffmpeg->m_videoFramesQueue.m_write_counter == m_ffmpeg->m_videoFramesQueue.m_read_counter && m_ffmpeg->m_videoFramesQueue.m_busy > 0)); // It can crash on memcpy if that
+                    Q_ASSERT(
+                        isAbort() || m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused ||
+                        !(m_ffmpeg->m_videoFramesQueue.m_write_counter == m_ffmpeg->m_videoFramesQueue.m_read_counter &&
+                          m_ffmpeg->m_videoFramesQueue.m_busy > 0));  // It can crash on memcpy if that
                 }
 
                 if (isAbort())
@@ -304,7 +313,8 @@ void VideoParseThread::run()
                 current_frame->m_pts = pts;
                 current_frame->m_duration = duration_stamp;
 
-                m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) % std::size(m_ffmpeg->m_videoFramesQueue.m_frames);
+                m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) %
+                                                               std::size(m_ffmpeg->m_videoFramesQueue.m_frames);
 
                 QMutexLocker locker(&m_ffmpeg->m_videoFramesMutex);
                 m_ffmpeg->m_videoFramesQueue.m_busy++;
@@ -312,6 +322,6 @@ void VideoParseThread::run()
                 m_ffmpeg->m_videoFramesCV.wakeAll();
             }
             frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
-		}
-	}
+        }
+    }
 }

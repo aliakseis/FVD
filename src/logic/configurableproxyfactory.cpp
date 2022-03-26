@@ -1,9 +1,9 @@
 #include "configurableproxyfactory.h"
 
-#include "settings_declaration.h"
-#include "global_functions.h"
-
 #include <QSettings>
+
+#include "global_functions.h"
+#include "settings_declaration.h"
 
 QList<QNetworkProxy> ConfigurableProxyFactory::queryProxy(const QNetworkProxyQuery& query)
 {
@@ -16,16 +16,13 @@ QList<QNetworkProxy> ConfigurableProxyFactory::queryProxy(const QNetworkProxyQue
     const bool useProxy = settings.value(UseProxy, UseProxy_Default).toBool();
     if (useProxy)
     {
-        proxies.append(QNetworkProxy(
-            QNetworkProxy::Socks5Proxy, 
-            settings.value(ProxyAddress).toString(),
-            settings.value(ProxyPort).toUInt()
-        ));
+        proxies.append(QNetworkProxy(QNetworkProxy::Socks5Proxy, settings.value(ProxyAddress).toString(),
+                                     settings.value(ProxyPort).toUInt()));
     }
-    //else
+    // else
     //{
     //	proxies = QNetworkProxyFactory::systemProxyForQuery(query);
-    //}
+    // }
 
     // Make sure NoProxy is in the list, so that QTcpServer can work:
     // it searches for the first proxy that can has the ListeningCapability capability

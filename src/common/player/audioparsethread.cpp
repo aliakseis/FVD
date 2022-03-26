@@ -1,310 +1,303 @@
 #include "audioparsethread.h"
-#include "utilities/loggertag.h"
-#include "utilities/logger.h"
-
-#include "interlockedadd.h"
 
 #include <portaudio.h>
 
+#include "interlockedadd.h"
+#include "utilities/logger.h"
+#include "utilities/loggertag.h"
+
 bool AudioParseThread::getAudioPacket(AVPacket* packet)
 {
-	QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);
-	m_ffmpeg->m_packetsQueueCV.wait([this]() { return !m_ffmpeg->m_audioPacketsQueue.empty(); }, &m_ffmpeg->m_packetsQueueMutex);
-	if (!isAbort())
-	{
-		*packet = m_ffmpeg->m_audioPacketsQueue.dequeue();
-		m_ffmpeg->m_packetsQueueCV.wakeAll();
-		return true;
-	}
-	return false;
+    QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);
+    m_ffmpeg->m_packetsQueueCV.wait([this]() { return !m_ffmpeg->m_audioPacketsQueue.empty(); },
+                                    &m_ffmpeg->m_packetsQueueMutex);
+    if (!isAbort())
+    {
+        *packet = m_ffmpeg->m_audioPacketsQueue.dequeue();
+        m_ffmpeg->m_packetsQueueCV.wakeAll();
+        return true;
+    }
+    return false;
 }
-
 
 void AudioParseThread::run()
 {
-	TAG("ffmpeg_threads") << "Audio thread started";
+    TAG("ffmpeg_threads") << "Audio thread started";
 
     setPriority(QThread::TimeCriticalPriority);
 
-	AVPacket packet;
+    AVPacket packet;
 
-	bool handlePacketPostponed = false;
+    bool handlePacketPostponed = false;
 
     while (true)
-	{
-		if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
-		{
+    {
+        if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+        {
             if (!Pa_IsStreamStopped(m_ffmpeg->m_stream))
             {
                 Pa_StopStream(m_ffmpeg->m_stream);
             }
 
-			if (isAbort())
-			{
-				if (handlePacketPostponed)
-				{
+            if (isAbort())
+            {
+                if (handlePacketPostponed)
+                {
                     av_packet_unref(&packet);
-				}
-				TAG("ffmpeg_threads") << "Video thread broken";
-				return;
-			}
+                }
+                TAG("ffmpeg_threads") << "Video thread broken";
+                return;
+            }
 
-			preciseSleep(0.1);
-			continue;
-		}
+            preciseSleep(0.1);
+            continue;
+        }
 
-		if (handlePacketPostponed)
-		{
-			handlePacketPostponed = false;
-			if (m_isSeekingWhilePaused)
-			{
+        if (handlePacketPostponed)
+        {
+            handlePacketPostponed = false;
+            if (m_isSeekingWhilePaused)
+            {
                 av_packet_unref(&packet);
-			}
-			else
-			{
-				handlePacket(packet);
-			}
-		}
+            }
+            else
+            {
+                handlePacket(packet);
+            }
+        }
 
-		while (getAudioPacket(&packet))
-		{
-			if (isAbort())
-			{
+        while (getAudioPacket(&packet))
+        {
+            if (isAbort())
+            {
                 av_packet_unref(&packet);
-				TAG("ffmpeg_threads") << "Audio thread broken";
-				return;
-			}
+                TAG("ffmpeg_threads") << "Audio thread broken";
+                return;
+            }
 
-			bool flush_packet_found = false;
+            bool flush_packet_found = false;
 
-			// Downloading section
-			if (packet.data == m_ffmpeg->m_downloadingPacket.data)
-			{
-				emit m_ffmpeg->downloadPendingStarted();
-				{
-					QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-					m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; }, &m_ffmpeg->m_downloadLockerMutex);
-				}
+            // Downloading section
+            if (packet.data == m_ffmpeg->m_downloadingPacket.data)
+            {
+                emit m_ffmpeg->downloadPendingStarted();
+                {
+                    QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
+                    m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                        &m_ffmpeg->m_downloadLockerMutex);
+                }
 
-				while (true)
-				{
-					if (isAbort())
-					{
-						//TAG("ffmpeg_threads") << "Audio thread broken";
-						return;
-					}
+                while (true)
+                {
+                    if (isAbort())
+                    {
+                        // TAG("ffmpeg_threads") << "Audio thread broken";
+                        return;
+                    }
 
-					if (!getAudioPacket(&packet))
-					{
-						return;
-					}
+                    if (!getAudioPacket(&packet))
+                    {
+                        return;
+                    }
 
-					if (packet.data == m_ffmpeg->m_downloadingPacket.data)
-					{
-						continue;
-					}
+                    if (packet.data == m_ffmpeg->m_downloadingPacket.data)
+                    {
+                        continue;
+                    }
 
-					if (packet.data == m_ffmpeg->m_seekPacket.data)
-					{
-						flush_packet_found = true;
-						break;
-					}
+                    if (packet.data == m_ffmpeg->m_seekPacket.data)
+                    {
+                        flush_packet_found = true;
+                        break;
+                    }
 
-					if (packet.pts != AV_NOPTS_VALUE)
-					{
-						m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
-					}
-					else
-					{
-						Q_ASSERT(false && "No audio pts found");
-						return;
-					}
+                    if (packet.pts != AV_NOPTS_VALUE)
+                    {
+                        m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
+                    }
+                    else
+                    {
+                        Q_ASSERT(false && "No audio pts found");
+                        return;
+                    }
 
-					break;
-				}
-				emit m_ffmpeg->downloadPendingFinished();
-			}
+                    break;
+                }
+                emit m_ffmpeg->downloadPendingFinished();
+            }
 
-			Q_ASSERT(packet.data != m_ffmpeg->m_downloadingPacket.data);
+            Q_ASSERT(packet.data != m_ffmpeg->m_downloadingPacket.data);
 
-			// Seeking audio
-			if (packet.data == m_ffmpeg->m_seekPacket.data)
-			{
-				avcodec_flush_buffers(m_ffmpeg->m_audioCodecContext);
+            // Seeking audio
+            if (packet.data == m_ffmpeg->m_seekPacket.data)
+            {
+                avcodec_flush_buffers(m_ffmpeg->m_audioCodecContext);
                 Pa_AbortStream(m_ffmpeg->m_stream);
-				while (true)
-				{
-					if (isAbort())
-					{
-						TAG("ffmpeg_threads") << "Audio thread broken";
-						return;
-					}
+                while (true)
+                {
+                    if (isAbort())
+                    {
+                        TAG("ffmpeg_threads") << "Audio thread broken";
+                        return;
+                    }
 
-					if (getAudioPacket(&packet))
-					{
-						Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
+                    if (getAudioPacket(&packet))
+                    {
+                        Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
 
-						if (packet.data == m_ffmpeg->m_downloadingPacket.data)
-						{
-							emit m_ffmpeg->downloadPendingStarted();
-							{
-								QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-								m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; }, &m_ffmpeg->m_downloadLockerMutex);
-							}
-							emit m_ffmpeg->downloadPendingFinished();
+                        if (packet.data == m_ffmpeg->m_downloadingPacket.data)
+                        {
+                            emit m_ffmpeg->downloadPendingStarted();
+                            {
+                                QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
+                                m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                                    &m_ffmpeg->m_downloadLockerMutex);
+                            }
+                            emit m_ffmpeg->downloadPendingFinished();
 
-							continue;
-						}
+                            continue;
+                        }
 
-						const bool isVE = (m_ffmpeg->m_mainVideoThread != nullptr);
+                        const bool isVE = (m_ffmpeg->m_mainVideoThread != nullptr);
 
-						QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
-						m_ffmpeg->m_seekFlags |= (isVE) ? 0x8 : 0xC;
-						m_ffmpeg->m_seekFlagsCV.wakeAll();
-						if (isVE)
-						{
-							m_ffmpeg->m_seekFlagsCV.wait(
-							[this]() { return (m_ffmpeg->m_seekFlags & 0x4) != 0; },
-							&m_ffmpeg->m_seekFlagsMtx);
-						}
+                        QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
+                        m_ffmpeg->m_seekFlags |= (isVE) ? 0x8 : 0xC;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
+                        if (isVE)
+                        {
+                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x4) != 0; },
+                                                         &m_ffmpeg->m_seekFlagsMtx);
+                        }
 
-						if (packet.pts != AV_NOPTS_VALUE)
-						{
-							m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
-							if (flush_packet_found)
-							{
-								m_ffmpeg->m_videoPTS = m_ffmpeg->m_audioPTS.load();
-								m_ffmpeg->m_videoFramesQueue.setBasePts(av_gettime() / 1000000. - m_ffmpeg->m_audioPTS, m_ffmpeg->m_audioPTS);
-							}
-						}
-						else
-						{
-							qDebug() << "No audio pts found";
-							m_ffmpeg->close();
-						}
+                        if (packet.pts != AV_NOPTS_VALUE)
+                        {
+                            m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
+                            if (flush_packet_found)
+                            {
+                                m_ffmpeg->m_videoPTS = m_ffmpeg->m_audioPTS.load();
+                                m_ffmpeg->m_videoFramesQueue.setBasePts(av_gettime() / 1000000. - m_ffmpeg->m_audioPTS,
+                                                                        m_ffmpeg->m_audioPTS);
+                            }
+                        }
+                        else
+                        {
+                            qDebug() << "No audio pts found";
+                            m_ffmpeg->close();
+                        }
 
-						m_ffmpeg->m_seekFlags &= (isVE) ? ~0x2 : ~0x3;
-						m_ffmpeg->m_seekFlagsCV.wakeAll();
-						if (isVE)
-						{
-							m_ffmpeg->m_seekFlagsCV.wait(
-							[this]() { return (m_ffmpeg->m_seekFlags & 0x1) == 0; },
-							&m_ffmpeg->m_seekFlagsMtx);
-						}
+                        m_ffmpeg->m_seekFlags &= (isVE) ? ~0x2 : ~0x3;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
+                        if (isVE)
+                        {
+                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x1) == 0; },
+                                                         &m_ffmpeg->m_seekFlagsMtx);
+                        }
 
-						//qDebug() << "ASOUT: " << seekflags << " = " << *seekflags;
-						m_ffmpeg->m_seekFlags |= (isVE) ? 0x20 : 0x30;
-						m_ffmpeg->m_seekFlagsCV.wakeAll();
+                        // qDebug() << "ASOUT: " << seekflags << " = " << *seekflags;
+                        m_ffmpeg->m_seekFlags |= (isVE) ? 0x20 : 0x30;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
 
-						TAG("ffmpeg_sync") << "Audio position: " << m_ffmpeg->m_audioPTS;
+                        TAG("ffmpeg_sync") << "Audio position: " << m_ffmpeg->m_audioPTS;
 
-						break;
-					}
-				} // while
+                        break;
+                    }
+                }  // while
 
-				if (m_isSeekingWhilePaused)
-				{
-					m_isSeekingWhilePaused = false;
-					handlePacketPostponed = true;
+                if (m_isSeekingWhilePaused)
+                {
+                    m_isSeekingWhilePaused = false;
+                    handlePacketPostponed = true;
 
-					break;
-				}
-			}
+                    break;
+                }
+            }
 
-			if (packet.size == 0)
-			{
-				TAG("ffmpeg_audio") << "Packet size = 0";
-				break;
-			}
+            if (packet.size == 0)
+            {
+                TAG("ffmpeg_audio") << "Packet size = 0";
+                break;
+            }
 
-			handlePacket(packet);
+            handlePacket(packet);
             av_packet_unref(&packet);
 
-			if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
-			{
-				break;
-			}
+            if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+            {
+                break;
+            }
+        }
 
-		}
-
-		// Break thread
-		if (isAbort())
-		{
-			TAG("ffmpeg_threads") << "Audio thread broken";
-			return;
-		}
-	}
+        // Break thread
+        if (isAbort())
+        {
+            TAG("ffmpeg_threads") << "Audio thread broken";
+            return;
+        }
+    }
 }
 
 void AudioParseThread::handlePacket(const AVPacket& packet)
 {
     const int ret = avcodec_send_packet(m_ffmpeg->m_audioCodecContext, &packet);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         return;
     }
 
     while (avcodec_receive_frame(m_ffmpeg->m_audioCodecContext, m_ffmpeg->m_audioFrame) == 0)
-	{
-		int original_buffer_size = av_samples_get_buffer_size(
-									   nullptr,
-									   m_ffmpeg->m_audioFrame->channels,
-									   m_ffmpeg->m_audioFrame->nb_samples,
-									   (AVSampleFormat)m_ffmpeg->m_audioFrame->format,
-									   1
-								   );
+    {
+        int original_buffer_size =
+            av_samples_get_buffer_size(nullptr, m_ffmpeg->m_audioFrame->channels, m_ffmpeg->m_audioFrame->nb_samples,
+                                       (AVSampleFormat)m_ffmpeg->m_audioFrame->format, 1);
 
-		// write buffer
-		uint8_t* write_data = (m_ffmpeg->m_audioFrame->extended_data != nullptr)
-							  ? *m_ffmpeg->m_audioFrame->extended_data
-							  : m_ffmpeg->m_audioFrame->data[0];
-		int64_t	write_size = original_buffer_size;
+        // write buffer
+        uint8_t* write_data = (m_ffmpeg->m_audioFrame->extended_data != nullptr)
+                                  ? *m_ffmpeg->m_audioFrame->extended_data
+                                  : m_ffmpeg->m_audioFrame->data[0];
+        int64_t write_size = original_buffer_size;
 
-		int64_t dec_channel_layout =
-			((m_ffmpeg->m_audioFrame->channel_layout != 0U) && m_ffmpeg->m_audioFrame->channels == av_get_channel_layout_nb_channels(m_ffmpeg->m_audioFrame->channel_layout)) ?
-			m_ffmpeg->m_audioFrame->channel_layout : av_get_default_channel_layout(m_ffmpeg->m_audioFrame->channels);
+        int64_t dec_channel_layout = ((m_ffmpeg->m_audioFrame->channel_layout != 0U) &&
+                                      m_ffmpeg->m_audioFrame->channels ==
+                                          av_get_channel_layout_nb_channels(m_ffmpeg->m_audioFrame->channel_layout))
+                                         ? m_ffmpeg->m_audioFrame->channel_layout
+                                         : av_get_default_channel_layout(m_ffmpeg->m_audioFrame->channels);
 
-		const int wanted_nb_samples = m_ffmpeg->m_audioFrame->nb_samples; // No sync resampling
+        const int wanted_nb_samples = m_ffmpeg->m_audioFrame->nb_samples;  // No sync resampling
 
-		int64_t out_channel_layout = av_get_default_channel_layout(m_ffmpeg->m_audioSettings.channels);
+        int64_t out_channel_layout = av_get_default_channel_layout(m_ffmpeg->m_audioSettings.channels);
 
-		// Check is the new swr context require
-		if (
-			(AVSampleFormat)m_ffmpeg->m_audioFrame->format != m_audioCurrentPref.format	||
-			dec_channel_layout != m_audioCurrentPref.channel_layout						||
-			m_ffmpeg->m_audioFrame->sample_rate != m_audioCurrentPref.frequency			||
-			(m_ffmpeg->m_audioFrame->nb_samples != wanted_nb_samples && (m_ffmpeg->m_audioSwrContext == nullptr))
-		)
-		{
-			swr_free(&m_ffmpeg->m_audioSwrContext);
-			m_ffmpeg->m_audioSwrContext = swr_alloc_set_opts(
-											  nullptr,
-											  out_channel_layout,
-											  m_ffmpeg->m_audioSettings.format,
-											  m_ffmpeg->m_audioSettings.frequency,
-											  dec_channel_layout,
-											  (AVSampleFormat)m_ffmpeg->m_audioFrame->format,
-											  m_ffmpeg->m_audioFrame->sample_rate,
-											  0,
-											  nullptr
-										  );
+        // Check is the new swr context require
+        if ((AVSampleFormat)m_ffmpeg->m_audioFrame->format != m_audioCurrentPref.format ||
+            dec_channel_layout != m_audioCurrentPref.channel_layout ||
+            m_ffmpeg->m_audioFrame->sample_rate != m_audioCurrentPref.frequency ||
+            (m_ffmpeg->m_audioFrame->nb_samples != wanted_nb_samples && (m_ffmpeg->m_audioSwrContext == nullptr)))
+        {
+            swr_free(&m_ffmpeg->m_audioSwrContext);
+            m_ffmpeg->m_audioSwrContext = swr_alloc_set_opts(
+                nullptr, out_channel_layout, m_ffmpeg->m_audioSettings.format, m_ffmpeg->m_audioSettings.frequency,
+                dec_channel_layout, (AVSampleFormat)m_ffmpeg->m_audioFrame->format, m_ffmpeg->m_audioFrame->sample_rate,
+                0, nullptr);
 
-			if ((m_ffmpeg->m_audioSwrContext == nullptr) || swr_init(m_ffmpeg->m_audioSwrContext) < 0)
-			{
-				qCritical() << "[FFMPEG] unable to initialize swr convert context";
-			}
+            if ((m_ffmpeg->m_audioSwrContext == nullptr) || swr_init(m_ffmpeg->m_audioSwrContext) < 0)
+            {
+                qCritical() << "[FFMPEG] unable to initialize swr convert context";
+            }
 
-			m_audioCurrentPref.format = (AVSampleFormat)m_ffmpeg->m_audioFrame->format;
-			m_audioCurrentPref.channels = m_ffmpeg->m_audioFrame->channels;
-			m_audioCurrentPref.channel_layout = dec_channel_layout;
-			m_audioCurrentPref.frequency = m_ffmpeg->m_audioFrame->sample_rate;
-		}
+            m_audioCurrentPref.format = (AVSampleFormat)m_ffmpeg->m_audioFrame->format;
+            m_audioCurrentPref.channels = m_ffmpeg->m_audioFrame->channels;
+            m_audioCurrentPref.channel_layout = dec_channel_layout;
+            m_audioCurrentPref.frequency = m_ffmpeg->m_audioFrame->sample_rate;
+        }
 
-		int converted_size = 0;
-		if (m_ffmpeg->m_audioSwrContext != nullptr)
-		{
-			const int out_count = (int64_t)wanted_nb_samples * m_ffmpeg->m_audioSettings.frequency / m_ffmpeg->m_audioFrame->sample_rate + 256;
+        int converted_size = 0;
+        if (m_ffmpeg->m_audioSwrContext != nullptr)
+        {
+            const int out_count =
+                (int64_t)wanted_nb_samples * m_ffmpeg->m_audioSettings.frequency / m_ffmpeg->m_audioFrame->sample_rate +
+                256;
 
-            const int size_multiplier = m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
+            const int size_multiplier =
+                m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
 
             const size_t buffer_size = out_count * size_multiplier;
 
@@ -312,54 +305,53 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             {
                 m_resampleBuffer.resize(buffer_size);
             }
-            uint8_t *out = m_resampleBuffer.data();
+            uint8_t* out = m_resampleBuffer.data();
 
-			converted_size = swr_convert(
-								 m_ffmpeg->m_audioSwrContext,
-								 &out,
-								 out_count,
-								 (m_ffmpeg->m_audioFrame->extended_data != nullptr) 
-                                    ? (const uint8_t**)m_ffmpeg->m_audioFrame->extended_data 
-                                    : (const uint8_t**)&m_ffmpeg->m_audioFrame->data[0],
-								 m_ffmpeg->m_audioFrame->nb_samples);
+            converted_size = swr_convert(m_ffmpeg->m_audioSwrContext, &out, out_count,
+                                         (m_ffmpeg->m_audioFrame->extended_data != nullptr)
+                                             ? (const uint8_t**)m_ffmpeg->m_audioFrame->extended_data
+                                             : (const uint8_t**)&m_ffmpeg->m_audioFrame->data[0],
+                                         m_ffmpeg->m_audioFrame->nb_samples);
 
-			if (converted_size < 0)
-			{
-				qCritical() << "swr_convert() failed";
-				break;
-			}
+            if (converted_size < 0)
+            {
+                qCritical() << "swr_convert() failed";
+                break;
+            }
 
-			if (converted_size == out_count)
-			{
-				qWarning() << "audio buffer is probably too small";
-				swr_init(m_ffmpeg->m_audioSwrContext);
-			}
+            if (converted_size == out_count)
+            {
+                qWarning() << "audio buffer is probably too small";
+                swr_init(m_ffmpeg->m_audioSwrContext);
+            }
 
-			write_data = out;
-			write_size = converted_size * size_multiplier;
-		}
+            write_data = out;
+            write_size = converted_size * size_multiplier;
+        }
 
-		const double frame_clock = (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels
-            * m_ffmpeg->m_audioFrame->sample_rate * av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
+        const double frame_clock =
+            (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels * m_ffmpeg->m_audioFrame->sample_rate *
+                                            av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
 
-		// Audio sync
-		double dsync = m_ffmpeg->videoClock() - m_ffmpeg->audioClock();
-		if (fabs(dsync) > 0.1)
-		{
-			if (dsync > 0)
-			{
+        // Audio sync
+        double dsync = m_ffmpeg->videoClock() - m_ffmpeg->audioClock();
+        if (fabs(dsync) > 0.1)
+        {
+            if (dsync > 0)
+            {
                 InterlockedAdd(m_ffmpeg->m_audioPTS, frame_clock);
-				TAG("ffmpeg_sync") << "Skip audio frame (new audio pts: " << m_ffmpeg->m_audioPTS << ")";
-				continue; // Skip audio frame
-			}
-			
-			TAG("ffmpeg_sync") << "Audio wait for video";
-			preciseSleep(0.1); // Wait
-		}
+                TAG("ffmpeg_sync") << "Skip audio frame (new audio pts: " << m_ffmpeg->m_audioPTS << ")";
+                continue;  // Skip audio frame
+            }
 
-		if (write_size > 0)
-		{
-            const auto m_FrameSize = m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
+            TAG("ffmpeg_sync") << "Audio wait for video";
+            preciseSleep(0.1);  // Wait
+        }
+
+        if (write_size > 0)
+        {
+            const auto m_FrameSize =
+                m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
             const auto framesToWrite = write_size / m_FrameSize;
 
             if (Pa_IsStreamStopped(m_ffmpeg->m_stream))
@@ -368,16 +360,17 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             }
 
             if (m_ffmpeg->m_stream != nullptr)
-			{
+            {
                 auto* realData = (int16_t*)write_data;
                 const double volume = m_ffmpeg->m_volume;
-                for (unsigned int i = 0; i < write_size / 2; ++i) {
+                for (unsigned int i = 0; i < write_size / 2; ++i)
+                {
                     realData[i] *= volume;
                 }
 
                 Pa_WriteStream(m_ffmpeg->m_stream, write_data, framesToWrite);
-			}
+            }
             InterlockedAdd(m_ffmpeg->m_audioPTS, frame_clock);
-		}
-	}
+        }
+    }
 }

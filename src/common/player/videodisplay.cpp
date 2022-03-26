@@ -2,31 +2,24 @@
 
 #include "ffmpegdecoder.h"
 
-VideoDisplay::VideoDisplay() : m_decoder(nullptr)
-{
+VideoDisplay::VideoDisplay() : m_decoder(nullptr) {}
 
-}
-
-VideoDisplay::~VideoDisplay()
-= default;
+VideoDisplay::~VideoDisplay() = default;
 
 void VideoDisplay::setDecoderObject(FFmpegDecoder* decoder)
 {
-	Q_ASSERT(decoder != nullptr);
-	m_decoder = decoder;
+    Q_ASSERT(decoder != nullptr);
+    m_decoder = decoder;
 }
 
-void VideoDisplay::displayFrame()
-{
-	m_decoder->finishedDisplayingFrame();
-}
+void VideoDisplay::displayFrame() { m_decoder->finishedDisplayingFrame(); }
 
 void VideoDisplay::showPicture(const QImage& picture)
 {
-	// Override this
+    // Override this
 }
 
 void VideoDisplay::showPicture(const QPixmap& picture)
 {
-	// Override this
+    // Override this
 }

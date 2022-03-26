@@ -1,32 +1,23 @@
 #include "threadcontrol.h"
 
+ThreadControl::ThreadControl() : m_abort(false), m_waitCondition(nullptr) {}
 
-ThreadControl::ThreadControl()
-	: m_abort(false)
-	, m_waitCondition(nullptr)
-{
-}
-
-ThreadControl::~ThreadControl()
-= default;
+ThreadControl::~ThreadControl() = default;
 
 void ThreadControl::setAbort()
 {
-	m_abort = true;
+    m_abort = true;
 
-	if (InterruptibleWaitCondition* const waitCondition = m_waitCondition)
-	{
-		waitCondition->wakeAll();
-	}
+    if (InterruptibleWaitCondition* const waitCondition = m_waitCondition)
+    {
+        waitCondition->wakeAll();
+    }
 
-	if (auto* thread = dynamic_cast<QThread*>(this))
-	{
-		thread->disconnect();
-		thread->exit(0);
-	}
+    if (auto* thread = dynamic_cast<QThread*>(this))
+    {
+        thread->disconnect();
+        thread->exit(0);
+    }
 }
 
-bool ThreadControl::isAbort() const
-{
-	return m_abort;
-}
+bool ThreadControl::isAbort() const { return m_abort; }

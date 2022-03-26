@@ -4,12 +4,13 @@
 
 class ClickableLabel : public QLabel
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ClickableLabel(QWidget* parent);
-	virtual ~ClickableLabel();
+    ClickableLabel(QWidget* parent);
+    virtual ~ClickableLabel();
+
 protected:
-	void mousePressEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 signals:
-	void clicked();
+    void clicked();
 };

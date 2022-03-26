@@ -4,41 +4,39 @@
 
 // https://github.com/MasterAler/SampleYUVRenderer
 
+#include <QCoreApplication>
 #include <QOpenGLShader>
 #include <QOpenGLTexture>
-#include <QCoreApplication>
 #include <QResizeEvent>
-
 #include <QTimer>
-
 #include <algorithm>
 #include <mutex>
 
+enum
+{
+    PROGRAM_VERTEX_ATTRIBUTE = 0,
+    PROGRAM_TEXCOORD_ATTRIBUTE = 1,
 
-enum {
-PROGRAM_VERTEX_ATTRIBUTE  = 0,
-PROGRAM_TEXCOORD_ATTRIBUTE = 1,
-
-ATTRIB_VERTEX = 0,
-ATTRIB_TEXTURE = 1,
+    ATTRIB_VERTEX = 0,
+    ATTRIB_TEXTURE = 1,
 };
 
 struct OpenGLDisplay::OpenGLDisplayImpl
 {
-    GLvoid*                 mBufYuv{nullptr};
-    int                     mFrameSize{0};
+    GLvoid* mBufYuv{nullptr};
+    int mFrameSize{0};
 
-    QOpenGLShader*          mVShader;
-    QOpenGLShader*          mFShader;
-    QOpenGLShaderProgram*   mShaderProgram;
+    QOpenGLShader* mVShader;
+    QOpenGLShader* mFShader;
+    QOpenGLShaderProgram* mShaderProgram;
 
-    QOpenGLTexture*         mTextureY;
-    QOpenGLTexture*         mTextureU;
-    QOpenGLTexture*         mTextureV;
+    QOpenGLTexture* mTextureY;
+    QOpenGLTexture* mTextureU;
+    QOpenGLTexture* mTextureV;
 
-    GLuint                  id_y, id_u, id_v;
-    int                     textureUniformY, textureUniformU, textureUniformV;
-    GLsizei                 mVideoW, mVideoH;
+    GLuint id_y, id_u, id_v;
+    int textureUniformY, textureUniformU, textureUniformV;
+    GLsizei mVideoW, mVideoH;
 
     std::mutex m_mutex;
 
@@ -47,18 +45,13 @@ struct OpenGLDisplay::OpenGLDisplayImpl
 
 /*************************************************************************/
 
-OpenGLDisplay::OpenGLDisplay(QWidget* parent)
-    : QOpenGLWidget(parent)
-    , impl(new OpenGLDisplayImpl())
+OpenGLDisplay::OpenGLDisplay(QWidget* parent) : QOpenGLWidget(parent), impl(new OpenGLDisplayImpl())
 {
     impl->m_postponedUpdater.setSingleShot(true);
-    connect(&impl->m_postponedUpdater, SIGNAL(timeout()), this, SLOT(update()));
+    connect(&impl->m_postponedUpdater, SIGNAL(timeout()), SLOT(update()));
 }
 
-OpenGLDisplay::~OpenGLDisplay()
-{
-    delete[] reinterpret_cast<unsigned char*>(impl->mBufYuv);
-}
+OpenGLDisplay::~OpenGLDisplay() { delete[] reinterpret_cast<unsigned char*>(impl->mBufYuv); }
 
 void OpenGLDisplay::InitDrawBuffer(unsigned bsize)
 {
@@ -69,7 +62,6 @@ void OpenGLDisplay::InitDrawBuffer(unsigned bsize)
         impl->mBufYuv = new unsigned char[bsize];
     }
 }
-
 
 void OpenGLDisplay::initializeGL()
 {
@@ -85,8 +77,9 @@ void OpenGLDisplay::initializeGL()
     // Initialize the vertex shader object
     impl->mVShader = new QOpenGLShader(QOpenGLShader::Vertex, this);
 
-    //Vertex shader source
-    const char *vsrc = "attribute vec4 vertexIn; \
+    // Vertex shader source
+    const char* vsrc =
+        "attribute vec4 vertexIn; \
         attribute vec2 textureIn; \
         varying vec2 textureOut;  \
         void main(void)           \
@@ -95,9 +88,9 @@ void OpenGLDisplay::initializeGL()
             textureOut = textureIn; \
         }";
 
-    //Compile the vertex shader program
+    // Compile the vertex shader program
     bool bCompile = impl->mVShader->compileSourceCode(vsrc);
-    if(!bCompile)
+    if (!bCompile)
     {
         throw OpenGlException();
     }
@@ -108,7 +101,8 @@ void OpenGLDisplay::initializeGL()
     // Fragment shader source code
 
 #ifdef QT_OPENGL_ES_2
-    const char *fsrc = "precision mediump float; \
+    const char* fsrc =
+        "precision mediump float; \
     varying vec2 textureOut; \
         uniform sampler2D tex_y; \
         uniform sampler2D tex_u; \
@@ -126,7 +120,8 @@ void OpenGLDisplay::initializeGL()
             gl_FragColor = vec4(rgb, 1); \
         }";
 #else
-    const char *fsrc = "varying vec2 textureOut; \
+    const char* fsrc =
+        "varying vec2 textureOut; \
     uniform sampler2D tex_y; \
     uniform sampler2D tex_u; \
     uniform sampler2D tex_v; \
@@ -145,11 +140,11 @@ void OpenGLDisplay::initializeGL()
 #endif
 
     bCompile = impl->mFShader->compileSourceCode(fsrc);
-    if(!bCompile)
+    if (!bCompile)
     {
         throw OpenGlException();
     }
-    
+
     // Create a shader program container
     impl->mShaderProgram = new QOpenGLShaderProgram(this);
     // Add the fragment shader to the program container
@@ -159,34 +154,28 @@ void OpenGLDisplay::initializeGL()
     // Bind the property vertexIn to the specified location ATTRIB_VERTEX, this property
     // has a declaration in the vertex shader source
     impl->mShaderProgram->bindAttributeLocation("vertexIn", ATTRIB_VERTEX);
-    // Bind the attribute textureIn to the specified location ATTRIB_TEXTURE, the attribute 
+    // Bind the attribute textureIn to the specified location ATTRIB_TEXTURE, the attribute
     // has a declaration in the vertex shader source
     impl->mShaderProgram->bindAttributeLocation("textureIn", ATTRIB_TEXTURE);
-    //Link all the shader programs added to
+    // Link all the shader programs added to
     impl->mShaderProgram->link();
-    //activate all links
+    // activate all links
     impl->mShaderProgram->bind();
     // Read the position of the data variables tex_y, tex_u, tex_v in the shader, the declaration
-    // of these variables can be seen in 
-    // fragment shader source 
+    // of these variables can be seen in
+    // fragment shader source
     impl->textureUniformY = impl->mShaderProgram->uniformLocation("tex_y");
     impl->textureUniformU = impl->mShaderProgram->uniformLocation("tex_u");
     impl->textureUniformV = impl->mShaderProgram->uniformLocation("tex_v");
-    
-    //Vertex matrix
+
+    // Vertex matrix
     static const GLfloat vertexVertices[] = {
-        -1.0F, -1.0F,
-         1.0F, -1.0F,
-         -1.0F, 1.0F,
-         1.0F, 1.0F,
+        -1.0F, -1.0F, 1.0F, -1.0F, -1.0F, 1.0F, 1.0F, 1.0F,
     };
-    
-    //Texture matrix
+
+    // Texture matrix
     static const GLfloat textureVertices[] = {
-        0.0F,  1.0F,
-        1.0F,  1.0F,
-        0.0F,  0.0F,
-        1.0F,  0.0F,
+        0.0F, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F,
     };
 
     // Set the value of the vertex matrix of the attribute ATTRIB_VERTEX and format
@@ -197,8 +186,8 @@ void OpenGLDisplay::initializeGL()
     glEnableVertexAttribArray(ATTRIB_VERTEX);
     // Enable the ATTRIB_TEXTURE attribute data, the default is off
     glEnableVertexAttribArray(ATTRIB_TEXTURE);
-    
-    // Create y, u, v texture objects respectively    
+
+    // Create y, u, v texture objects respectively
     impl->mTextureY = new QOpenGLTexture(QOpenGLTexture::Target2D);
     impl->mTextureU = new QOpenGLTexture(QOpenGLTexture::Target2D);
     impl->mTextureV = new QOpenGLTexture(QOpenGLTexture::Target2D);
@@ -213,14 +202,15 @@ void OpenGLDisplay::initializeGL()
     // Get the texture index value of the returned v component
     impl->id_v = impl->mTextureV->textureId();
 
-    glClearColor (0.3, 0.3, 0.3, 0.0); // set the background color
-//    qDebug("addr=%x id_y = %d id_u=%d id_v=%d\n", this, impl->id_y, impl->id_u, impl->id_v);
+    glClearColor(0.3, 0.3, 0.3, 0.0);  // set the background color
+    //    qDebug("addr=%x id_y = %d id_u=%d id_v=%d\n", this, impl->id_y, impl->id_u, impl->id_v);
 }
 
 void OpenGLDisplay::resizeGL(int w, int h)
 {
-    if(h == 0) {// prevents being divided by zero
-        h = 1;// set the height to 1
+    if (h == 0)
+    {           // prevents being divided by zero
+        h = 1;  // set the height to 1
     }
 
     // Set the viewport
@@ -232,7 +222,8 @@ void OpenGLDisplay::paintGL()
 {
     std::unique_lock<std::mutex> lock(impl->m_mutex);
 
-    if (impl->mBufYuv == nullptr) {
+    if (impl->mBufYuv == nullptr)
+    {
         return;
     }
 
@@ -249,32 +240,33 @@ void OpenGLDisplay::paintGL()
     glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
     // Use the memory mBufYuv data to create a real y data texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW, impl->mVideoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, impl->mBufYuv);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW, impl->mVideoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 impl->mBufYuv);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Load u data texture
-    glActiveTexture(GL_TEXTURE1);//Activate texture unit GL_TEXTURE1
+    glActiveTexture(GL_TEXTURE1);  // Activate texture unit GL_TEXTURE1
     glBindTexture(GL_TEXTURE_2D, impl->id_u);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW/2, impl->mVideoH/2
-                 , 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Load v data texture
-    glActiveTexture(GL_TEXTURE2);//Activate texture unit GL_TEXTURE2
+    glActiveTexture(GL_TEXTURE2);  // Activate texture unit GL_TEXTURE2
     glBindTexture(GL_TEXTURE_2D, impl->id_v);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2
-                 , 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH * 5/4);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH * 5 / 4);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Specify y texture to use the new value can only use 0, 1, 2, etc. to represent
     // the index of the texture unit, this is the place where opengl is not humanized
-    //0 corresponds to the texture unit GL_TEXTURE0 1 corresponds to the
+    // 0 corresponds to the texture unit GL_TEXTURE0 1 corresponds to the
     // texture unit GL_TEXTURE1 2 corresponds to the texture unit GL_TEXTURE2
     glUniform1i(impl->textureUniformY, 0);
     // Specify the u texture to use the new value
@@ -286,7 +278,6 @@ void OpenGLDisplay::paintGL()
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
 
 void OpenGLDisplay::renderFrame(const FPicture& data)
 {
@@ -316,17 +307,19 @@ void OpenGLDisplay::renderFrame(const FPicture& data)
 
 void OpenGLDisplay::showPicture(const QImage& img)
 {
-    if (img.isNull()) {
+    if (img.isNull())
+    {
         return;
     }
 
-    if(img.format()!=QImage::Format_RGB32 && img.format() != QImage::Format_ARGB32 && img.format() != QImage::Format_RGB888)
+    if (img.format() != QImage::Format_RGB32 && img.format() != QImage::Format_ARGB32 &&
+        img.format() != QImage::Format_RGB888)
     {
-       Q_ASSERT(false && "Wrong image format\n");
-       return;
+        Q_ASSERT(false && "Wrong image format\n");
+        return;
     }
 
-    const auto step = (img.format() == QImage::Format_RGB888)? 3 : 4;
+    const auto step = (img.format() == QImage::Format_RGB888) ? 3 : 4;
 
     const int width = img.width() & ~1;
     const int height = img.height() & ~1;
@@ -339,76 +332,65 @@ void OpenGLDisplay::showPicture(const QImage& img)
 
     InitDrawBuffer(height * width * 3 / 2);
 
-    int size = width*height;
+    int size = width * height;
     // Y
-    for(unsigned y=0;y<height;y++)
+    for (unsigned y = 0; y < height; y++)
     {
+        const auto* s = img.scanLine(y);
+        unsigned char* d = reinterpret_cast<unsigned char*>(impl->mBufYuv) + y * width;
 
-       const auto *s = img.scanLine(y);
-       unsigned char *d = reinterpret_cast<unsigned char*>(impl->mBufYuv) + y*width;
+        for (unsigned x = 0; x < width; x++)
+        {
+            unsigned int r = s[2];
+            unsigned int g = s[1];
+            unsigned int b = s[0];
 
-       for(unsigned x=0;x<width;x++)
-       {
-          unsigned int r=s[2];
-          unsigned int g=s[1];
-          unsigned int b=s[0];
+            unsigned Y = std::min((r * 2104 + g * 4130 + b * 802 + 4096 + 131072) >> 13, 235U);
+            *d = Y;
 
-          unsigned Y = std::min((r*2104 + g*4130 + b*802 + 4096 + 131072) >> 13, 235U);
-          *d = Y;
-
-          d++;
-          s+=step;
-       }
+            d++;
+            s += step;
+        }
     }
 
     // U,V
     const unsigned int ss = img.bytesPerLine();
-    for(unsigned y=0;y<height;y+=2)
+    for (unsigned y = 0; y < height; y += 2)
     {
-       const auto *s = img.scanLine(y);
-       unsigned char *d = reinterpret_cast<unsigned char*>(impl->mBufYuv) + size+y/2*width/2;
+        const auto* s = img.scanLine(y);
+        unsigned char* d = reinterpret_cast<unsigned char*>(impl->mBufYuv) + size + y / 2 * width / 2;
 
-       for(unsigned x=0;x<width;x+=2)
-       {
-          // Cr = 128 + 1/256 * ( 112.439 * R'd -  94.154 * G'd -  18.285 * B'd)
-          // Cb = 128 + 1/256 * (- 37.945 * R'd -  74.494 * G'd + 112.439 * B'd)
+        for (unsigned x = 0; x < width; x += 2)
+        {
+            // Cr = 128 + 1/256 * ( 112.439 * R'd -  94.154 * G'd -  18.285 * B'd)
+            // Cb = 128 + 1/256 * (- 37.945 * R'd -  74.494 * G'd + 112.439 * B'd)
 
-          // Get the average RGB in a 2x2 block
-          int r=(s[2] + s[step+2] + s[ss+2] + s[ss+step+2] + 2) >> 2;
-          int g=(s[1] + s[step+1] + s[ss+1] + s[ss+step+1] + 2) >> 2;
-          int b=(s[0] + s[step] + s[ss+0] + s[ss+step] + 2) >> 2;
+            // Get the average RGB in a 2x2 block
+            int r = (s[2] + s[step + 2] + s[ss + 2] + s[ss + step + 2] + 2) >> 2;
+            int g = (s[1] + s[step + 1] + s[ss + 1] + s[ss + step + 1] + 2) >> 2;
+            int b = (s[0] + s[step] + s[ss + 0] + s[ss + step] + 2) >> 2;
 
-          int Cb = std::clamp((-1214*r - 2384*g + 3598*b + 4096 + 1048576)>>13, 16, 240);
-          int Cr = std::clamp((3598*r - 3013*g - 585*b + 4096 + 1048576)>>13, 16, 240);
+            int Cb = std::clamp((-1214 * r - 2384 * g + 3598 * b + 4096 + 1048576) >> 13, 16, 240);
+            int Cr = std::clamp((3598 * r - 3013 * g - 585 * b + 4096 + 1048576) >> 13, 16, 240);
 
-          *d = Cb;
-          *(d+size/4) = Cr;
+            *d = Cb;
+            *(d + size / 4) = Cr;
 
-          d++;
-          s+=step * 2;
-       }
+            d++;
+            s += step * 2;
+        }
     }
 
     lock.unlock();
-    //emit update();
+    // emit update();
     impl->m_postponedUpdater.start(50);
 }
 
-void OpenGLDisplay::showPicture(const QPixmap& picture)
-{
-    showPicture(picture.toImage());
-}
+void OpenGLDisplay::showPicture(const QPixmap& picture) { showPicture(picture.toImage()); }
 
+AVPixelFormat OpenGLDisplay::preferablePixelFormat() const { return AV_PIX_FMT_YUV420P; }
 
-AVPixelFormat OpenGLDisplay::preferablePixelFormat() const
-{
-    return AV_PIX_FMT_YUV420P;
-}
-
-bool OpenGLDisplay::resizeWithDecoder() const
-{
-    return false;
-}
+bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame()
 {
