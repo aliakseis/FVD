@@ -18,8 +18,7 @@ MainToolBar::MainToolBar(QWidget* parent) :
 		std::make_pair(DOWNLOADS_TAB, ui->btnDownloads),
 		std::make_pair(LIBRARY_TAB, ui->btnLibrary)
 	};
-	m_tabs.reserve(3);
-	std::copy(std::begin(tabsOrder), std::end(tabsOrder), std::back_inserter(m_tabs));
+    m_tabs = { std::begin(tabsOrder), std::end(tabsOrder) };
 	activateTab(m_activeTabIndex);
 	utilities::Tr::MakeRetranslatable(this, ui);
 }

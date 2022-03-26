@@ -53,8 +53,10 @@ public:
 		for (const auto& v : list)
 		{
 			DownloadEntity* de = createLibraryDE(v);
-			m_allEntities.insert(QSharedPointer<RemoteVideoEntity>(de->getParent()));
-			dles.push_back(de);
+            if (m_allEntities.insert(QSharedPointer<RemoteVideoEntity>(de->getParent())).second)
+            {
+                dles.push_back(de);
+            }
 		}
 		if (!dles.isEmpty())
 		{

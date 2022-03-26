@@ -280,8 +280,7 @@ bool DownloadSortFilterModel::dropMimeData(const QMimeData* data, Qt::DropAction
 	QDataStream ds(ba);
 	ds >> rowsSet;
 
-	std::vector<int> rows(rowsSet.size());
-	std::copy(rowsSet.begin(), rowsSet.end(), rows.begin());
+    std::vector<int> rows{ rowsSet.begin(), rowsSet.end() };
 
 	int decreaseRowCounter = 0;
 	for (int r : rows)
