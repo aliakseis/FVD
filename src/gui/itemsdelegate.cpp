@@ -142,7 +142,7 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             const auto* sourceModel = qobject_cast<const SearchListModel*>(sourceIndex.model());
             RemoteVideoEntity* entity = sourceModel->item(sourceIndex.row());
 
-            float progressFloat = progress.toFloat();
+            const float progressFloat = progress.toFloat();
             if (progress.isNull())
             {
                 progressBarOption.text = Tr::Tr(TREEVIEW_PPEPARING_STATUS);
@@ -150,7 +150,7 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             else
             {
                 progressBarOption.progress = static_cast<int>(progressFloat);
-                progressBarOption.text = QString::number(progress.toFloat(), 'f', 2) + "%";
+                progressBarOption.text = utilities::ProgressString(progressFloat);
             }
 
             switch (entity->state())

@@ -68,6 +68,7 @@ typedef QMap<QString, QObject*> QObjectMap;
 
 namespace utilities
 {
+
 void InitializeProjectDescription();
 QFont GetAdaptedFont(int size, int additional_amount = 2);
 bool DeserializeObject(QXmlStreamReader* stream, QObject* object, const QString& name = QString());
@@ -76,6 +77,7 @@ void PrintReplyHeader(QNetworkReply* reply);
 QString SizeToString(quint64 size, int precision = -1, int fieldWidth = 0);
 bool IsAsyncUrl(const QString& path);
 QString secondsToString(int seconds);
+QString ProgressString(double progress);
 
 
 // returns true only if (min <= val < max)

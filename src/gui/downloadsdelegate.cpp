@@ -30,10 +30,10 @@ void DownloadsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         progressBarOption.textAlignment = Qt::AlignCenter;
         progressBarOption.textVisible = true;
 
-        float progressFloat = index.data().toFloat();
-        int progress = static_cast<int>(progressFloat);
+        const float progressFloat = index.data().toFloat();
+        const int progress = static_cast<int>(progressFloat);
         progressBarOption.progress = progress < 0 ? 0 : progress;
-        progressBarOption.text = QString("%1%").arg(progressFloat, 0, 'f', 2);
+        progressBarOption.text = utilities::ProgressString(progressFloat);
 
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter);
     }
