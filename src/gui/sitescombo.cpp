@@ -74,8 +74,7 @@ bool SitesCombo::eventFilter(QObject* receiver, QEvent* event)
         }
     }
     break;
-    default:
-        break;
+    default:;
     }
     return false;
 }

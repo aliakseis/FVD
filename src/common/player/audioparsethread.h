@@ -25,7 +25,7 @@ public:
         : m_isSeekingWhilePaused(false), m_ffmpeg(parent), m_audioCurrentPref(m_ffmpeg->m_audioSettings)
     {
         setObjectName("AudioParseThread");
-    };
+    }
     void run() override;
     bool getAudioPacket(AVPacket* packet);
 };

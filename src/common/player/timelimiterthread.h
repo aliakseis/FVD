@@ -14,6 +14,6 @@ public:
     explicit TimeLimiterThread(FFmpegDecoder* parent) : m_parent(parent), m_readerBytesCurrent(0)
     {
         setObjectName("TimeLimiterThread");
-    };
+    }
     void run() override;
 };

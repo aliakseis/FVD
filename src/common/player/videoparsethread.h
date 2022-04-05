@@ -19,7 +19,7 @@ public:
     explicit VideoParseThread(FFmpegDecoder* parent) : m_isSeekingWhilePaused(false), m_ffmpeg(parent)
     {
         setObjectName("VideoParseThread");
-    };
+    }
     void run() override;
     bool getVideoPacket(AVPacket* packet);
 };

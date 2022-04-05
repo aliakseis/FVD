@@ -17,7 +17,7 @@ public:
     explicit ParseThread(FFmpegDecoder* parent) : QThread((QObject*)parent), m_seekDuration(-1), reader_eof(false)
     {
         setObjectName("ParseThread");
-    };
+    }
     void run() override;
 
     static void startAudioThread(FFmpegDecoder* parent);

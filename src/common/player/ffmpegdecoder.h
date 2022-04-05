@@ -87,7 +87,7 @@ public:
     inline bool isPlaying() const { return m_isPlaying; }
     inline bool isPaused() const { return m_isPaused; }
 
-    inline bool isFileLoaded() const { return m_formatContext != NULL; };
+    inline bool isFileLoaded() const { return m_formatContext != NULL; }
 
     void setFrameListener(VideoDisplay* listener);
 
@@ -99,7 +99,7 @@ public:
     {
         Q_ASSERT(seconds >= 0);
         m_waitSleperTime = seconds;
-    };
+    }
 
     double getDurationSecs(int64_t duration) const
     {

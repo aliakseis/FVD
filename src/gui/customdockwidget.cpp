@@ -58,10 +58,7 @@ void CustomDockWidget::keyPressEvent(QKeyEvent* event)
 
 bool CustomDockWidget::eventFilter(QObject* obj, QEvent* event)
 {
-    QEvent::Type eventType = event->type();
-    switch (eventType)
-    {
-    case QEvent::MouseButtonRelease:
+    if (event->type() == QEvent::MouseButtonRelease)
     {
         if (m_state == ShownDocked)
         {
@@ -75,10 +72,6 @@ bool CustomDockWidget::eventFilter(QObject* obj, QEvent* event)
         {
             setVisibilityState(FullScreen);
         }
-    }
-    default:
-    {
-    }
     }
     return QWidget::eventFilter(obj, event);
 }
