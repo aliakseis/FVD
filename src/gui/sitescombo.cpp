@@ -104,7 +104,8 @@ void SitesCombo::paintEvent(QPaintEvent* /*e*/)
     {
         textWidth -= opt.iconSize.width() + textMargin;
     }
-    if (m_selectedStrategies.size() == count() - groupCount())
+    const auto allCount = count() - groupCount();
+    if (allCount != 1 && m_selectedStrategies.size() == allCount)
     {
         // special case when all items are selected
         opt.currentText = tr("All Sites");
