@@ -76,40 +76,33 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             }
 
             rect.adjust(3, 4, -4, -4);
-            int row = index.row();
-            int column = index.column();
 
-            if (progress.type() == QVariant::Int)
-            {
-                qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_btnDisabled);
-            }
-            else if (m_mouseDown && m_mouseDownRow == m_mouseRow && m_mouseDownColumn == m_mouseColumn &&
-                     row == m_mouseRow && column == m_mouseColumn)
-            {
-                if (m_btnElement == DownloadButton)
+            qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2),
+                [this, &progress, &option, &index]()->const QPixmap&
                 {
-                    qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_pixmapDown);
-                }
-                else if (m_btnElement == MenuIndicator)
-                {
-                    qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_pixmapDown2);
-                }
-                else
-                {
-                    qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_pixmapHover);
-                }
-            }
-            else
-            {
-                if (option.state & QStyle::State_MouseOver && m_mouseColumn == SR_Status)
-                {
-                    qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_pixmapHover);
-                }
-                else
-                {
-                    qDrawBorderPixmap(painter, rect, QMargins(2, 2, 28, 2), m_pixmap);
-                }
-            }
+                    if (progress.type() == QVariant::Int)
+                    {
+                        return m_btnDisabled;
+                    }
+                    if (m_mouseDown && m_mouseDownRow == m_mouseRow && m_mouseDownColumn == m_mouseColumn &&
+                        index.row() == m_mouseRow && index.column() == m_mouseColumn)
+                    {
+                        if (m_btnElement == DownloadButton)
+                        {
+                            return m_pixmapDown;
+                        }
+                        if (m_btnElement == MenuIndicator)
+                        {
+                            return m_pixmapDown2;
+                        }
+                        return  m_pixmapHover;
+                    }
+                    if (option.state & QStyle::State_MouseOver && m_mouseColumn == SR_Status)
+                    {
+                        return  m_pixmapHover;
+                    }
+                    return m_pixmap;
+                }());
 
             QRectF rectf(rect);
             rectf.adjust(0, 0, -24, 0);

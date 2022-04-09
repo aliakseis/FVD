@@ -10,10 +10,9 @@
 MainToolBar::MainToolBar(QWidget* parent) : QWidget(parent), m_activeTabIndex(SEARCH_TAB), ui(new Ui::MainToolBar)
 {
     ui->setupUi(this);
-    std::pair<TabId, QToolButton*> tabsOrder[] = {std::make_pair(SEARCH_TAB, ui->btnSearch),
-                                                  std::make_pair(DOWNLOADS_TAB, ui->btnDownloads),
-                                                  std::make_pair(LIBRARY_TAB, ui->btnLibrary)};
-    m_tabs = {std::begin(tabsOrder), std::end(tabsOrder)};
+    m_tabs = { {SEARCH_TAB, ui->btnSearch},
+               {DOWNLOADS_TAB, ui->btnDownloads},
+               {LIBRARY_TAB, ui->btnLibrary} };
     activateTab(m_activeTabIndex);
     utilities::Tr::MakeRetranslatable(this, ui);
 }
