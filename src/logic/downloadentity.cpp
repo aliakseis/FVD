@@ -241,29 +241,22 @@ void DownloadEntity::onFileToBeReleased(const QString& filename)
 
 QString DownloadEntity::stateToString(State s)
 {
-    QString res;
     switch (s)
     {
     case DownloadEntity::kQueued:
-        res = Tr::Tr(TREEVIEW_QUEUED_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_QUEUED_STATUS);
     case DownloadEntity::kDownloading:
-        res = Tr::Tr(TREEVIEW_DOWNLOADING_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_DOWNLOADING_STATUS);
     case DownloadEntity::kPaused:
-        res = Tr::Tr(TREEVIEW_PAUSED_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_PAUSED_STATUS);
     case DownloadEntity::kFinished:
-        res = Tr::Tr(TREEVIEW_FINISHED_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_FINISHED_STATUS);
     case DownloadEntity::kFailed:
-        res = Tr::Tr(TREEVIEW_ERROR_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_ERROR_STATUS);
     case DownloadEntity::kCanceled:
-        res = Tr::Tr(TREEVIEW_CANSELED_STATUS);
-        break;
+        return Tr::Tr(TREEVIEW_CANSELED_STATUS);
     }
-    return res;
+    return {};
 }
 
 void DownloadEntity::doSetVisibilityState(VisibilityState value) { m_visibilityState = value; }

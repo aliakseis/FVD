@@ -93,8 +93,7 @@ void VideoQualityDialog::onItemClicked(QListWidgetItem* item)
 
 bool VideoQualityDialog::event(QEvent* event)
 {
-    if ((static_cast<int>(event->type() == QEvent::WindowDeactivate) |
-         static_cast<int>(event->type() == QEvent::HideToParent)) != 0)
+    if ((event->type() == QEvent::WindowDeactivate) || (event->type() == QEvent::HideToParent))
     {
         close();
         localEventLoop.quit();

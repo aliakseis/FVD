@@ -11,11 +11,10 @@
 
 static const int HEIGHT_FIX = 1;
 
-#ifdef DEVELOPER_OPENGL
 VideoWidget::VideoWidget(VideoPlayerWidget* parent)
+#ifdef DEVELOPER_OPENGL
     : OpenGLDisplay(parent),
 #else
-VideoWidget::VideoWidget(VideoPlayerWidget* parent)
     : WidgetDisplay(parent),
 #endif
       m_playIndicator(false),
