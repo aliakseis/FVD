@@ -709,26 +709,20 @@ QRect FFmpegDecoder::setPreferredSize(int scr_width, int scr_height, int scr_xle
 QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xleft /* = 0*/,
                                       int scr_ytop /* = 0*/) const
 {
-    int width;
-    int height;
-    int x;
-    int y;
-    double aspect_ratio;
-
     TAG("ffmpeg_resizeframe") << "Target frame size: " << scr_width << "x" << scr_height;
 
-    aspect_ratio = aspectRatio();
+    const double aspect_ratio = aspectRatio();
 
-    width = int(scr_height * aspect_ratio) & ~0xf;
-    height = width / aspect_ratio + 0.5F;
+    int width = int(scr_height * aspect_ratio) & ~0xf;
+    int height = width / aspect_ratio + 0.5F;
 
     if (width > scr_width)
     {
         width = scr_width & ~0xf;
         height = width / aspect_ratio + 0.5F;
     }
-    x = ((scr_width - width) >> 1);
-    y = ((scr_height - height) >> 1);
+    int x = ((scr_width - width) >> 1);
+    int y = ((scr_height - height) >> 1);
 
     return {scr_xleft + x, scr_ytop + y, FFMAX(width, 1), FFMAX(height, 1)};
 }
