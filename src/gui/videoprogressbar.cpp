@@ -1,15 +1,16 @@
 #include "videoprogressbar.h"
 
+#include "player/ffmpegdecoder.h"
+#include "utilities/utils.h"
+#include "videoplayerwidget.h"
+
 #include <qdrawutil.h>
 
 #include <QEvent>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QToolTip>
-
-#include "player/ffmpegdecoder.h"
-#include "utilities/utils.h"
-#include "videoplayerwidget.h"
+#include <algorithm>
 
 VideoProgressBar::VideoProgressBar(QWidget* parent)
     : QProgressBar(parent), m_scale(1000), m_btn_down(false), m_seekDisabled(false), m_downloadedTotalOriginal(0)
@@ -61,14 +62,7 @@ void VideoProgressBar::paintEvent(QPaintEvent* event)
 
 void VideoProgressBar::setDownloadedCounter(int downloaded)
 {
-    if (downloaded > m_scale)
-    {
-        downloaded = m_scale;
-    }
-    else if (downloaded < 0)
-    {
-        downloaded = 0;
-    }
+    downloaded = std::clamp(downloaded, 0, m_scale);
 
     if (m_downloaded == downloaded)
     {
@@ -126,14 +120,7 @@ bool VideoProgressBar::eventFilter(QObject* obj, QEvent* event)
 
         if (m_btn_down)
         {
-            if (percent > 1.0)
-            {
-                percent = 1.0;
-            }
-            if (percent < 0)
-            {
-                percent = 0;
-            }
+            percent = std::clamp(percent, 0.F, 1.F);
 
             if (!m_seekDisabled)
             {
@@ -152,14 +139,7 @@ bool VideoProgressBar::eventFilter(QObject* obj, QEvent* event)
         auto* mevent = static_cast<QMouseEvent*>(event);
         float percent = (mevent->x() * 1.0) / width();
 
-        if (percent > 1.0)
-        {
-            percent = 1.0;
-        }
-        if (percent < 0)
-        {
-            percent = 0;
-        }
+        percent = std::clamp(percent, 0.F, 1.F);
 
         if (!m_seekDisabled)
         {
@@ -216,7 +196,7 @@ void VideoProgressBar::displayPlayedProgress(qint64 frame, qint64 total)
     if (decoder->isBrokenDuration() && decoder->isRunningLimitation() && limiterDuration > 0 && limiterBytes > 0 &&
         m_downloadedTotalOriginal > 0)
     {
-        // changing total duration to assumprion value
+        // changing total duration to assumption value
         total = durationAssumption;
     }
 

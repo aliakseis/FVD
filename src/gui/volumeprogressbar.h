@@ -10,7 +10,7 @@ public:
     virtual ~VolumeProgressBar();
 
 protected:
-    void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 
 private:
     QBrush m_borderBrush, m_backBrush;
