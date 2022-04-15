@@ -4,4 +4,4 @@
 
 This is (not) the greatest stuff in the world.
 
-This is just a tribute.
+[This is just a tribute.](resources/strategies/YouTube.py)
