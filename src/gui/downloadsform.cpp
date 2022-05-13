@@ -58,20 +58,19 @@ DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Index, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Icon, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Title, QHeaderView::Stretch);
-    ui->downloadsTreeView->header()->setSectionResizeMode(DL_Length, QHeaderView::Stretch);
+    ui->downloadsTreeView->header()->setSectionResizeMode(DL_Length, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Size, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Progress, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Speed, QHeaderView::Fixed);
     ui->downloadsTreeView->header()->setSectionResizeMode(DL_Status, QHeaderView::Fixed);
     ui->downloadsTreeView->setColumnWidth(DL_Index, 28);
     ui->downloadsTreeView->setColumnWidth(DL_Icon, 34);
-    ui->downloadsTreeView->setColumnWidth(DL_Title, 288);
     ui->downloadsTreeView->setColumnWidth(DL_Title, 233);
-    ui->downloadsTreeView->setColumnWidth(DL_Length, 55);
-    ui->downloadsTreeView->setColumnWidth(DL_Size, 60);
+    ui->downloadsTreeView->setColumnWidth(DL_Length, 65);
+    ui->downloadsTreeView->setColumnWidth(DL_Size, 65);
     ui->downloadsTreeView->setColumnWidth(DL_Progress, 150);
     ui->downloadsTreeView->setColumnWidth(DL_Speed, 70);
-    ui->downloadsTreeView->setColumnWidth(DL_Status, 135);
+    ui->downloadsTreeView->setColumnWidth(DL_Status, 130);
 
     ui->downloadsTreeView->viewport()->installEventFilter(this);
     ui->downloadsTreeView->installEventFilter(this);
