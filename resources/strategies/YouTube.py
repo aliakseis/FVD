@@ -15,11 +15,11 @@ install_and_import("pytube", "https://github.com/pytube/pytube/archive/refs/head
 
 from pytube import Search, YouTube
 
-socket.setdefaulttimeout(10)
+#socket.setdefaulttimeout(20)
 
 
 def YouTube_search(query, order, searchLimit, page, strategy) :
-    socket.setdefaulttimeout(10)
+    socket.setdefaulttimeout(30)
 
     yt_watch = "https://www.youtube.com/watch?v="
 

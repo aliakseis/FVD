@@ -67,7 +67,7 @@ DownloadEntity* RemoteVideoEntity::download(int resolutionId, VisibilityState vi
                      [&resolutionId](DownloadEntity* ent) { return (ent->currentResolutionId() == resolutionId); });
     if (it == m_downloads.end())
     {
-        if (m_downloads.empty() && m_resolutionLinks.empty())
+        if (m_downloads.empty() && m_resolutionLinks.empty() && visState == visNorm)
             m_delayAddEntity = true;
 
         resultEntity = DownloadEntity::create(this, visState, false);
