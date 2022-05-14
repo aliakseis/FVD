@@ -10,6 +10,8 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QToolButton>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 #include "QPushButton"
 #include "branding.hxx"
@@ -140,6 +142,8 @@ MainWindow::MainWindow(QWidget* parent)
     addTrayMenuItem(TrayMenu::Exit);
 
     VERIFY(QMetaObject::invokeMethod(m_mainToolbar, "search", Qt::QueuedConnection));
+
+    setAcceptDrops(true);
 
     m_isInitialized = true;
 }
@@ -565,4 +569,56 @@ MainWindow* MainWindow::Instance()
         }
     }
     return nullptr;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+    QString text;
+    QRegExp intrestedDataRx;
+
+    if (event->mimeData()->hasHtml())
+    {
+        text = event->mimeData()->html();
+        intrestedDataRx = QRegExp("(http|https):[^\"'<>\\s\\n]+", Qt::CaseInsensitive);
+    }
+    else if (event->mimeData()->hasText())
+    {
+        text = event->mimeData()->text();
+        intrestedDataRx = QRegExp("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
+    }
+    else if (event->mimeData()->hasFormat("text/uri-list"))
+    {
+        text = event->mimeData()->data("text/uri-list");
+        intrestedDataRx = QRegExp("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
+    }
+    else
+    {
+        return;
+    }
+
+    qDebug() << "Some data dropped to program. Trying to manage it.";
+
+    int pos = 0;
+    QStringList linksForDownload;
+    while ((pos = intrestedDataRx.indexIn(text, pos)) != -1)
+    {
+        QString someLink = intrestedDataRx.cap(0);
+        QString typeOfLink = intrestedDataRx.cap(1);
+        qDebug() << QString(PROJECT_NAME) + " takes " + someLink;
+        pos += intrestedDataRx.matchedLength();
+
+
+        linksForDownload << someLink;
+    }
+    SearchManager::Instance().addLinks(linksForDownload);
+
+    event->acceptProposedAction();
 }

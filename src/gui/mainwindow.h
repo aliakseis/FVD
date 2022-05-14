@@ -82,6 +82,9 @@ protected:
 
     void showHideNotify() override;
 
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 private:
     void loadModelData();
     void saveModelData();

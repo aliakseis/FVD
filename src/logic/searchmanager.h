@@ -70,6 +70,8 @@ public:
         onLibraryFilesAdded(param);
     }
 
+    void addLinks(const QStringList& urls);
+
 private:
     SearchManager();
 

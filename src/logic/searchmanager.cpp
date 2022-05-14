@@ -60,10 +60,7 @@ std::array<QStringList, 2> SearchManager::allStrategiesNames() const
     std::array<QStringList, 2> result;
     for (const auto& strat : qAsConst(m_scriptStrategies))
     {
-        if (strat != nullptr)
-        {
-            result[strat->isSafeForWork() ? 0 : 1].push_back(strat->name());
-        }
+        result[strat->isSafeForWork() ? 0 : 1].push_back(strat->name());
     }
     return result;
 }
@@ -306,4 +303,27 @@ DownloadEntity* SearchManager::createLibraryDE(const QString& fileName)
     rve->m_videoInfo.thumbnailUrl = fileName;
     DownloadEntity* dle = rve->createDownloadEntityByFilename(fileName);
     return dle;
+}
+
+void SearchManager::addLinks(const QStringList& urls)
+{
+    for (const auto& url : urls)
+    {
+        for (const auto& strat : qAsConst(m_scriptStrategies))
+        {
+            EntitiesSetItem_t rve(new RemoteVideoEntity());
+
+            rve->m_videoInfo.id = url;
+            rve->m_videoInfo.videoTitle = url;
+            rve->m_videoInfo.description = url;
+            rve->m_videoInfo.thumbnailUrl = url;
+            rve->m_videoInfo.originalUrl = url;
+            rve->m_videoInfo.strategyName = strat->name();
+
+            if (m_allEntities.insert(rve).second)
+            {
+                rve->requestStartDownload();
+            }
+        }
+    }
 }
