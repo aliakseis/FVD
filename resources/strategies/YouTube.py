@@ -15,9 +15,6 @@ install_and_import("pytube", "https://github.com/pytube/pytube/archive/refs/head
 
 from pytube import Search, YouTube
 
-#socket.setdefaulttimeout(20)
-
-
 def YouTube_search(query, order, searchLimit, page, strategy) :
     socket.setdefaulttimeout(30)
 
@@ -65,6 +62,7 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
 
 
 def YouTube_extractDirectLinks(link, receiver) :
+    socket.setdefaulttimeout(30)
 
     s=YouTube(link).streams.filter(progressive=True).order_by('resolution').desc()
 
