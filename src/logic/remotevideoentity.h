@@ -159,6 +159,8 @@ private:
     int m_preferredResolutionId;
     Errors::Code m_lastErrorCode;
 
+    bool m_delayAddEntity = false;
+
     DISALLOW_COPY_AND_ASSIGN(RemoteVideoEntity);
 };
 

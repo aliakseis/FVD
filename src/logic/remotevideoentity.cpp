@@ -67,6 +67,9 @@ DownloadEntity* RemoteVideoEntity::download(int resolutionId, VisibilityState vi
                      [&resolutionId](DownloadEntity* ent) { return (ent->currentResolutionId() == resolutionId); });
     if (it == m_downloads.end())
     {
+        if (m_downloads.empty() && m_resolutionLinks.empty())
+            m_delayAddEntity = true;
+
         resultEntity = DownloadEntity::create(this, visState, false);
         m_downloads.append(resultEntity);
 
@@ -81,7 +84,8 @@ DownloadEntity* RemoteVideoEntity::download(int resolutionId, VisibilityState vi
 
         if (visState == visNorm)
         {
-            /*emit*/ downloadEntitiesAdded(QList<DownloadEntity*>() << resultEntity);
+            if (!m_delayAddEntity)
+                /*emit*/ downloadEntitiesAdded(QList<DownloadEntity*>() << resultEntity);
         }
         else if (visState == visTemp && !m_resolutionLinks.isEmpty())
         {
@@ -185,6 +189,15 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
     {
         m_resolutionLinks = links;
         m_lastErrorCode = Errors::NoError;
+
+        if (m_delayAddEntity)
+        {
+            m_delayAddEntity = false;
+            if (!m_downloads.empty())
+            {
+                /*emit*/ downloadEntitiesAdded(QList<DownloadEntity*>() << m_downloads[0]);
+            }
+        }
 
         m_preferredResolutionId = preferredResolutionId;
         // if given preferred resolution id doesn't exist in the links map, set it as first item
