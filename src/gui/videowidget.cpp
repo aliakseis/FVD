@@ -39,7 +39,7 @@ VideoWidget::VideoWidget(VideoPlayerWidget* parent)
 
     m_cursorTimer.setInterval(1000);
     VERIFY(connect(&m_cursorTimer, SIGNAL(timeout()), SLOT(onCursorTimer())));
-    VERIFY(connect(&m_imageCache, SIGNAL(getImageFinished(QImage)), SLOT(getImageFinished(QImage))));
+    connect(&m_imageCache, &ImageCache::getImageFinished, this, &VideoWidget::getImageFinished);
     m_cursorTimer.start();
 }
 
@@ -69,9 +69,20 @@ void VideoWidget::setPreviewPicture(const RemoteVideoEntity* entity)
 {
     if (entity != nullptr)
     {
-        if (entity->id() == entity->m_videoInfo.thumbnailUrl)  // if file was added by synchronization to library
+        if (entity->m_videoInfo.thumbnailUrl.isEmpty())
         {
-            m_imageCache.getAsync("", "", entity->m_videoInfo.thumbnailUrl);
+            if (auto download = entity->actualDownload())
+            {
+                m_imageCache.getAsync(download->filename(), "", download->filename());
+            }
+            else
+            {
+                setDefaultPreviewPicture();
+            }
+        }
+        else if (entity->id() == entity->m_videoInfo.thumbnailUrl)  // if file was added by synchronization to library
+        {
+            m_imageCache.getAsync(entity->m_videoInfo.thumbnailUrl, "", entity->m_videoInfo.thumbnailUrl);
         }
         else
         {

@@ -62,7 +62,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
     case Qt::DisplayRole:
         return entity->videoTitle();
     case RoleThumbnail:
-        return entity->getParent()->thumbnailUrl();
+        return entity->getParent()->thumbnailUrl().isEmpty()? entity->filename() : entity->getParent()->thumbnailUrl();
     case RoleTitle:
         return entity->videoTitle();
     case RoleDate:

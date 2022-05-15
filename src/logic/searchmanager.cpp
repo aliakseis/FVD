@@ -316,7 +316,7 @@ void SearchManager::addLinks(const QStringList& urls)
             rve->m_videoInfo.id = url;
             rve->m_videoInfo.videoTitle = url;
             rve->m_videoInfo.description = url;
-            rve->m_videoInfo.thumbnailUrl = url;
+            // Don't set rve->m_videoInfo.thumbnailUrl
             rve->m_videoInfo.originalUrl = url;
             rve->m_videoInfo.strategyName = strat->name();
 
