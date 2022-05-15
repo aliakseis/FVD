@@ -57,7 +57,7 @@ private slots:
     void onTopLevelChanged(bool);
 
 private:
-    PreviewPanelButton* manageButton;
+    PreviewPanelButton* manageButton{};
     VisibilityState m_state;
     VisibilityState m_prevState;
     VideoWidget* m_display{};
