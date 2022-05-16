@@ -968,6 +968,19 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
     return result;
 }
 
+
+double FFmpegDecoder::getDuration(const QString& file)
+{
+    double result = 0;
+    if (openFileDecoder(file))
+    {
+        result = getDurationSecs(m_duration);
+    }
+    close();
+    return result;
+}
+
+
 int64_t FFmpegDecoder::seekPostion() const
 {
     if (m_mainParseThread != nullptr)

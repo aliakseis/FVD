@@ -93,6 +93,8 @@ public:
 
     QByteArray getRandomFrame(const QString& file, double startPercent = 0, double endPercent = 1.);
 
+    double getDuration(const QString& file);
+
     void setDefaultImageOnClose(bool set) { m_setDefaultImageOnClose = set; }
 
     void setDownloadBufferingAwait(double seconds)
@@ -272,7 +274,6 @@ signals:
     void decoderClosed();
     void fileReleased(bool setDefaultImage);
     void fileLoaded();
-    void processOpenning();
     void volumeChanged(double volume);
 
     void downloadPendingStarted();

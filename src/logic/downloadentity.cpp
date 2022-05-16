@@ -13,6 +13,14 @@
 #include "utilities/logger.h"
 #include "utilities/translation.h"
 
+#include "player/ffmpegdecoder.h"
+
+static double getVideoDuration(const QString& file)
+{
+    FFmpegDecoder decoder;
+    return decoder.getDuration(file);
+}
+
 const QDateTime nullDateTime;
 
 REGISTER_QOBJECT_METATYPE(DownloadEntity)
@@ -65,6 +73,11 @@ void DownloadEntity::onSpeed(qint64 bytesPerSecond)
 
 void DownloadEntity::onFinished()
 {
+    if (getParent()->m_videoInfo.duration == 0)
+    {
+        getParent()->m_videoInfo.duration = getVideoDuration(filename());
+    }
+
     setState(kFinished);
     emit finished();
 }

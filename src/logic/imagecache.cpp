@@ -16,7 +16,7 @@
 #include "utilities/filesystem_utils.h"
 #include "utilities/utils.h"
 
-int doGetRandomFrame(const QString& filePath, const QString& imageFilePath)
+static int doGetRandomFrame(const QString& filePath, const QString& imageFilePath)
 {
     if (imageFilePath.isEmpty())
     {
