@@ -11,6 +11,31 @@
 #include "utilities/instantiator.h"
 #include "utilities/notify_helper.h"
 
+#include <QRegularExpression>
+
+static QString UnescapeForHTML(QString text) 
+{
+    static const struct {
+        const char* ampersand_code;
+        const char replacement;
+    } kEscapeToChars[] = {
+        {"&lt;", '<'},   {"&gt;", '>'},   
+        {"&quot;", '"'}, {"&#39;", '\''},
+        {"&amp;", '&'},
+    };
+
+    if (!text.contains('&'))
+        return text;
+
+    for (const auto& r : kEscapeToChars)
+    {
+        text.replace(QLatin1String(r.ampersand_code), QLatin1String(&r.replacement, 1));
+    }
+
+    return text;
+}
+
+
 class FileReleasedRestartCallback : public NotifyHelper
 {
 public:
@@ -203,6 +228,16 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         if (m_delayAddEntity)
         {
             m_delayAddEntity = false;
+
+            if (m_videoInfo.id == m_videoInfo.videoTitle)
+            {
+                QNetworkRequest request(m_videoInfo.originalUrl);
+                QNetworkReply* reply = TheQNetworkAccessManager::Instance().get(request);
+                reply->ignoreSslErrors();
+                connect(reply, &QNetworkReply::finished, this, &RemoteVideoEntity::onInfoRequestFinished);
+                return;
+            }
+
             if (!m_downloads.empty())
             {
                 /*emit*/ downloadEntitiesAdded(QList<DownloadEntity*>() << m_downloads[0]);
@@ -220,6 +255,66 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         }
         m_lastErrorCode = Errors::FailedToExtractLinks;
     }
+
+    emit linksExtracted();
+    emit signRVEUpdated();
+}
+
+void RemoteVideoEntity::onInfoRequestFinished()
+{
+    if (auto* myReply = qobject_cast<QNetworkReply*>(sender()))
+    {
+        QVariant possibleRedirectUrl = myReply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+
+        enum { REDIRECT_LIMIT = 10 };
+
+        if (!possibleRedirectUrl.isNull() && m_redirectCount++ < REDIRECT_LIMIT)
+        {
+            QUrl redirect = possibleRedirectUrl.toUrl();
+            QUrl url = myReply->url();
+            myReply->deleteLater();
+            myReply = redirect.isRelative() ? TheQNetworkAccessManager::Instance().get(
+                QNetworkRequest(url.scheme() + "://" + url.host() + redirect.toString()))
+                : TheQNetworkAccessManager::Instance().get(QNetworkRequest(redirect));
+
+            connect(myReply, &QNetworkReply::finished, this, &RemoteVideoEntity::onInfoRequestFinished);
+            return;
+        }
+
+        QByteArray ba = myReply->readAll();
+        const auto result = QString::fromUtf8(ba);
+        myReply->deleteLater();
+        myReply = nullptr;
+
+        // https://stackoverflow.com/questions/12030599/regex-for-html-title
+        QRegularExpression rxTitle("<title>(.*?)</title>");
+        if (QRegularExpressionMatch match = rxTitle.match(result); match.hasMatch())
+        {
+            const auto title = match.captured(1).trimmed();
+            if (!title.isEmpty())
+            {
+                m_videoInfo.videoTitle = UnescapeForHTML(title);
+            }
+        }
+
+        // https://stackoverflow.com/questions/12550903/what-is-the-regex-code-for-meta-description
+        QRegularExpression rxDescription(R"(<meta[^>]*name=[\"\']description[\"\'][^>]*content=[\"\'](.*?)[\"\'][^>]*>)");
+        if (QRegularExpressionMatch match = rxDescription.match(result); match.hasMatch())
+        {
+            const auto description = match.captured(1).trimmed();
+            if (!description.isEmpty())
+            {
+                m_videoInfo.description = UnescapeForHTML(description);
+            }
+        }
+    }
+
+    if (!m_downloads.empty())
+    {
+        /*emit*/ downloadEntitiesAdded(QList<DownloadEntity*>() << m_downloads[0]);
+    }
+
+    manageDownloads();
 
     emit linksExtracted();
     emit signRVEUpdated();

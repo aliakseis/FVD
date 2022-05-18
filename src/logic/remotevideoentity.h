@@ -152,6 +152,7 @@ private Q_SLOTS:
     void onHandleExtractedLinks(const QMap<int, LinkInfo>& links, int preferredResolutionId);
     void extractFailed();
     void connectEntityProgress(const QList<DownloadEntity*>&);
+    void onInfoRequestFinished();
 
 private:
     friend class SearchManager;
@@ -162,6 +163,7 @@ private:
     Errors::Code m_lastErrorCode;
 
     bool m_delayAddEntity = false;
+    int m_redirectCount = 0;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteVideoEntity);
 };
