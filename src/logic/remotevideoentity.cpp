@@ -286,7 +286,7 @@ void RemoteVideoEntity::onInfoRequestFinished()
         myReply = nullptr;
 
         // https://stackoverflow.com/questions/12030599/regex-for-html-title
-        QRegularExpression rxTitle("<title>(.*?)</title>");
+        QRegularExpression rxTitle("<title>(.*?)</title>", QRegularExpression::CaseInsensitiveOption);
         if (QRegularExpressionMatch match = rxTitle.match(result); match.hasMatch())
         {
             const auto title = match.captured(1).trimmed();
@@ -297,7 +297,9 @@ void RemoteVideoEntity::onInfoRequestFinished()
         }
 
         // https://stackoverflow.com/questions/12550903/what-is-the-regex-code-for-meta-description
-        QRegularExpression rxDescription(R"(<meta[^>]*name=[\"\']description[\"\'][^>]*content=[\"\'](.*?)[\"\'][^>]*>)");
+        QRegularExpression rxDescription(
+            R"(<meta[^>]*name=[\"\']description[\"\'][^>]*content=[\"\'](.*?)[\"\'][^>]*>)",
+            QRegularExpression::CaseInsensitiveOption);
         if (QRegularExpressionMatch match = rxDescription.match(result); match.hasMatch())
         {
             const auto description = match.captured(1).trimmed();
