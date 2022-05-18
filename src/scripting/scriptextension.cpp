@@ -111,9 +111,8 @@ void ScriptExtension::onHttpRequestFinished()
         QUrl redirect = possibleRedirectUrl.toUrl();
         QUrl url = myReply->url();
         myReply->deleteLater();
-        myReply = redirect.isRelative() ? TheQNetworkAccessManager::Instance().get(
-                                              QNetworkRequest(url.scheme() + "://" + url.host() + redirect.toString()))
-                                        : TheQNetworkAccessManager::Instance().get(QNetworkRequest(redirect));
+        myReply = TheQNetworkAccessManager::Instance().get(QNetworkRequest(
+            redirect.isRelative() ? url.scheme() + "://" + url.host() + redirect.toString() : redirect));
 
         VERIFY(connect(myReply, SIGNAL(finished()), SLOT(onHttpRequestFinished())));
         VERIFY(connect(myReply, SIGNAL(error(QNetworkReply::NetworkError)),

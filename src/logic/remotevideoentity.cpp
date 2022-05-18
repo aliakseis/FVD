@@ -273,9 +273,8 @@ void RemoteVideoEntity::onInfoRequestFinished()
             QUrl redirect = possibleRedirectUrl.toUrl();
             QUrl url = myReply->url();
             myReply->deleteLater();
-            myReply = redirect.isRelative() ? TheQNetworkAccessManager::Instance().get(
-                QNetworkRequest(url.scheme() + "://" + url.host() + redirect.toString()))
-                : TheQNetworkAccessManager::Instance().get(QNetworkRequest(redirect));
+            myReply = TheQNetworkAccessManager::Instance().get(QNetworkRequest(
+                redirect.isRelative() ? url.scheme() + "://" + url.host() + redirect.toString() : redirect));
 
             connect(myReply, &QNetworkReply::finished, this, &RemoteVideoEntity::onInfoRequestFinished);
             return;
