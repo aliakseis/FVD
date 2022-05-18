@@ -135,6 +135,8 @@ private:
     void downloadEntitiesAdded(const QList<DownloadEntity*>&);
     static void downloadEntitiesRemoved(const QList<DownloadEntity*>&);
 
+    void manageDownloads();
+
 signals:
     void linksExtracted();
     void signRequestStartDwnl(VisibilityState visState);

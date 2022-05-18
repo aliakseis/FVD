@@ -192,6 +192,14 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         m_resolutionLinks = links;
         m_lastErrorCode = Errors::NoError;
 
+        m_preferredResolutionId = preferredResolutionId;
+        // if given preferred resolution id doesn't exist in the links map, set it as first item
+        if (!m_resolutionLinks.contains(m_preferredResolutionId) && !m_resolutionLinks.empty())
+        {
+            Q_ASSERT(false);
+            m_preferredResolutionId = m_resolutionLinks.begin().key();
+        }
+
         if (m_delayAddEntity)
         {
             m_delayAddEntity = false;
@@ -201,44 +209,7 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
             }
         }
 
-        m_preferredResolutionId = preferredResolutionId;
-        // if given preferred resolution id doesn't exist in the links map, set it as first item
-        if (!m_resolutionLinks.contains(m_preferredResolutionId) && !m_resolutionLinks.empty())
-        {
-            Q_ASSERT(false);
-            m_preferredResolutionId = m_resolutionLinks.begin().key();
-        }
-
-        bool nextIteraion = false;
-        for (auto it(m_downloads.end()), itBegin(m_downloads.begin()); it != itBegin; nextIteraion = true)
-        {
-            --it;
-            DownloadEntity* de = *it;
-            const bool entityBeingReloaded = DownloadEntity::kFailed == de->state() && !de->isFailed();
-            if (nextIteraion && !entityBeingReloaded)
-            {
-                break;
-            }
-
-            int currResolutionID = de->currentResolutionId();
-            if (currResolutionID == -1 || !m_resolutionLinks.contains(currResolutionID))
-            {
-                currResolutionID = m_preferredResolutionId;
-            }
-            de->setup(links[currResolutionID]);
-
-            if (de->visibilityState() == visTemp)
-            {
-                startTempDownloading(m_downloads[0]);
-            }
-
-            if (!entityBeingReloaded)
-            {
-                break;
-            }
-
-            de->setState(DownloadEntity::kQueued);  // trigger download, unless it failed for the second time
-        }
+        manageDownloads();
     }
     else
     {
@@ -253,6 +224,41 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
     emit linksExtracted();
     emit signRVEUpdated();
 }
+
+void RemoteVideoEntity::manageDownloads()
+{
+    bool nextIteraion = false;
+    for (auto it(m_downloads.end()), itBegin(m_downloads.begin()); it != itBegin; nextIteraion = true)
+    {
+        --it;
+        DownloadEntity* de = *it;
+        const bool entityBeingReloaded = DownloadEntity::kFailed == de->state() && !de->isFailed();
+        if (nextIteraion && !entityBeingReloaded)
+        {
+            break;
+        }
+
+        int currResolutionID = de->currentResolutionId();
+        if (currResolutionID == -1 || !m_resolutionLinks.contains(currResolutionID))
+        {
+            currResolutionID = m_preferredResolutionId;
+        }
+        de->setup(m_resolutionLinks[currResolutionID]);
+
+        if (de->visibilityState() == visTemp)
+        {
+            startTempDownloading(m_downloads[0]);
+        }
+
+        if (!entityBeingReloaded)
+        {
+            break;
+        }
+
+        de->setState(DownloadEntity::kQueued);  // trigger download, unless it failed for the second time
+    }
+}
+
 void RemoteVideoEntity::onlinksExtracted(QVariantMap links, int preferredResolutionId)
 {
     QMap<int, LinkInfo> linksMap;
