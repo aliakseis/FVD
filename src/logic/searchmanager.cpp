@@ -320,6 +320,8 @@ void SearchManager::addLinks(const QStringList& urls)
             rve->m_videoInfo.originalUrl = url;
             rve->m_videoInfo.strategyName = strat->name();
 
+            rve->setCreatedByUrl();
+
             if (m_allEntities.insert(rve).second)
             {
                 rve->requestStartDownload();

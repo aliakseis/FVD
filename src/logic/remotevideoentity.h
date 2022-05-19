@@ -94,6 +94,8 @@ public:
     static void pauseTempDE(DownloadEntity* de);
     static void startTempDownloading(DownloadEntity* de);
 
+    void setCreatedByUrl() { m_createdByUrl = true; }
+
 #ifndef Q_MOC_RUN
 
 #define READ ,
@@ -162,6 +164,7 @@ private:
     int m_preferredResolutionId;
     Errors::Code m_lastErrorCode;
 
+    bool m_createdByUrl = false;
     bool m_delayAddEntity = false;
     int m_redirectCount = 0;
 

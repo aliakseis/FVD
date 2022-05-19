@@ -229,7 +229,7 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         {
             m_delayAddEntity = false;
 
-            if (m_videoInfo.id == m_videoInfo.videoTitle)
+            if (m_createdByUrl)
             {
                 QNetworkRequest request(m_videoInfo.originalUrl);
                 QNetworkReply* reply = TheQNetworkAccessManager::Instance().get(request);
