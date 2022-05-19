@@ -286,13 +286,20 @@ void RemoteVideoEntity::onInfoRequestFinished()
         myReply = nullptr;
 
         // https://stackoverflow.com/questions/12030599/regex-for-html-title
-        QRegularExpression rxTitle("<title>(.*?)</title>", QRegularExpression::CaseInsensitiveOption);
-        if (QRegularExpressionMatch match = rxTitle.match(result); match.hasMatch())
+        for (auto pattern : {
+            R"(<meta[^>]*name=[\"\']title[\"\'][^>]*content=[\"\'](.*?)[\"\'][^>]*>)",
+            "<title>(.*?)</title>"
+            })
         {
-            const auto title = match.captured(1).trimmed();
-            if (!title.isEmpty())
+            QRegularExpression rxTitle(pattern, QRegularExpression::CaseInsensitiveOption);
+            if (QRegularExpressionMatch match = rxTitle.match(result); match.hasMatch())
             {
-                m_videoInfo.videoTitle = UnescapeForHTML(title);
+                const auto title = match.captured(1).trimmed();
+                if (!title.isEmpty())
+                {
+                    m_videoInfo.videoTitle = UnescapeForHTML(title);
+                    break;
+                }
             }
         }
 
