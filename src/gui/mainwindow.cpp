@@ -39,11 +39,10 @@
 #include "videoplayerwidget.h"
 #include "videowidget.h"
 
-#if defined(Q_OS_WIN)
-#include <Shobjidl.h>
-#endif
 
-#ifdef Q_OS_MAC
+#if defined (Q_OS_WIN)
+#include <windows.h>
+#elif defined (Q_OS_MAC)
 #include "darwin/DarwinSingleton.h"
 #endif  // Q_OS_MAC
 #include "ui_utils/uiutils.h"
@@ -614,7 +613,6 @@ void MainWindow::dropEvent(QDropEvent* event)
         QString typeOfLink = intrestedDataRx.cap(1);
         qDebug() << QString(PROJECT_NAME) + " takes " + someLink;
         pos += intrestedDataRx.matchedLength();
-
 
         linksForDownload << someLink;
     }

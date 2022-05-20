@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QToolTip>
 #include <algorithm>
+#include <cmath>
 
 VideoProgressBar::VideoProgressBar(QWidget* parent)
     : QProgressBar(parent), m_scale(1000), m_btn_down(false), m_seekDisabled(false), m_downloadedTotalOriginal(0)
@@ -210,10 +211,10 @@ void VideoProgressBar::displayPlayedProgress(qint64 frame, qint64 total)
         setPlayedCounter(0);
     }
 
-    const int durationSecs = int(decoder->getDurationSecs(total) + .5);
+    const auto durationSecs = std::lround(decoder->getDurationSecs(total));
     if (durationSecs > 0)
     {
-        const int currentSecs = int(decoder->getDurationSecs(frame) + .5);
+        const auto currentSecs = std::lround(decoder->getDurationSecs(frame));
 
         QString text = utilities::secondsToString(currentSecs) + " / " + utilities::secondsToString(durationSecs);
         setToolTip(text);

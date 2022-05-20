@@ -124,8 +124,7 @@ void SearchManager::setEntities(const QObjectList& items)
     m_allEntities.clear();
     Q_FOREACH (QObject* item, items)
     {
-        auto* videoEntity = dynamic_cast<RemoteVideoEntity*>(item);
-        if (videoEntity != nullptr)
+        if (auto* videoEntity = dynamic_cast<RemoteVideoEntity*>(item))
         {
             m_allEntities.insert(QSharedPointer<RemoteVideoEntity>(videoEntity));
         }
@@ -274,11 +273,11 @@ void SearchManager::onDownloadChanged()
 {
     float overallProgress = 0.0F;
     int downloadsAmount = 0;
-    for (const auto& m_allEntitie : m_allEntities)
+    for (const auto& entity : m_allEntities)
     {
-        if (m_allEntitie->state() == Downloadable::kDownloading && !m_allEntitie->progress().isNull())
+        if (entity->state() == Downloadable::kDownloading && !entity->progress().isNull())
         {
-            overallProgress += m_allEntitie->progress().toFloat();
+            overallProgress += entity->progress().toFloat();
             ++downloadsAmount;
         }
     }

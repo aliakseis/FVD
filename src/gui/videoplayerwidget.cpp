@@ -117,7 +117,7 @@ void VideoPlayerWidget::processPreviewEntity()
 void VideoPlayerWidget::downloadingToPreview(qint64 bytesReceived, qint64 bytesTotal)
 {
     double factor = 0.02;  // 2%
-    if (bytesTotal < 0.5 * 1024 * 1024)
+    if (bytesTotal < 1024 * 1024 / 2)
     {
         factor = 0.5;
     }

@@ -32,7 +32,7 @@ extern "C"
 enum
 {
     MAX_QUEUE_SIZE = (15 * 1024 * 1024),
-    MAX_VIDEO_FRAMES = 8,
+    MAX_VIDEO_FRAMES = 500,
     MAX_AUDIO_FRAMES = 1000,
     VIDEO_PICTURE_QUEUE_SIZE = 2,   // enough for displaying one frame.
     PLAYBACK_AVPACKET_MAX = 524288  // AVPacket maximum size for downloading items.

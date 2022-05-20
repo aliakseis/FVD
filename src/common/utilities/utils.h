@@ -76,7 +76,7 @@ void SerializeObject(QXmlStreamWriter* stream, QObject* object, const QString& n
 void PrintReplyHeader(QNetworkReply* reply);
 QString SizeToString(quint64 size, int precision = -1, int fieldWidth = 0);
 bool IsAsyncUrl(const QString& path);
-QString secondsToString(int seconds);
+QString secondsToString(long seconds);
 QString ProgressString(double progress);
 
 

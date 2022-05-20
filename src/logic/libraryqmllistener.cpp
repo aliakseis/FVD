@@ -38,7 +38,8 @@ private:
     QPointer<DownloadEntity> m_entity;
 };
 
-LibraryQmlListener::LibraryQmlListener(QObject* parent) : QObject(parent), m_model(nullptr)
+LibraryQmlListener::LibraryQmlListener(QObject* parent, LibraryModel* model, QSortFilterProxyModel* proxyModel)
+    : QObject(parent), m_model(model), m_proxyModel(proxyModel)
 {
     qRegisterMetaType<QPointer<DownloadEntity> >("QPointer<DownloadEntity>");
     VERIFY(connect(this, SIGNAL(handleDeleteAsynchronously(const QPointer<DownloadEntity>&)),

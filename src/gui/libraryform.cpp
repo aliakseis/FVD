@@ -54,9 +54,7 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
     m_proxyModel->setSortRole(LibraryModel::RoleTimeDownload);
     m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    auto* qmlListener = new LibraryQmlListener(this);
-    qmlListener->m_model = m_model;
-    qmlListener->m_proxyModel = m_proxyModel;
+    auto* qmlListener = new LibraryQmlListener(this, m_model, m_proxyModel);
 
     ui->setupUi(this);
     ui->manageLabel->setVisible(false);

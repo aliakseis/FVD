@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QMessageBox>
+#include <cmath>
 
 #include "branding.hxx"
 #include "global_functions.h"
@@ -75,7 +76,7 @@ void DownloadEntity::onFinished()
 {
     if (getParent()->m_videoInfo.duration == 0)
     {
-        getParent()->m_videoInfo.duration = getVideoDuration(filename());
+        getParent()->m_videoInfo.duration = std::lround(getVideoDuration(filename()));
     }
 
     setState(kFinished);

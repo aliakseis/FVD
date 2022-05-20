@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <random>
 #include <utility>
+#include <cmath>
 
 #include "audioparsethread.h"
 #include "displaythread.h"
@@ -714,12 +715,12 @@ QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xle
     const double aspect_ratio = aspectRatio();
 
     int width = int(scr_height * aspect_ratio) & ~0xf;
-    int height = width / aspect_ratio + 0.5F;
+    int height = std::lround(width / aspect_ratio);
 
     if (width > scr_width)
     {
         width = scr_width & ~0xf;
-        height = width / aspect_ratio + 0.5F;
+        height = std::lround(width / aspect_ratio);
     }
     int x = ((scr_width - width) >> 1);
     int y = ((scr_height - height) >> 1);

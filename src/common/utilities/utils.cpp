@@ -195,13 +195,12 @@ bool IsAsyncUrl(const QString& path)
     return s.contains(QRegExp("^https?://")) || s.startsWith("qrc:/");
 }
 
-QString secondsToString(int seconds)
+QString secondsToString(long seconds)
 {
     QString result;
-    int s = seconds % 60;
-    int m = seconds / 60;
-    int h = seconds / 3600;
-    m = m - h * 60;
+    const int s = seconds % 60;
+    const int m = (seconds / 60) % 60;
+    const int h = seconds / 3600;
 
     if (h > 0)
     {

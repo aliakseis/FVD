@@ -11,10 +11,11 @@ class LibraryQmlListener : public QObject
 {
     Q_OBJECT
 public:
-    explicit LibraryQmlListener(QObject* parent = 0);
+    LibraryQmlListener(QObject* parent, LibraryModel* model, QSortFilterProxyModel* proxyModel);
 
+private:
     LibraryModel* m_model;
-    QSortFilterProxyModel* m_proxyModel{};
+    QSortFilterProxyModel* m_proxyModel;
 
 public slots:
     static void onImageClicked(int index);
