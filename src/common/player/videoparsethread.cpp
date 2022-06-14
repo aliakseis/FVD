@@ -5,6 +5,12 @@
 #include "utilities/logger.h"
 #include "utilities/loggertag.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+#include <libavutil/time.h>
+}
+
 bool VideoParseThread::getVideoPacket(AVPacket* packet)
 {
     QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);

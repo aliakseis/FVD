@@ -6,6 +6,13 @@
 #include "utilities/logger.h"
 #include "utilities/loggertag.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+#include <libavutil/time.h>
+#include <libswresample/swresample.h>
+}
+
 bool AudioParseThread::getAudioPacket(AVPacket* packet)
 {
     QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);

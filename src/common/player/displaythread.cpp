@@ -4,6 +4,11 @@
 #include "videodisplay.h"
 #include "videoparsethread.h"
 
+extern "C"
+{
+#include <libavutil/time.h>
+}
+
 void DisplayThread::run()
 {
     TAG("ffmpeg_threads") << "Displaying thread started";

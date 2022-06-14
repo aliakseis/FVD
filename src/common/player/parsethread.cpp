@@ -4,6 +4,12 @@
 #include "utilities/loggertag.h"
 #include "videoparsethread.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+}
+
+
 bool ParseThread::readFrame(AVPacket* packet)
 {
     auto* parent = (FFmpegDecoder*)this->parent();

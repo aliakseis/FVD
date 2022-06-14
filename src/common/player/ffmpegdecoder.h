@@ -2,15 +2,6 @@
 
 #include <QDebug>
 
-extern "C"
-{
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/time.h>
-#include <libswresample/swresample.h>
-#include <libswscale/swscale.h>
-}
-
 #include <QEventLoop>
 #include <QFile>
 #include <QMutex>
@@ -57,6 +48,11 @@ class DisplayThread;
 class VideoDisplay;
 class Test_FFmpegDecoder;  // test class
 
+struct AVFormatContext;
+struct AVStream;
+struct SwrContext;
+struct SwsContext;
+
 class FFmpegDecoder : public QObject
 {
     friend class Test_FFmpegDecoder;
@@ -64,6 +60,9 @@ class FFmpegDecoder : public QObject
 public:
     FFmpegDecoder();
     ~FFmpegDecoder();
+
+    FFmpegDecoder(const FFmpegDecoder&) = delete;
+    FFmpegDecoder& operator=(const FFmpegDecoder&) = delete;
 
     void openFile(QString file);
     bool seekMs(int64_t ts);
@@ -103,10 +102,7 @@ public:
         m_waitSleperTime = seconds;
     }
 
-    double getDurationSecs(int64_t duration) const
-    {
-        return (m_videoStream != 0) ? av_q2d(m_videoStream->time_base) * duration : 0;
-    }
+    double getDurationSecs(int64_t duration) const;
 
     // Limiter functions
     bool isRunningLimitation() const;

@@ -1,5 +1,10 @@
 #include "timelimiterthread.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+}
+
 void TimeLimiterThread::run()
 {
     QScopedPointer<FFmpegDecoder> thread_data(new FFmpegDecoder());

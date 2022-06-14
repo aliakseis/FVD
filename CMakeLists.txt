@@ -50,7 +50,7 @@ option(DEVELOPER_FEATURES "use some debug tricks for developers" OFF)
 option(DEVELOPER_GENERATE_TRANSLATIONS "Generate ts-files for ${PROJECT_NAME}" OFF)
 
 option(DEVELOPER_TRAFFIC_CONTROL "allow traffic control functionality" ON)
-option(DEVELOPER_OPENGL "Enables opengl display" OFF)
+option(DEVELOPER_OPENGL "Enables opengl display" ON)
 
 option (LUA_SCRIPTING "Enables lua script engine" OFF)
 

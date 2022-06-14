@@ -19,6 +19,15 @@
 #include "videodisplay.h"
 #include "videoparsethread.h"
 
+extern "C"
+{
+#include <libavformat/avformat.h>
+#include <libavutil/time.h>
+#include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
+}
+
+
 void preciseSleep(double sec) { QThread::usleep(sec * 1000000UL); }
 
 FFmpegDecoder::FFmpegDecoder()
@@ -640,7 +649,8 @@ FPicture* FFmpegDecoder::frameToImage()
     // Prepare image conversion
     m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
                                                 (AVPixelFormat)m_videoFrame->format, width, height, m_pixelFormat,
-                                                SWS_BICUBIC, nullptr, nullptr, nullptr);
+                                                m_resizeWithDecoder? SWS_BICUBIC : SWS_POINT,
+                                                nullptr, nullptr, nullptr);
 
     Q_ASSERT(m_imageCovertContext != nullptr);
 
@@ -1009,6 +1019,12 @@ float FFmpegDecoder::aspectRatio() const
 int64_t FFmpegDecoder::framesCount() const { return m_frameTotalCount; }
 
 int64_t FFmpegDecoder::headerSize() const { return FFMAX(0, m_headerSize - 8); }
+
+double FFmpegDecoder::getDurationSecs(int64_t duration) const
+{
+    return (m_videoStream != 0) ? av_q2d(m_videoStream->time_base) * duration : 0;
+}
+
 
 int64_t FFmpegDecoder::limiterBytes() const
 {
