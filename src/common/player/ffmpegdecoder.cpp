@@ -1022,7 +1022,7 @@ int64_t FFmpegDecoder::headerSize() const { return FFMAX(0, m_headerSize - 8); }
 
 double FFmpegDecoder::getDurationSecs(int64_t duration) const
 {
-    return (m_videoStream != 0) ? av_q2d(m_videoStream->time_base) * duration : 0;
+    return (m_videoStream != nullptr) ? av_q2d(m_videoStream->time_base) * duration : 0;
 }
 
 

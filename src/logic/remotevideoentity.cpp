@@ -24,8 +24,9 @@ static QString UnescapeForHTML(QString text)
         {"&amp;", '&'},
     };
 
-    if (!text.contains('&'))
+    if (!text.contains('&')) {
         return text;
+    }
 
     for (const auto& r : kEscapeToChars)
     {

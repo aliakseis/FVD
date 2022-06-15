@@ -52,6 +52,32 @@ const char WindowState[] = "WindowState";
 
 bool MainWindow::m_isInitialized = false;
 
+static QString UnescapeParameters(QString text)
+{
+    static const struct {
+        const char* ampersand_code;
+        const char replacement;
+    } kEscapeToChars[] = {
+        {"%2F", '/'},
+        {"%3A", ':'},
+        {"%3D", '='},
+        {"%3F", '?'},
+    };
+
+    text.replace("&amp;", "&", Qt::CaseInsensitive);
+
+    if (!text.contains('%')) {
+        return text;
+    }
+
+    for (const auto& r : kEscapeToChars)
+    {
+        text.replace(QLatin1String(r.ampersand_code), QLatin1String(&r.replacement, 1), Qt::CaseInsensitive);
+    }
+
+    return text;
+}
+
 MainWindow::MainWindow(QWidget* parent)
     : ui_utils::MainWindowWithTray(parent, QIcon(":/images/fvdownloader.png"), PROJECT_FULLNAME_TRANSLATION),
       ui(new Ui::MainWindow),
@@ -581,22 +607,20 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 void MainWindow::dropEvent(QDropEvent* event)
 {
     QString text;
-    QRegExp intrestedDataRx;
+    QRegExp intrestedDataRx("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
 
     if (event->mimeData()->hasHtml())
     {
-        text = event->mimeData()->html();
-        intrestedDataRx = QRegExp("(http|https):[^\"'<>\\s\\n]+", Qt::CaseInsensitive);
+        text = UnescapeParameters(event->mimeData()->html());
+        intrestedDataRx = QRegExp(R"((http|https):[^:"'<>\s\n]+)", Qt::CaseInsensitive);
     }
     else if (event->mimeData()->hasText())
     {
         text = event->mimeData()->text();
-        intrestedDataRx = QRegExp("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
     }
     else if (event->mimeData()->hasFormat("text/uri-list"))
     {
         text = event->mimeData()->data("text/uri-list");
-        intrestedDataRx = QRegExp("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
     }
     else
     {
@@ -612,9 +636,13 @@ void MainWindow::dropEvent(QDropEvent* event)
         QString someLink = intrestedDataRx.cap(0);
         QString typeOfLink = intrestedDataRx.cap(1);
         qDebug() << QString(PROJECT_NAME) + " takes " + someLink;
-        pos += intrestedDataRx.matchedLength();
+        pos += std::max(5, intrestedDataRx.matchedLength() - 5);
 
-        linksForDownload << someLink;
+        auto it = std::lower_bound(linksForDownload.begin(), linksForDownload.end(), someLink);
+        if (it == linksForDownload.end() || *it != someLink)
+        {
+            linksForDownload.insert(it, someLink);
+        }
     }
     SearchManager::Instance().addLinks(linksForDownload);
 
