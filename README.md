@@ -8,3 +8,7 @@ This is (not) the greatest stuff in the world. [This is just a tribute.](resourc
 ```
 pip3 install --force-reinstall git+https://github.com/kinshuk-h/pytube
 ```
+
+```
+pip3 install --force-reinstall https://github.com/sadeghastaneh/pytube/archive/refs/heads/patch-1.zip
+```
