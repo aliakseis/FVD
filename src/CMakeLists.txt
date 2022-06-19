@@ -267,12 +267,12 @@ set(HEADERS_SCRIPTING
 
 set(HEADERS_TOMOC_SCRIPTING
 	scripting/scriptprovider.h
-	scripting/scriptextension.h
+        #scripting/scriptextension.h
 	scripting/scriptstrategy.h
 )
 
 set(SOURCES_SCRIPTING
-	scripting/scriptextension.cpp
+        #scripting/scriptextension.cpp
 	scripting/scriptprovider.cpp
 	scripting/scriptstrategy.cpp
 )

@@ -10,8 +10,7 @@ class ScriptExtension : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScriptExtension(QObject* parent = 0)
-     : QObject(parent) {}
+    explicit ScriptExtension(QObject* parent = 0);
     ~ScriptExtension();
 
 signals:

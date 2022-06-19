@@ -11,6 +11,7 @@ INCLUDE_DIRECTORIES(
 )
 
 set(HEADERS_LOCAL_TOMOC
+    scriptextension.h
 )
 
 set(HEADERS_LOCAL
@@ -24,6 +25,7 @@ set(SOURCES_LOCAL
 	luaengine.cpp
 	jsengine.cpp
 	pythonengine.cpp
+	scriptextension.cpp
 )
 
 set(LINK_LIBRARIES_LOCAL
@@ -31,7 +33,7 @@ set(LINK_LIBRARIES_LOCAL
 )
 
 
-#QT4_WRAP_CPP(MOC_LOCAL ${HEADERS_LOCAL_TOMOC})
+QTX_WRAP_CPP(MOC_LOCAL ${HEADERS_LOCAL_TOMOC})
 
 source_group("Sources" FILES 
 				${HEADERS_LOCAL} 
