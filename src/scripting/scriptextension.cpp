@@ -15,7 +15,7 @@ enum
     REDIRECT_LIMIT = 10
 };
 
-ScriptExtension::ScriptExtension(QObject* parent) : QObject(parent), m_redirectCount(0) {}
+//ScriptExtension::ScriptExtension(QObject* parent) : QObject(parent), m_redirectCount(0) {}
 
 ScriptExtension::~ScriptExtension() { qDebug() << __FUNCTION__; }
 

@@ -186,13 +186,13 @@ private:
     AVPacket m_downloadingPacket;
 
     // Video Stuff
-    AVCodec* m_videoCodec;
+    const AVCodec* m_videoCodec;
     AVCodecContext* m_videoCodecContext;
     AVStream* m_videoStream;
     int m_videoStreamNumber;
 
     // Audio Stuff
-    AVCodec* m_audioCodec;
+    const AVCodec* m_audioCodec;
     AVCodecContext* m_audioCodecContext;
     AVStream* m_audioStream;
     int m_audioStreamNumber;

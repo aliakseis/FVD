@@ -31,20 +31,22 @@ include_directories(
 
 find_package (Python3 COMPONENTS Interpreter Development REQUIRED)
 
+message ("    *** Python: (${Python3_INCLUDE_DIRS})")
+
 file(GLOB PYTHONQT_SRCS 
 	./3rdparty/pythonqt/src/*.cpp 
-	./3rdparty/pythonqt/generated_cpp_511/com_trolltech_qt_core_builtin/*.cpp
-	./3rdparty/pythonqt/generated_cpp_511/com_trolltech_qt_gui_builtin/*.cpp
+	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_core_builtin/*.cpp
+	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_gui_builtin/*.cpp
 )
 file(GLOB PYTHONQT_HDRS 
 	./3rdparty/pythonqt/src/*.h
-	./3rdparty/pythonqt/generated_cpp_511/com_trolltech_qt_core_builtin/*.h
-	./3rdparty/pythonqt/generated_cpp_511/com_trolltech_qt_gui_builtin/*.h
+	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_core_builtin/*.h
+	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_gui_builtin/*.h
 )
 QTX_WRAP_CPP(PYTHONQT_MOC_FILES ${PYTHONQT_HDRS})              
 add_library(pythonqt SHARED
                ${PYTHONQT_SRCS} ${PYTHONQT_MOC_FILES})
-target_include_directories(pythonqt PRIVATE ./3rdparty/pythonqt/src ${Python3_INCLUDE_DIRS} ${Qt5Core_PRIVATE_INCLUDE_DIRS})
+target_include_directories(pythonqt PRIVATE ./3rdparty/pythonqt/src ${Python3_INCLUDE_DIRS} ${Python3_INCLUDE_DIRS}/cpython ${Qt5Core_PRIVATE_INCLUDE_DIRS})
 target_compile_definitions(pythonqt PUBLIC PYTHONQT_EXPORTS)
 target_link_libraries(pythonqt
                       ${Python3_LIBRARIES} Qt5::Core Qt5::Gui Qt5::Widgets)

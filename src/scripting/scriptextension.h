@@ -10,7 +10,8 @@ class ScriptExtension : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScriptExtension(QObject* parent = 0);
+    explicit ScriptExtension(QObject* parent = 0)
+     : QObject(parent) {}
     ~ScriptExtension();
 
 signals:
@@ -31,7 +32,7 @@ private slots:
 private:
     QEventLoop m_requrestWaitLoop;
     QString m_syncResult;
-    int m_redirectCount;
+    int m_redirectCount = 0;
 
     QNetworkReply* doSyncRequest(const QString& url, QVariantMap const& headers);
 };

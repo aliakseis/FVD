@@ -457,7 +457,7 @@ void Preferences::setContentSize(QListWidget* wdt)
     int shforCcol = wdt->sizeHintForColumn(0);
     int shforRow = wdt->sizeHintForRow(0);
     int countItem = wdt->count();
-    int heightView = ceil(countItem * shforCcol * 1.F / size.width()) * shforRow;
+    int heightView = ((countItem * shforCcol - 1) / size.width() + 1) * shforRow;
     wdt->setMinimumHeight(heightView + 5);
 }
 
