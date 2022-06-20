@@ -3,25 +3,25 @@ cmake_minimum_required(VERSION 2.8)
 # Project name
 project(Player)
 
-#find_package(portaudio CONFIG REQUIRED)
-
-find_path(PORTAUDIO_INCLUDE_DIR
+find_package(portaudio CONFIG)
+if(NOT PORTAUDIO_FOUND)
+    find_path(PORTAUDIO_INCLUDE_DIR
           NAMES portaudio.h
           DOC "The PortAudio include directory"
-)
-find_library(PORTAUDIO_LIBRARY
+    )
+    find_library(PORTAUDIO_LIBRARY
              NAMES portaudio
              DOC "The PortAudio library"
-)
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(PortAudio
-    REQUIRED_VARS PORTAUDIO_LIBRARY PORTAUDIO_INCLUDE_DIR
-)
-if(PORTAUDIO_FOUND)
-    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBRARY})
-    set(PORTAUDIO_INCLUDE_DIRS ${PORTAUDIO_INCLUDE_DIR})
+    )
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(PortAudio
+        REQUIRED_VARS PORTAUDIO_LIBRARY PORTAUDIO_INCLUDE_DIR
+    )
+    if(PORTAUDIO_FOUND)
+        set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBRARY})
+        set(PORTAUDIO_INCLUDE_DIRS ${PORTAUDIO_INCLUDE_DIR})
+    endif()
 endif()
-
 
 INCLUDE_DIRECTORIES(
 	${CMAKE_CURRENT_SOURCE_DIR}
