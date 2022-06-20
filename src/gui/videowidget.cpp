@@ -9,6 +9,8 @@
 #include "player/ffmpegdecoder.h"
 #include "videoplayerwidget.h"
 
+#include <cmath>
+
 static const int HEIGHT_FIX = 1;
 
 VideoWidget::VideoWidget(VideoPlayerWidget* parent)
@@ -243,10 +245,7 @@ bool VideoWidget::pointInButton(const QPoint& point)
     if (point.x() >= centerPoint.x() - m_playBtnRadius && point.x() <= centerPoint.x() + m_playBtnRadius &&
         point.y() >= centerPoint.y() - m_playBtnRadius && point.y() <= centerPoint.y() + m_playBtnRadius)
     {
-        double xDistance = abs(centerPoint.x() - point.x());
-        double yDistance = abs(centerPoint.y() - point.y());
-
-        return sqrt(xDistance * xDistance + yDistance * yDistance) < m_playBtnRadius;
+        return std::hypot(centerPoint.x() - point.x(), centerPoint.y() - point.y()) < m_playBtnRadius;
     }
     return false;
 }
