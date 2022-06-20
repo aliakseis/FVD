@@ -8,3 +8,9 @@ As of 6/20/22:
 ```
 pip3 install --force-reinstall https://github.com/sadeghastaneh/pytube/archive/refs/heads/patch-1.zip
 ```
+
+For Fedora:
+```
+sudo dnf install qt5-qtquickcontrols2-devel
+sudo dnf install qt5-qtbase-private-devel
+```
