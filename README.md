@@ -4,11 +4,7 @@ Either drag-and-drop an URL from a web browser or use the built-in search:
 
 This is (not) the greatest stuff in the world. [This is just a tribute.](resources/strategies/YouTube.py)
 
-~~As of 4/16/22 (https://github.com/pytube/pytube/issues/1281):~~
-```
-pip3 install --force-reinstall git+https://github.com/kinshuk-h/pytube
-```
-
+As of 6/20/22:
 ```
 pip3 install --force-reinstall https://github.com/sadeghastaneh/pytube/archive/refs/heads/patch-1.zip
 ```
