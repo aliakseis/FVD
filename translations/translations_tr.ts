@@ -4,27 +4,27 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/main/globals.h" line="40"/>
+        <location filename="../src/main/globals.h" line="39"/>
         <source>About %1</source>
         <translation>%1 Hakkında</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="43"/>
+        <location filename="../src/main/globals.h" line="42"/>
         <source>Help</source>
         <translation>Yardım</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="44"/>
+        <location filename="../src/main/globals.h" line="43"/>
         <source>Feedback</source>
         <translation>Geri bildirim</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="42"/>
+        <location filename="../src/main/globals.h" line="41"/>
         <source>Copyright 2013 %1, All Rights reserved</source>
         <translation>Copyright 2013 %1, tüm hakları saklıdır</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="41"/>
+        <location filename="../src/main/globals.h" line="40"/>
         <source>Version %1</source>
         <translation>Sürüm %1</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>Trafik limiti, KB/sn</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadscontrol.cpp" line="69"/>
+        <location filename="../src/gui/downloadscontrol.cpp" line="55"/>
         <source>Are you sure you want to remove this download? If download completed file will not be removed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -154,63 +154,63 @@
         <translation>Ara</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="27"/>
+        <location filename="../src/main/globals.h" line="26"/>
         <source>Downloading</source>
         <translation>İndiriliyor</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="28"/>
+        <location filename="../src/main/globals.h" line="27"/>
         <source>Preparing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="29"/>
+        <location filename="../src/main/globals.h" line="28"/>
         <source>Queued</source>
         <translation>Sıralandı</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="30"/>
+        <location filename="../src/main/globals.h" line="29"/>
         <source>Waiting...</source>
         <translation>Bekleniyor...</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="31"/>
+        <location filename="../src/main/globals.h" line="30"/>
         <source>Paused</source>
         <translation>Duraklatıldı</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="32"/>
+        <location filename="../src/main/globals.h" line="31"/>
         <source>Canceled</source>
         <translation>İptal edildi</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="33"/>
+        <location filename="../src/main/globals.h" line="32"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="34"/>
+        <location filename="../src/main/globals.h" line="33"/>
         <source>Completed</source>
         <translation>Tamamlandı</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="401"/>
+        <location filename="../src/gui/downloadsform.cpp" line="395"/>
         <source>Warning</source>
         <translation>Uyarı</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="397"/>
-        <location filename="../src/gui/downloadsform.cpp" line="398"/>
+        <location filename="../src/gui/downloadsform.cpp" line="391"/>
+        <location filename="../src/gui/downloadsform.cpp" line="393"/>
         <source>Are you sure want to remove %1 item(s)?</source>
         <translation>%1 öğeyi kaldırmak istediğiniz emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="397"/>
+        <location filename="../src/gui/downloadsform.cpp" line="392"/>
         <source>All downloaded files will be removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="513"/>
+        <location filename="../src/gui/downloadsform.cpp" line="501"/>
         <source>&lt;b&gt;Are you sure want to clear the download list?&lt;/b&gt;</source>
         <translation>&lt;b&gt;İndirme listesini silmek istediğiniz emin misiniz?&lt;/b&gt;</translation>
     </message>
@@ -253,12 +253,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/common/utilities/errorcode.h" line="36"/>
+        <location filename="../src/common/utilities/errorcode.h" line="35"/>
         <source>Network error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/common/utilities/errorcode.h" line="37"/>
+        <location filename="../src/common/utilities/errorcode.h" line="36"/>
         <source>HTTP status: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -266,27 +266,27 @@
 <context>
     <name>ItemsDelegate</name>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="158"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="153"/>
         <source>Completed</source>
         <translation>Tamamlandı</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="161"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="156"/>
         <source>Paused</source>
         <translation>Duraklatıldı</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="164"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="159"/>
         <source>Canceled</source>
         <translation>İptal edildi</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="167"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="162"/>
         <source>Failed</source>
         <translation>Başarısız oldu</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="170"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="165"/>
         <source>Queued</source>
         <translation>Sıralandı</translation>
     </message>
@@ -304,7 +304,7 @@
         <translation>Ara</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="36"/>
+        <location filename="../src/main/globals.h" line="35"/>
         <source>Type search query here...</source>
         <translation>Arama sorgunuzu buraya yazın...</translation>
     </message>
@@ -325,19 +325,19 @@
 <context>
     <name>LibraryQmlListener</name>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="96"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="92"/>
         <source>Video file cannot be played with default video player.
 Do you want to watch it with internal player?</source>
         <translation>Video dosyası varsayılan video oynatıcısı ile oynatılamıyor
 Bu dosyayı dahli oynatıcınızla oynatmak ister misiniz?</translation>
     </message>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="105"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="102"/>
         <source>File missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="130"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="127"/>
         <source>Are you sure you want to delete &apos;%1&apos;?</source>
         <translation>&apos;%1&apos; öğesini silmek istediğinizden emin misiniz?</translation>
     </message>
@@ -345,27 +345,27 @@ Bu dosyayı dahli oynatıcınızla oynatmak ister misiniz?</translation>
 <context>
     <name>MainToolBar</name>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="220"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="149"/>
         <source>Search</source>
         <translation>Ara</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="222"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="153"/>
         <source>Downloads</source>
         <translation>İndirilenler</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="224"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="157"/>
         <source>Library</source>
         <translation>Kütüphane</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="225"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="161"/>
         <source>Help</source>
         <translation>Yardım</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="226"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="164"/>
         <source>Settings</source>
         <translation>Ayarlar</translation>
     </message>
@@ -403,23 +403,23 @@ Bu dosyayı dahli oynatıcınızla oynatmak ister misiniz?</translation>
         <translation>Dock widget</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="46"/>
+        <location filename="../src/main/globals.h" line="45"/>
         <source>&lt;b&gt;Cannot create directory &quot;%1&quot;&lt;/b&gt;</source>
         <translation>&lt;b&gt;&quot;%1&quot; dizini oluşturulamıyor&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="47"/>
+        <location filename="../src/main/globals.h" line="46"/>
         <source>&lt;b&gt;Cannot create file &quot;%1&quot;&lt;/b&gt;</source>
         <translation>&lt;b&gt;&quot;%1&quot; dosyası oluşturulamıyor&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainwindow.cpp" line="222"/>
-        <location filename="../src/gui/mainwindow.cpp" line="226"/>
+        <location filename="../src/gui/mainwindow.cpp" line="243"/>
+        <location filename="../src/gui/mainwindow.cpp" line="247"/>
         <source>&apos; has been downloaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainwindow.cpp" line="599"/>
+        <location filename="../src/gui/mainwindow.cpp" line="583"/>
         <source>%1 continues running. Click this button to open it</source>
         <translation type="unfinished"></translation>
     </message>
@@ -437,134 +437,139 @@ Bu dosyayı dahli oynatıcınızla oynatmak ister misiniz?</translation>
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="605"/>
+        <location filename="../build/src/ui_preferences.h" line="611"/>
         <source>Settings</source>
         <translation>Ayarlar</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="606"/>
+        <location filename="../build/src/ui_preferences.h" line="612"/>
         <source>Search</source>
         <translation>Arama</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="607"/>
+        <location filename="../build/src/ui_preferences.h" line="613"/>
         <source>Display max items per site</source>
         <translation>Site başına maksimum sayıda öğe görüntüle</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="608"/>
+        <location filename="../build/src/ui_preferences.h" line="614"/>
         <source>Select video by</source>
         <translation>Videoları şuna göre seç:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="611"/>
+        <location filename="../build/src/ui_preferences.h" line="617"/>
         <source>View count</source>
         <translation>İzleme sayısı</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="613"/>
+        <location filename="../build/src/ui_preferences.h" line="619"/>
         <source>Download</source>
         <translation>İndirme</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="614"/>
+        <location filename="../build/src/ui_preferences.h" line="620"/>
         <source>Output path:</source>
         <translation>Çıkış yolu:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="615"/>
+        <location filename="../build/src/ui_preferences.h" line="621"/>
         <source>Concurrent downloads</source>
         <translation>Eşzamanlı indirme</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="616"/>
+        <location filename="../build/src/ui_preferences.h" line="622"/>
         <source>Traffic limit</source>
         <translation>Trafik limiti</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="617"/>
+        <location filename="../build/src/ui_preferences.h" line="623"/>
         <source>kbps</source>
         <translation>KB/sn</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="618"/>
+        <location filename="../build/src/ui_preferences.h" line="624"/>
         <source>Clear Downloads list on closing</source>
         <translation>Uygulama kapatıldığında İndirilenler listesini temizle</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="619"/>
+        <location filename="../build/src/ui_preferences.h" line="625"/>
         <source>Search in</source>
         <translation>Şurada ara:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="620"/>
+        <location filename="../build/src/ui_preferences.h" line="626"/>
         <source>Quit app when closing window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="621"/>
+        <location filename="../build/src/ui_preferences.h" line="627"/>
+        <source>Open library items in folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_preferences.h" line="628"/>
         <source>General</source>
         <translation>Genel</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="623"/>
+        <location filename="../build/src/ui_preferences.h" line="630"/>
         <source>Select your language:</source>
         <translation>Dilinizi seçin:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="624"/>
+        <location filename="../build/src/ui_preferences.h" line="631"/>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="625"/>
+        <location filename="../build/src/ui_preferences.h" line="632"/>
         <source>Language</source>
         <translation>Dil</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="627"/>
+        <location filename="../build/src/ui_preferences.h" line="634"/>
         <source>Configure your proxy</source>
         <translation>Proxy yapılandırma</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="628"/>
+        <location filename="../build/src/ui_preferences.h" line="635"/>
         <source>Use Proxy Server</source>
         <translation>Proxy sunucusu kullan</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="629"/>
+        <location filename="../build/src/ui_preferences.h" line="636"/>
         <source>Proxy Address:</source>
         <translation>Proxy Adresi:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="630"/>
+        <location filename="../build/src/ui_preferences.h" line="637"/>
         <source>Proxy Port:</source>
         <translation>Proxy Bağlantı Noktası:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="631"/>
+        <location filename="../build/src/ui_preferences.h" line="638"/>
         <source>Proxy</source>
         <translation>Proxy</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="14"/>
+        <location filename="../src/main/globals.h" line="13"/>
         <source>Download to:</source>
         <comment>Download to dialog header</comment>
         <translation>Şuraya indir:</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="38"/>
+        <location filename="../src/main/globals.h" line="37"/>
         <source>English (English)</source>
         <comment>Language name in preferences</comment>
         <translation>Türkçe (Turkish)</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="609"/>
+        <location filename="../build/src/ui_preferences.h" line="615"/>
         <source>Relevance</source>
         <translation>Alaka düzeyi</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="610"/>
+        <location filename="../build/src/ui_preferences.h" line="616"/>
         <source>Date added</source>
         <translation>Eklenme tarihi</translation>
     </message>
@@ -579,12 +584,12 @@ Bu dosyayı dahli oynatıcınızla oynatmak ister misiniz?</translation>
         <translation>Geçerli bir proxy bağlantı noktası girin.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="182"/>
+        <location filename="../src/gui/preferences.cpp" line="183"/>
         <source>The folder &quot;%1&quot; cannot be created. Please choose another one.</source>
         <translation>&quot;%1&quot; klasörü oluşturulamıyor. Lütfen başka bir klasör seçin.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="214"/>
+        <location filename="../src/gui/preferences.cpp" line="216"/>
         <source>The folder &quot;%1&quot; cannot be used, as there is no write access for %2. Please choose another one.</source>
         <translation>%2 için yazma erişimi bulunmadığından dolayı &quot;%1&quot; klasörü kullanılamaz. Lütfen başka bir klasör seçin.</translation>
     </message>
@@ -1110,17 +1115,17 @@ Yine de silmek istiyor musunuz?</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/logic/errors.cpp" line="10"/>
+        <location filename="../src/logic/errors.cpp" line="11"/>
         <source>Failed to extract links</source>
         <translation>Linkler ayıklanamadı</translation>
     </message>
     <message>
-        <location filename="../src/logic/errors.cpp" line="11"/>
+        <location filename="../src/logic/errors.cpp" line="12"/>
         <source>Network error</source>
         <translation>Ağ hatası</translation>
     </message>
     <message>
-        <location filename="../src/logic/downloadentity.cpp" line="295"/>
+        <location filename="../src/logic/downloadentity.cpp" line="288"/>
         <source>&lt;b&gt;NOTE: You have already downloaded this video. Would you like to download it again?&lt;/b&gt;</source>
         <translation>&lt;b&gt;NOT: Bu videoyu zaten indirdiniz. Tekrar indirmek istiyor musunuz?&lt;/b&gt;</translation>
     </message>
@@ -1128,12 +1133,12 @@ Yine de silmek istiyor musunuz?</translation>
 <context>
     <name>SearchManager</name>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="200"/>
+        <location filename="../src/logic/searchmanager.cpp" line="180"/>
         <source>Set new path</source>
         <translation>Yeni yolu ayarla</translation>
     </message>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="202"/>
+        <location filename="../src/logic/searchmanager.cpp" line="181"/>
         <source>Cancel</source>
         <translation>İptal</translation>
     </message>
@@ -1186,78 +1191,78 @@ Yine de silmek istiyor musunuz?</translation>
         <translation>Sonraki &gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="15"/>
+        <location filename="../src/main/globals.h" line="14"/>
         <source>Download</source>
         <comment>Download button in search results</comment>
         <translation>İndir</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="17"/>
+        <location filename="../src/main/globals.h" line="16"/>
         <source>Title</source>
         <translation>Başlık</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="18"/>
+        <location filename="../src/main/globals.h" line="17"/>
         <source>Description</source>
         <translation>Açıklama</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="19"/>
+        <location filename="../src/main/globals.h" line="18"/>
         <source>Progress</source>
         <translation>İlerleme</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="20"/>
+        <location filename="../src/main/globals.h" line="19"/>
         <source>Speed</source>
         <translation>Hız</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="21"/>
+        <location filename="../src/main/globals.h" line="20"/>
         <source>Action/Status</source>
         <translation>Eylem/Durum</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="22"/>
+        <location filename="../src/main/globals.h" line="21"/>
         <source>Status</source>
         <translation>Durum</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="23"/>
+        <location filename="../src/main/globals.h" line="22"/>
         <source>Size</source>
         <translation>Boyut</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="24"/>
+        <location filename="../src/main/globals.h" line="23"/>
         <source>Length</source>
         <translation>Uzunluk</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="25"/>
+        <location filename="../src/main/globals.h" line="24"/>
         <source>Search on %1 failed with error %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="188"/>
+        <location filename="../src/gui/searchresultform.cpp" line="165"/>
         <source>All Video Sites</source>
         <translation>Tüm Video Siteleri</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="300"/>
+        <location filename="../src/gui/searchresultform.cpp" line="269"/>
         <source>What videos would you like to download?</source>
         <translation>Hangi videoları indirmek istiyorsunuz?</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="303"/>
+        <location filename="../src/gui/searchresultform.cpp" line="272"/>
         <source>Download all</source>
         <translation>Tümünü indir</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="304"/>
+        <location filename="../src/gui/searchresultform.cpp" line="273"/>
         <source>Current one</source>
         <translation>Mevcut video</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="305"/>
+        <location filename="../src/gui/searchresultform.cpp" line="274"/>
         <source>Cancel</source>
         <translation>İptal</translation>
     </message>
@@ -1265,7 +1270,7 @@ Yine de silmek istiyor musunuz?</translation>
 <context>
     <name>SitesCombo</name>
     <message>
-        <location filename="../src/gui/sitescombo.cpp" line="118"/>
+        <location filename="../src/gui/sitescombo.cpp" line="111"/>
         <source>All Sites</source>
         <translation>Tüm Siteler</translation>
     </message>
@@ -1311,7 +1316,7 @@ Yine de silmek istiyor musunuz?</translation>
 <context>
     <name>VideoPlayerWidget</name>
     <message>
-        <location filename="../src/gui/videoplayerwidget.cpp" line="369"/>
+        <location filename="../src/gui/videoplayerwidget.cpp" line="357"/>
         <source>File %1 cannot be played as it doesn&apos;t exist.</source>
         <translation>%1 dosyası mevcut olmadığı için oynatılamıyor.</translation>
     </message>

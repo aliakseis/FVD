@@ -360,13 +360,9 @@ set(TS_FILES
 	${CMAKE_SOURCE_DIR}/translations/translations_tr.ts
 	${CMAKE_SOURCE_DIR}/translations/translations_de.ts
 	${CMAKE_SOURCE_DIR}/translations/translations_it.ts
+	${CMAKE_SOURCE_DIR}/translations/translations_ru.ts
 )
 
-if(DEVELOPER_FEATURES)
-	set(TS_FILES ${TS_FILES}
-		${CMAKE_SOURCE_DIR}/translations/translations_ru.ts
-	)
-endif(DEVELOPER_FEATURES)
 
 set(FILES_TO_TRANSLATE
 	${CMAKE_SOURCE_DIR}/resources/qml2/LibraryItemDelegate.qml

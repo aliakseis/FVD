@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="en">
+<TS version="2.1" language="en">
 <context>
     <name>AboutDialog</name>
     <message>
@@ -29,94 +29,127 @@
         <translation>Версия %1</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/main/Branding.h" line="7"/>
+        <location filename="../build/src/branding.hxx" line="6"/>
         <source>Free Video Downloader</source>
         <translation>Бесплатный видео-загрузчик</translation>
+    </message>
+    <message>
+        <location filename="../build/src/branding.hxx" line="7"/>
+        <source>aliakseis</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DownloadsControl</name>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="245"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="242"/>
         <source>Start download</source>
         <translation>Начать загрузку</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="248"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="245"/>
         <source>Pause download</source>
         <translation>Остановка загрузки</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="251"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="248"/>
         <source>Stop download</source>
         <translation>Остановить загрузку</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="254"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="251"/>
         <source>Remove download</source>
         <translation>Удалить закачку</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="257"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="254"/>
         <source>Restart download</source>
         <translation>Перезагрузка скачать</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="260"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="257"/>
         <source>Move up</source>
         <translation>Перемещение вверх</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="263"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="260"/>
         <source>Move down</source>
         <translation>Переместить вниз</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="266"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="263"/>
         <source>Enable traffic limit</source>
         <translation>Учитывать ограничение скорости</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadscontrol.h" line="269"/>
+        <location filename="../build/src/ui_downloadscontrol.h" line="266"/>
         <source>Traffic limit, kbps</source>
         <translation>Максимальная скорость, kbps</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadscontrol.cpp" line="69"/>
+        <location filename="../src/gui/downloadscontrol.cpp" line="55"/>
         <source>Are you sure you want to remove this download? If download completed file will not be removed.</source>
-        <translation>Вы хотите удалить эту закачку из списка? Если она завершилась, файл от этого не удалиться.</translation>
+        <translation>Вы хотите удалить эту закачку из списка? Если она завершилась, файл от этого не удалится.</translation>
     </message>
 </context>
 <context>
     <name>DownloadsForm</name>
     <message>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="147"/>
+        <location filename="../build/src/ui_downloadsform.h" line="157"/>
         <source>Play file</source>
         <translation>Воспроизведение файла</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="148"/>
+        <location filename="../build/src/ui_downloadsform.h" line="158"/>
         <source>Show in folder</source>
         <translation>Показать в папке</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="149"/>
+        <location filename="../build/src/ui_downloadsform.h" line="159"/>
         <source>Remove from list</source>
         <translation>Удалить из списка</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="151"/>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="156"/>
+        <location filename="../build/src/ui_downloadsform.h" line="161"/>
+        <location filename="../build/src/ui_downloadsform.h" line="182"/>
         <source>Clear list</source>
         <translation>Очистить список</translation>
     </message>
-    <message utf8="true">
-        <location filename="../.build-win/src/ui_downloadsform.h" line="154"/>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="163"/>
+        <location filename="../build/src/ui_downloadsform.h" line="165"/>
+        <source>Pause selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="167"/>
+        <location filename="../build/src/ui_downloadsform.h" line="169"/>
+        <source>Resume selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="171"/>
+        <location filename="../build/src/ui_downloadsform.h" line="173"/>
+        <source>Stop selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="175"/>
+        <source>Show in Library</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="177"/>
+        <source>Show selected video in the Library tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_downloadsform.h" line="180"/>
         <source>Search videos…</source>
         <translation>Поиск видео...</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_downloadsform.h" line="155"/>
+        <location filename="../build/src/ui_downloadsform.h" line="181"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
@@ -127,8 +160,8 @@
     </message>
     <message>
         <location filename="../src/main/globals.h" line="27"/>
-        <source>Connecting...</source>
-        <translation>Подключение...</translation>
+        <source>Preparing...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/main/globals.h" line="28"/>
@@ -161,19 +194,73 @@
         <translation>Завершено</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="340"/>
+        <location filename="../src/gui/downloadsform.cpp" line="395"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="340"/>
+        <location filename="../src/gui/downloadsform.cpp" line="391"/>
+        <location filename="../src/gui/downloadsform.cpp" line="393"/>
         <source>Are you sure want to remove %1 item(s)?</source>
         <translation>Вы уверены, хотите удалить %1 элемент(ы)?</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="438"/>
+        <location filename="../src/gui/downloadsform.cpp" line="392"/>
+        <source>All downloaded files will be removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/downloadsform.cpp" line="501"/>
         <source>&lt;b&gt;Are you sure want to clear the download list?&lt;/b&gt;</source>
         <translation>&lt;b&gt;Вы действительно хотите очистить список закачек?&lt;/b&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>ErrorMsg</name>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="9"/>
+        <source>Unknown error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="10"/>
+        <source>Can&apos;t open file for writing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="11"/>
+        <source>Downloader network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="12"/>
+        <source>HTTP status &gt; 400</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="13"/>
+        <source>Invalid content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="14"/>
+        <source>Endless redirect loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.cpp" line="15"/>
+        <source>Unknown file error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.h" line="35"/>
+        <source>Network error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/utilities/errorcode.h" line="36"/>
+        <source>HTTP status: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -186,40 +273,40 @@
 <context>
     <name>ItemsDelegate</name>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="151"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="153"/>
         <source>Completed</source>
         <translation>Завершено</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="154"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="156"/>
         <source>Paused</source>
         <translation>Приостановлено</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="157"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="159"/>
         <source>Canceled</source>
         <translation>Отменено</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="160"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="162"/>
         <source>Failed</source>
         <translation>Не удалось</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="163"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="165"/>
         <source>Queued</source>
         <translation>В очереди</translation>
     </message>
 </context>
 <context>
     <name>LibraryForm</name>
-    <message utf8="true">
-        <location filename="../.build-win/src/ui_libraryform.h" line="108"/>
+    <message>
+        <location filename="../build/src/ui_libraryform.h" line="104"/>
         <source>Search videos…</source>
         <translation>Поиск видео...</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_libraryform.h" line="109"/>
+        <location filename="../build/src/ui_libraryform.h" line="105"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
@@ -232,12 +319,12 @@
 <context>
     <name>LibraryItemDelegate</name>
     <message>
-        <location filename="../resources/qml/LibraryItemDelegate.qml" line="179"/>
+        <location filename="../resources/qml2/LibraryItemDelegate.qml" line="184"/>
         <source>Play</source>
         <translation>Играть</translation>
     </message>
     <message>
-        <location filename="../resources/qml/LibraryItemDelegate.qml" line="206"/>
+        <location filename="../resources/qml2/LibraryItemDelegate.qml" line="210"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -252,7 +339,12 @@ Do you want to watch it with internal player?</source>
 Вы хотите посмотреть его встроенным?</translation>
     </message>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="119"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="102"/>
+        <source>File missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="127"/>
         <source>Are you sure you want to delete &apos;%1&apos;?</source>
         <translation>Вы уверены, что вы хотите удалить &apos;%1&apos;?</translation>
     </message>
@@ -260,27 +352,27 @@ Do you want to watch it with internal player?</source>
 <context>
     <name>MainToolBar</name>
     <message>
-        <location filename="../.build-win/src/ui_maintoolbar.h" line="223"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="149"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_maintoolbar.h" line="225"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="153"/>
         <source>Downloads</source>
         <translation>Закачки</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_maintoolbar.h" line="227"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="157"/>
         <source>Library</source>
         <translation>Библиотека</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_maintoolbar.h" line="228"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="161"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_maintoolbar.h" line="229"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="164"/>
         <source>Settings</source>
         <translation>Параметры</translation>
     </message>
@@ -288,42 +380,32 @@ Do you want to watch it with internal player?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="166"/>
+        <location filename="../build/src/ui_mainwindow.h" line="153"/>
         <source>Information</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="167"/>
+        <location filename="../build/src/ui_mainwindow.h" line="154"/>
         <source>Configure</source>
         <translation>Настройка</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="168"/>
+        <location filename="../build/src/ui_mainwindow.h" line="155"/>
         <source>Search video</source>
         <translation>Поиск видео</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="169"/>
-        <source>Exit</source>
-        <translation>Выход</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="170"/>
-        <source>Alt+X</source>
-        <translation>ALT + X</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="171"/>
+        <location filename="../build/src/ui_mainwindow.h" line="156"/>
         <source>Main toolbar</source>
         <translation>Главная панель инструментов</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="173"/>
+        <location filename="../build/src/ui_mainwindow.h" line="158"/>
         <source>Search pane</source>
         <translation>Панель поиска</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_mainwindow.h" line="175"/>
+        <location filename="../build/src/ui_mainwindow.h" line="160"/>
         <source>Dock widget</source>
         <translation>Док виджет</translation>
     </message>
@@ -338,18 +420,29 @@ Do you want to watch it with internal player?</source>
         <translation>&lt;b&gt;Не удается создать файл «%1»&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainwindow.cpp" line="135"/>
-        <source>Are you sure you want to exit %1?</source>
-        <translation>Вы уверены, что вы хотите выйти из %1?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainwindow.cpp" line="136"/>
-        <source>Click Yes to exit application, or No to hide. You will be able to open in from tray.</source>
-        <translation>Нажмите кнопку Да, чтобы выйти из приложения, или нет, чтобы скрыть. Вы сможете открыть в из лотка.</translation>
-    </message>
-    <message>
         <source></source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainwindow.cpp" line="243"/>
+        <location filename="../src/gui/mainwindow.cpp" line="247"/>
+        <source>&apos; has been downloaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainwindow.cpp" line="583"/>
+        <source>%1 continues running. Click this button to open it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/ui_utils/mainwindowwithtray.cpp" line="17"/>
+        <source>Exit %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/common/ui_utils/mainwindowwithtray.cpp" line="18"/>
+        <source>Show %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -369,152 +462,152 @@ Do you want to watch it with internal player?</source>
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="619"/>
+        <location filename="../build/src/ui_preferences.h" line="611"/>
         <source>Settings</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="620"/>
+        <location filename="../build/src/ui_preferences.h" line="612"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="621"/>
+        <location filename="../build/src/ui_preferences.h" line="613"/>
         <source>Display max items per site</source>
         <translation>Максимальное количество результатов в поиске на сайт</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="622"/>
+        <location filename="../build/src/ui_preferences.h" line="614"/>
         <source>Select video by</source>
         <translation>Поиск по</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="627"/>
+        <location filename="../build/src/ui_preferences.h" line="617"/>
         <source>View count</source>
         <translation>Числу просмотров</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="629"/>
+        <location filename="../build/src/ui_preferences.h" line="619"/>
         <source>Download</source>
         <translation>Скачать</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="630"/>
+        <location filename="../build/src/ui_preferences.h" line="620"/>
         <source>Output path:</source>
         <translation>Папка закачек:</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="631"/>
+        <location filename="../build/src/ui_preferences.h" line="621"/>
         <source>Concurrent downloads</source>
         <translation>Параллельные закачки</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="632"/>
+        <location filename="../build/src/ui_preferences.h" line="622"/>
         <source>Traffic limit</source>
         <translation>Максимальная скорость</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="633"/>
+        <location filename="../build/src/ui_preferences.h" line="623"/>
         <source>kbps</source>
         <translation>кбит/с</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="634"/>
+        <location filename="../build/src/ui_preferences.h" line="624"/>
         <source>Clear Downloads list on closing</source>
         <translation>Очистить список закачек на закрытие</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="635"/>
+        <location filename="../build/src/ui_preferences.h" line="625"/>
         <source>Search in</source>
         <translation>Поиск в</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="636"/>
-        <source>Adult Sites</source>
-        <translation>Сайты для взрослых</translation>
+        <location filename="../build/src/ui_preferences.h" line="626"/>
+        <source>Quit app when closing window</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="637"/>
+        <location filename="../build/src/ui_preferences.h" line="627"/>
+        <source>Open library items in folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_preferences.h" line="628"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="639"/>
+        <location filename="../build/src/ui_preferences.h" line="630"/>
         <source>Select your language:</source>
         <translation>Выберите ваш язык:</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="640"/>
+        <location filename="../build/src/ui_preferences.h" line="631"/>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="641"/>
-        <source>Many language files must be translated. Thank you for translators who would like to translate these files.</source>
-        <translation>Многие языковые файлы должны быть переведены. Благодарю вас за переводчиков, которые хотел бы перевести эти файлы.</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="642"/>
+        <location filename="../build/src/ui_preferences.h" line="632"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="644"/>
+        <location filename="../build/src/ui_preferences.h" line="634"/>
         <source>Configure your proxy</source>
         <translation>Настройка прокси</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="645"/>
+        <location filename="../build/src/ui_preferences.h" line="635"/>
         <source>Use Proxy Server</source>
         <translation>Использовать прокси-сервер</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="646"/>
+        <location filename="../build/src/ui_preferences.h" line="636"/>
         <source>Proxy Address:</source>
         <translation>Адрес прокси-сервера:</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="647"/>
+        <location filename="../build/src/ui_preferences.h" line="637"/>
         <source>Proxy Port:</source>
         <translation>Порт прокси:</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="648"/>
+        <location filename="../build/src/ui_preferences.h" line="638"/>
         <source>Proxy</source>
         <translation>Прокси</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="625"/>
+        <location filename="../build/src/ui_preferences.h" line="615"/>
         <source>Relevance</source>
         <translation>Актуальности</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_preferences.h" line="626"/>
+        <location filename="../build/src/ui_preferences.h" line="616"/>
         <source>Date added</source>
         <translation>Дате добавления</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="142"/>
+        <location filename="../src/gui/preferences.cpp" line="146"/>
         <source>Enter a valid proxy address.</source>
         <translation>Введите допустимый прокси-адрес.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="151"/>
+        <location filename="../src/gui/preferences.cpp" line="155"/>
         <source>Enter a valid proxy port.</source>
         <translation>Введите допустимый прокси порт.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="169"/>
+        <location filename="../src/gui/preferences.cpp" line="183"/>
         <source>The folder &quot;%1&quot; cannot be created. Please choose another one.</source>
         <translation>Не удается создать папку «%1». Пожалуйста, выберите другой.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="201"/>
+        <location filename="../src/gui/preferences.cpp" line="216"/>
         <source>The folder &quot;%1&quot; cannot be used, as there is no write access for %2. Please choose another one.</source>
         <translation>Папка «%1» не может использоваться, как нет нет доступа на запись для %2. Пожалуйста, выберите другой.</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="14"/>
+        <location filename="../src/main/globals.h" line="13"/>
         <source>Download to:</source>
         <comment>Download to dialog header</comment>
         <translation type="unfinished">Скачайте:</translation>
@@ -1041,17 +1134,17 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/logic/errors.cpp" line="10"/>
+        <location filename="../src/logic/errors.cpp" line="11"/>
         <source>Failed to extract links</source>
         <translation>Не удалось извлечь ссылки</translation>
     </message>
     <message>
-        <location filename="../src/logic/errors.cpp" line="11"/>
+        <location filename="../src/logic/errors.cpp" line="12"/>
         <source>Network error</source>
         <translation>Ошибка сети</translation>
     </message>
     <message>
-        <location filename="../src/logic/downloadentity.cpp" line="292"/>
+        <location filename="../src/logic/downloadentity.cpp" line="288"/>
         <source>&lt;b&gt;NOTE: You have already downloaded this video. Would you like to download it again?&lt;/b&gt;</source>
         <translation>&lt;b&gt;Примечание: вы уже загрузили это видео. Вы хотели бы скачать его снова?&lt;/b&gt;</translation>
     </message>
@@ -1059,116 +1152,136 @@ Do you want to delete it anyway?</source>
 <context>
     <name>SearchManager</name>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="227"/>
+        <location filename="../src/logic/searchmanager.cpp" line="180"/>
         <source>Set new path</source>
         <translation>Задать новый путь</translation>
     </message>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="229"/>
+        <location filename="../src/logic/searchmanager.cpp" line="181"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
 </context>
 <context>
     <name>SearchResultForm</name>
-    <message utf8="true">
-        <location filename="../.build-win/src/ui_searchresultform.h" line="181"/>
+    <message>
+        <location filename="../build/src/ui_searchresultform.h" line="186"/>
+        <source>Show in Download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_searchresultform.h" line="188"/>
+        <source>Show selected video in the Downloads tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_searchresultform.h" line="190"/>
+        <source>Show in Library</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_searchresultform.h" line="192"/>
+        <source>Show selected video in the Library tab</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_searchresultform.h" line="196"/>
         <source>Search videos…</source>
         <translation>Поиск видео...</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_searchresultform.h" line="182"/>
+        <location filename="../build/src/ui_searchresultform.h" line="197"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_searchresultform.h" line="183"/>
+        <location filename="../build/src/ui_searchresultform.h" line="198"/>
         <source>Stop search</source>
         <translation>Остановить поиск</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_searchresultform.h" line="184"/>
+        <location filename="../build/src/ui_searchresultform.h" line="199"/>
         <source>&lt;&lt; Previous</source>
         <translation>&lt;&lt; Предыдущих</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_searchresultform.h" line="185"/>
+        <location filename="../build/src/ui_searchresultform.h" line="200"/>
         <source>Next &gt;&gt;</source>
         <translation>Следующая &gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="15"/>
+        <location filename="../src/main/globals.h" line="14"/>
         <source>Download</source>
         <comment>Download button in search results</comment>
         <translation type="unfinished">Скачать</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="17"/>
+        <location filename="../src/main/globals.h" line="16"/>
         <source>Title</source>
         <translation>Название</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="18"/>
+        <location filename="../src/main/globals.h" line="17"/>
         <source>Description</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="19"/>
+        <location filename="../src/main/globals.h" line="18"/>
         <source>Progress</source>
         <translation>Прогресс</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="20"/>
+        <location filename="../src/main/globals.h" line="19"/>
         <source>Speed</source>
         <translation>Скорость</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="21"/>
+        <location filename="../src/main/globals.h" line="20"/>
         <source>Action/Status</source>
         <translation>Состояние действия</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="22"/>
+        <location filename="../src/main/globals.h" line="21"/>
         <source>Status</source>
         <translation>Статус</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="23"/>
+        <location filename="../src/main/globals.h" line="22"/>
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="24"/>
+        <location filename="../src/main/globals.h" line="23"/>
         <source>Length</source>
         <translation>Длина</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="164"/>
+        <location filename="../src/main/globals.h" line="24"/>
+        <source>Search on %1 failed with error %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gui/searchresultform.cpp" line="165"/>
         <source>All Video Sites</source>
         <translation>Все видео сайты</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="165"/>
-        <source>All Adult Sites</source>
-        <translation>Все взрослые сайты</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/searchresultform.cpp" line="277"/>
+        <location filename="../src/gui/searchresultform.cpp" line="269"/>
         <source>What videos would you like to download?</source>
         <translation>Какие видео вы хотите скачать?</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="280"/>
+        <location filename="../src/gui/searchresultform.cpp" line="272"/>
         <source>Download all</source>
         <translation>Скачать все</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="281"/>
+        <location filename="../src/gui/searchresultform.cpp" line="273"/>
         <source>Current one</source>
         <translation>Текущий</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="282"/>
+        <location filename="../src/gui/searchresultform.cpp" line="274"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -1176,83 +1289,45 @@ Do you want to delete it anyway?</source>
 <context>
     <name>SitesCombo</name>
     <message>
-        <location filename="../src/gui/sitescombo.cpp" line="117"/>
+        <location filename="../src/gui/sitescombo.cpp" line="111"/>
         <source>All Sites</source>
         <translation>Все сайты</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/sitescombo.cpp" line="151"/>
-        <source>Yes, I am over 18</source>
-        <translation>Да, я старше 18 лет</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/sitescombo.cpp" line="151"/>
-        <source>Cancel</source>
-        <translation>Отмена</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/sitescombo.cpp" line="151"/>
-        <source>&lt;b&gt;Warning:&lt;/b&gt; You are about to view content that may only be appropriate for users at least 18 years of age. Do you wish to continue?</source>
-        <translation>&lt;b&gt;Предупреждение:&lt;/b&gt; Вы собираетесь просмотреть содержимое, которое может быть только для пользователей по меньшей мере 18 лет. Вы хотите продолжить?</translation>
-    </message>
-</context>
-<context>
-    <name>SocialNetworks</name>
-    <message>
-        <location filename="../.build-win/src/ui_socialnetworks.h" line="122"/>
-        <source>Share it on facebook</source>
-        <translation>Поделиться на facebook</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_socialnetworks.h" line="124"/>
-        <source>F</source>
-        <translation>F</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_socialnetworks.h" line="126"/>
-        <source>Share it on twitter</source>
-        <translation>Поделитесь на Твиттере</translation>
-    </message>
-    <message>
-        <location filename="../.build-win/src/ui_socialnetworks.h" line="130"/>
-        <source>Share it on google+</source>
-        <translation>Доля его на google +</translation>
     </message>
 </context>
 <context>
     <name>VideoControl</name>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="144"/>
+        <location filename="../build/src/ui_videocontrol.h" line="141"/>
         <source>Pause</source>
         <translation>Пауза</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="148"/>
+        <location filename="../build/src/ui_videocontrol.h" line="145"/>
         <source>Stop</source>
         <translation>Остановка</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="152"/>
+        <location filename="../build/src/ui_videocontrol.h" line="149"/>
         <source>Mute</source>
         <translation>Немой</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="156"/>
+        <location filename="../build/src/ui_videocontrol.h" line="153"/>
         <source>Browse</source>
         <translation>Обзор</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="160"/>
+        <location filename="../build/src/ui_videocontrol.h" line="157"/>
         <source>Volume control</source>
         <translation>Регулятор громкости</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="164"/>
+        <location filename="../build/src/ui_videocontrol.h" line="161"/>
         <source>Play</source>
         <translation>Играть</translation>
     </message>
     <message>
-        <location filename="../.build-win/src/ui_videocontrol.h" line="162"/>
+        <location filename="../build/src/ui_videocontrol.h" line="159"/>
         <source>%p%</source>
         <translation>% p %</translation>
     </message>
@@ -1260,7 +1335,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>VideoPlayerWidget</name>
     <message>
-        <location filename="../src/gui/videoplayerwidget.cpp" line="330"/>
+        <location filename="../src/gui/videoplayerwidget.cpp" line="357"/>
         <source>File %1 cannot be played as it doesn&apos;t exist.</source>
         <translation>Файл %1 не может воспроизводиться, поскольку он не существует.</translation>
     </message>
@@ -1268,88 +1343,9 @@ Do you want to delete it anyway?</source>
 <context>
     <name>VideoQualityDialog</name>
     <message>
-        <location filename="../.build-win/src/ui_videoqualitydialog.h" line="81"/>
+        <location filename="../build/src/ui_videoqualitydialog.h" line="77"/>
         <source>Dialog</source>
         <translation>Диалоговое окно</translation>
-    </message>
-</context>
-<context>
-    <name>advisoryUpdateDialog</name>
-    <message>
-        <location filename="../.build-win/src/common/server_communications/ui_advisory_update_dialog.h" line="167"/>
-        <source>Update Available.</source>
-        <translation>Доступно обновление.</translation>
-    </message>
-    <message utf8="true">
-        <location filename="../.build-win/src/common/server_communications/ui_advisory_update_dialog.h" line="168"/>
-        <source>Don’t remind me for a week</source>
-        <translation>Не напоминают мне за неделю</translation>
-    </message>
-    <message>
-        <location filename="../src/common/server_communications/server_communications_globals.h" line="23"/>
-        <source>A new version of %1 is available.&lt;br/&gt;Do you want to upgrade to the latest version now?</source>
-        <translation>Доступна новая версия %1. &lt;br/&gt;Вы хотите обновить до последней версии в настоящее время?</translation>
-    </message>
-</context>
-<context>
-    <name>progressDialog</name>
-    <message>
-        <location filename="../src/common/server_communications/server_communications_globals.h" line="22"/>
-        <source>Please hold while the latest version of %1 is being downloaded.</source>
-        <translation>Пожалуйста, подождите, пока загружается последняя версия %1.</translation>
-    </message>
-    <message>
-        <location filename="../src/common/server_communications/server_communications_globals.h" line="24"/>
-        <source>We&apos;d like to take this opportunity to thank you for using %1.</source>
-        <translation>Мы хотели бы воспользоваться этой возможностью, чтобы поблагодарить вас за использование %1.</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::DailymotionStrategy</name>
-    <message>
-        <location filename="../src/logic/strategies/dailymotionstrategy.cpp" line="66"/>
-        <source>Strategy Dailymotion search failed (QNetworkReply::NetworkError %1)</source>
-        <translation>Стратегия Dailymotion Поиск не удалось (QNetworkReply::NetworkError %1)</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::MetacafeStrategy</name>
-    <message>
-        <location filename="../src/logic/strategies/metacafestrategy.cpp" line="66"/>
-        <source>Strategy Metacafe search failed (QNetworkReply::NetworkError %1)</source>
-        <translation>Стратегия Metacafe Поиск не удалось (QNetworkReply::NetworkError %1)</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::RedtubeStrategy</name>
-    <message>
-        <location filename="../src/logic/strategies/redtubestrategy.cpp" line="139"/>
-        <source>Strategy Redtube search failed (QNetworkReply::NetworkError %1)</source>
-        <translation>Стратегия Redtube Поиск не удалось (QNetworkReply::NetworkError %1)</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::VimeoStrategy</name>
-    <message>
-        <location filename="../src/logic/strategies/vimeostrategy.cpp" line="197"/>
-        <source>Strategy Vimeo search failed (QNetworkReply::NetworkError %1)</source>
-        <translation>Стратегия Vimeo Поиск не удалось (QNetworkReply::NetworkError %1)</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::WithoutApiHelper</name>
-    <message>
-        <location filename="../src/logic/strategies/strategyinterface.cpp" line="80"/>
-        <source>%1 search failed</source>
-        <translation>Поиск %1 не удалось</translation>
-    </message>
-</context>
-<context>
-    <name>strategies::YoutubeStrategy</name>
-    <message>
-        <location filename="../src/logic/strategies/youtubestrategy.cpp" line="110"/>
-        <source>Youtube search failed</source>
-        <translation>YouTube поиска не удалось</translation>
     </message>
 </context>
 </TS>

@@ -4,27 +4,27 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/main/globals.h" line="40"/>
+        <location filename="../src/main/globals.h" line="39"/>
         <source>About %1</source>
         <translation>Acerca de %1</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="43"/>
+        <location filename="../src/main/globals.h" line="42"/>
         <source>Help</source>
         <translation>Ayuda</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="44"/>
+        <location filename="../src/main/globals.h" line="43"/>
         <source>Feedback</source>
         <translation>Comentarios</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="42"/>
+        <location filename="../src/main/globals.h" line="41"/>
         <source>Copyright 2013 %1, All Rights reserved</source>
         <translation>Copyright 2013 %1, todos los derechos reservados</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="41"/>
+        <location filename="../src/main/globals.h" line="40"/>
         <source>Version %1</source>
         <translation>Versión %1</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>Límite de tráfico, kbps</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadscontrol.cpp" line="69"/>
+        <location filename="../src/gui/downloadscontrol.cpp" line="55"/>
         <source>Are you sure you want to remove this download? If download completed file will not be removed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -154,63 +154,63 @@
         <translation>Buscar</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="27"/>
+        <location filename="../src/main/globals.h" line="26"/>
         <source>Downloading</source>
         <translation>Descargando</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="28"/>
+        <location filename="../src/main/globals.h" line="27"/>
         <source>Preparing...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="29"/>
+        <location filename="../src/main/globals.h" line="28"/>
         <source>Queued</source>
         <translation>En cola</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="30"/>
+        <location filename="../src/main/globals.h" line="29"/>
         <source>Waiting...</source>
         <translation>Esperando...</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="31"/>
+        <location filename="../src/main/globals.h" line="30"/>
         <source>Paused</source>
         <translation>En pausa</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="32"/>
+        <location filename="../src/main/globals.h" line="31"/>
         <source>Canceled</source>
         <translation>Cancelado</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="33"/>
+        <location filename="../src/main/globals.h" line="32"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="34"/>
+        <location filename="../src/main/globals.h" line="33"/>
         <source>Completed</source>
         <translation>Completado</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="401"/>
+        <location filename="../src/gui/downloadsform.cpp" line="395"/>
         <source>Warning</source>
         <translation>Advertencia</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="397"/>
-        <location filename="../src/gui/downloadsform.cpp" line="398"/>
+        <location filename="../src/gui/downloadsform.cpp" line="391"/>
+        <location filename="../src/gui/downloadsform.cpp" line="393"/>
         <source>Are you sure want to remove %1 item(s)?</source>
         <translation>¿Está seguro de que desea eliminar %1 elemento(s)?</translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="397"/>
+        <location filename="../src/gui/downloadsform.cpp" line="392"/>
         <source>All downloaded files will be removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/downloadsform.cpp" line="513"/>
+        <location filename="../src/gui/downloadsform.cpp" line="501"/>
         <source>&lt;b&gt;Are you sure want to clear the download list?&lt;/b&gt;</source>
         <translation>&lt;b&gt;Está seguro de que desea borrar la lista de descargas?&lt;/b&gt;</translation>
     </message>
@@ -253,12 +253,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/common/utilities/errorcode.h" line="36"/>
+        <location filename="../src/common/utilities/errorcode.h" line="35"/>
         <source>Network error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/common/utilities/errorcode.h" line="37"/>
+        <location filename="../src/common/utilities/errorcode.h" line="36"/>
         <source>HTTP status: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -266,27 +266,27 @@
 <context>
     <name>ItemsDelegate</name>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="158"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="153"/>
         <source>Completed</source>
         <translation>Completado</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="161"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="156"/>
         <source>Paused</source>
         <translation>En pausa</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="164"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="159"/>
         <source>Canceled</source>
         <translation>Cancelado</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="167"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="162"/>
         <source>Failed</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemsdelegate.cpp" line="170"/>
+        <location filename="../src/gui/itemsdelegate.cpp" line="165"/>
         <source>Queued</source>
         <translation>En cola</translation>
     </message>
@@ -304,7 +304,7 @@
         <translation>Buscar</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="36"/>
+        <location filename="../src/main/globals.h" line="35"/>
         <source>Type search query here...</source>
         <translation>Escriba aquí lo que desea buscar...</translation>
     </message>
@@ -325,19 +325,19 @@
 <context>
     <name>LibraryQmlListener</name>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="96"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="92"/>
         <source>Video file cannot be played with default video player.
 Do you want to watch it with internal player?</source>
         <translation>Do you want to watch it with internal player?
 ¿Desea mirarlo con el reproductor interno?</translation>
     </message>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="105"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="102"/>
         <source>File missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/logic/libraryqmllistener.cpp" line="130"/>
+        <location filename="../src/logic/libraryqmllistener.cpp" line="127"/>
         <source>Are you sure you want to delete &apos;%1&apos;?</source>
         <translation>¿Está seguro de que desea eliminar &apos;%1&apos;?</translation>
     </message>
@@ -345,27 +345,27 @@ Do you want to watch it with internal player?</source>
 <context>
     <name>MainToolBar</name>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="220"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="149"/>
         <source>Search</source>
         <translation>Buscar</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="222"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="153"/>
         <source>Downloads</source>
         <translation>Descargas</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="224"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="157"/>
         <source>Library</source>
         <translation>Biblioteca</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="225"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="161"/>
         <source>Help</source>
         <translation>Ayuda</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_maintoolbar.h" line="226"/>
+        <location filename="../build/src/ui_maintoolbar.h" line="164"/>
         <source>Settings</source>
         <translation>Configuración</translation>
     </message>
@@ -403,23 +403,23 @@ Do you want to watch it with internal player?</source>
         <translation>Dock widget</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="46"/>
+        <location filename="../src/main/globals.h" line="45"/>
         <source>&lt;b&gt;Cannot create directory &quot;%1&quot;&lt;/b&gt;</source>
         <translation>&lt;b&gt;No se puede crear el directorio &quot;%1&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="47"/>
+        <location filename="../src/main/globals.h" line="46"/>
         <source>&lt;b&gt;Cannot create file &quot;%1&quot;&lt;/b&gt;</source>
         <translation>&lt;b&gt;No se puede crear el archivo &quot;%1&quot;&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainwindow.cpp" line="222"/>
-        <location filename="../src/gui/mainwindow.cpp" line="226"/>
+        <location filename="../src/gui/mainwindow.cpp" line="243"/>
+        <location filename="../src/gui/mainwindow.cpp" line="247"/>
         <source>&apos; has been downloaded successfully</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/mainwindow.cpp" line="599"/>
+        <location filename="../src/gui/mainwindow.cpp" line="583"/>
         <source>%1 continues running. Click this button to open it</source>
         <translation type="unfinished"></translation>
     </message>
@@ -437,134 +437,139 @@ Do you want to watch it with internal player?</source>
 <context>
     <name>Preferences</name>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="605"/>
+        <location filename="../build/src/ui_preferences.h" line="611"/>
         <source>Settings</source>
         <translation>Configuración</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="606"/>
+        <location filename="../build/src/ui_preferences.h" line="612"/>
         <source>Search</source>
         <translation>Búsqueda</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="607"/>
+        <location filename="../build/src/ui_preferences.h" line="613"/>
         <source>Display max items per site</source>
         <translation>Máximo de elementos para mostrar por sitio</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="608"/>
+        <location filename="../build/src/ui_preferences.h" line="614"/>
         <source>Select video by</source>
         <translation>Seleccionar vídeo por</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="611"/>
+        <location filename="../build/src/ui_preferences.h" line="617"/>
         <source>View count</source>
         <translation>Ver contador</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="613"/>
+        <location filename="../build/src/ui_preferences.h" line="619"/>
         <source>Download</source>
         <translation>Descargar</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="614"/>
+        <location filename="../build/src/ui_preferences.h" line="620"/>
         <source>Output path:</source>
         <translation>Ruta de salida:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="615"/>
+        <location filename="../build/src/ui_preferences.h" line="621"/>
         <source>Concurrent downloads</source>
         <translation>Descargas simultáneas</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="616"/>
+        <location filename="../build/src/ui_preferences.h" line="622"/>
         <source>Traffic limit</source>
         <translation>Límite de tráfico</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="617"/>
+        <location filename="../build/src/ui_preferences.h" line="623"/>
         <source>kbps</source>
         <translation>Kbps</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="618"/>
+        <location filename="../build/src/ui_preferences.h" line="624"/>
         <source>Clear Downloads list on closing</source>
         <translation>Borrar lista de descargas al cerrar</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="619"/>
+        <location filename="../build/src/ui_preferences.h" line="625"/>
         <source>Search in</source>
         <translation>Buscar en</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="620"/>
+        <location filename="../build/src/ui_preferences.h" line="626"/>
         <source>Quit app when closing window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="621"/>
+        <location filename="../build/src/ui_preferences.h" line="627"/>
+        <source>Open library items in folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../build/src/ui_preferences.h" line="628"/>
         <source>General</source>
         <translation>General</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="623"/>
+        <location filename="../build/src/ui_preferences.h" line="630"/>
         <source>Select your language:</source>
         <translation>Seleccione su idioma:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="624"/>
+        <location filename="../build/src/ui_preferences.h" line="631"/>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="625"/>
+        <location filename="../build/src/ui_preferences.h" line="632"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="627"/>
+        <location filename="../build/src/ui_preferences.h" line="634"/>
         <source>Configure your proxy</source>
         <translation>Configurar el proxy</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="628"/>
+        <location filename="../build/src/ui_preferences.h" line="635"/>
         <source>Use Proxy Server</source>
         <translation>Utilizar servidor Proxy</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="629"/>
+        <location filename="../build/src/ui_preferences.h" line="636"/>
         <source>Proxy Address:</source>
         <translation>Dirección del proxy:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="630"/>
+        <location filename="../build/src/ui_preferences.h" line="637"/>
         <source>Proxy Port:</source>
         <translation>Puerto del proxy:</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="631"/>
+        <location filename="../build/src/ui_preferences.h" line="638"/>
         <source>Proxy</source>
         <translation>Proxy</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="14"/>
+        <location filename="../src/main/globals.h" line="13"/>
         <source>Download to:</source>
         <comment>Download to dialog header</comment>
         <translation>Descargar a:</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="38"/>
+        <location filename="../src/main/globals.h" line="37"/>
         <source>English (English)</source>
         <comment>Language name in preferences</comment>
         <translation>Español (español)</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="609"/>
+        <location filename="../build/src/ui_preferences.h" line="615"/>
         <source>Relevance</source>
         <translation>Relevancia</translation>
     </message>
     <message>
-        <location filename="../build/src/ui_preferences.h" line="610"/>
+        <location filename="../build/src/ui_preferences.h" line="616"/>
         <source>Date added</source>
         <translation>Fecha de creación</translation>
     </message>
@@ -579,12 +584,12 @@ Do you want to watch it with internal player?</source>
         <translation>Introduzca un puerto de proxy válido.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="182"/>
+        <location filename="../src/gui/preferences.cpp" line="183"/>
         <source>The folder &quot;%1&quot; cannot be created. Please choose another one.</source>
         <translation>No se puede crear la carpeta &quot;%1&quot;. Seleccione otra.</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferences.cpp" line="214"/>
+        <location filename="../src/gui/preferences.cpp" line="216"/>
         <source>The folder &quot;%1&quot; cannot be used, as there is no write access for %2. Please choose another one.</source>
         <translation>La carpeta &quot;%1&quot; no puede utilizarse, ya que no hay acceso de escritura para %2. Seleccione otra.</translation>
     </message>
@@ -1110,17 +1115,17 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/logic/errors.cpp" line="10"/>
+        <location filename="../src/logic/errors.cpp" line="11"/>
         <source>Failed to extract links</source>
         <translation>Error al extraer enlaces</translation>
     </message>
     <message>
-        <location filename="../src/logic/errors.cpp" line="11"/>
+        <location filename="../src/logic/errors.cpp" line="12"/>
         <source>Network error</source>
         <translation>Error de red</translation>
     </message>
     <message>
-        <location filename="../src/logic/downloadentity.cpp" line="295"/>
+        <location filename="../src/logic/downloadentity.cpp" line="288"/>
         <source>&lt;b&gt;NOTE: You have already downloaded this video. Would you like to download it again?&lt;/b&gt;</source>
         <translation>&lt;b&gt;Nota: Ya ha descargado este vídeo. ¿Le gustaría volver a descargarlo?&lt;/b&gt;</translation>
     </message>
@@ -1128,12 +1133,12 @@ Do you want to delete it anyway?</source>
 <context>
     <name>SearchManager</name>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="200"/>
+        <location filename="../src/logic/searchmanager.cpp" line="180"/>
         <source>Set new path</source>
         <translation>Establecer nueva ruta</translation>
     </message>
     <message>
-        <location filename="../src/logic/searchmanager.cpp" line="202"/>
+        <location filename="../src/logic/searchmanager.cpp" line="181"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -1186,78 +1191,78 @@ Do you want to delete it anyway?</source>
         <translation>Siguiente &gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="15"/>
+        <location filename="../src/main/globals.h" line="14"/>
         <source>Download</source>
         <comment>Download button in search results</comment>
         <translation>Descargar</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="17"/>
+        <location filename="../src/main/globals.h" line="16"/>
         <source>Title</source>
         <translation>Título</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="18"/>
+        <location filename="../src/main/globals.h" line="17"/>
         <source>Description</source>
         <translation>Descripción</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="19"/>
+        <location filename="../src/main/globals.h" line="18"/>
         <source>Progress</source>
         <translation>Avance</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="20"/>
+        <location filename="../src/main/globals.h" line="19"/>
         <source>Speed</source>
         <translation>Velocidad</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="21"/>
+        <location filename="../src/main/globals.h" line="20"/>
         <source>Action/Status</source>
         <translation>Acción/Estado</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="22"/>
+        <location filename="../src/main/globals.h" line="21"/>
         <source>Status</source>
         <translation>Estado</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="23"/>
+        <location filename="../src/main/globals.h" line="22"/>
         <source>Size</source>
         <translation>Tamaño</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="24"/>
+        <location filename="../src/main/globals.h" line="23"/>
         <source>Length</source>
         <translation>Longitud</translation>
     </message>
     <message>
-        <location filename="../src/main/globals.h" line="25"/>
+        <location filename="../src/main/globals.h" line="24"/>
         <source>Search on %1 failed with error %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="188"/>
+        <location filename="../src/gui/searchresultform.cpp" line="165"/>
         <source>All Video Sites</source>
         <translation>Todos los sitios de vídeo</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="300"/>
+        <location filename="../src/gui/searchresultform.cpp" line="269"/>
         <source>What videos would you like to download?</source>
         <translation>¿Qué vídeos quiere descargar?</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="303"/>
+        <location filename="../src/gui/searchresultform.cpp" line="272"/>
         <source>Download all</source>
         <translation>Descargar todos</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="304"/>
+        <location filename="../src/gui/searchresultform.cpp" line="273"/>
         <source>Current one</source>
         <translation>El actual</translation>
     </message>
     <message>
-        <location filename="../src/gui/searchresultform.cpp" line="305"/>
+        <location filename="../src/gui/searchresultform.cpp" line="274"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -1265,7 +1270,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>SitesCombo</name>
     <message>
-        <location filename="../src/gui/sitescombo.cpp" line="118"/>
+        <location filename="../src/gui/sitescombo.cpp" line="111"/>
         <source>All Sites</source>
         <translation>Todos los sitios</translation>
     </message>
@@ -1311,7 +1316,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>VideoPlayerWidget</name>
     <message>
-        <location filename="../src/gui/videoplayerwidget.cpp" line="369"/>
+        <location filename="../src/gui/videoplayerwidget.cpp" line="357"/>
         <source>File %1 cannot be played as it doesn&apos;t exist.</source>
         <translation>El archivo %1 no se puede reproducir porque ya no existe.</translation>
     </message>
