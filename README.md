@@ -13,4 +13,5 @@ For Fedora:
 ```
 sudo dnf install qt5-qtquickcontrols2-devel
 sudo dnf install qt5-qtbase-private-devel
+sudo dnf install qt5-linguist
 ```
