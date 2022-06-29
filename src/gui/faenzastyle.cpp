@@ -12,6 +12,10 @@ QRect windowsClassicBug;
 
 }  // namespace
 
+FaenzaStyle::FaenzaStyle() : QProxyStyle("Fusion")
+{
+}
+
 void FaenzaStyle::drawControl(ControlElement element, const QStyleOption* option, QPainter* painter,
                               const QWidget* widget) const
 {
