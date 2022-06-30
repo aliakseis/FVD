@@ -111,7 +111,7 @@ QVariant DownloadListModel::data(const QModelIndex& index, int role) const
     }
     else if (role == Qt::SizeHintRole && index.column() == DL_Icon)
     {
-        return QVariant(QSize(32, 32));
+        return QSize(32, 32);
     }
     else if (role == Qt::DecorationRole && index.column() == DL_Icon)
     {
@@ -128,7 +128,7 @@ QVariant DownloadListModel::data(const QModelIndex& index, int role) const
         switch (index.column())
         {
         case DL_Index:
-            return QVariant(downloadEntity->getParent()->originalUrl());
+            return downloadEntity->getParent()->originalUrl();
         default:
             return {};
         }

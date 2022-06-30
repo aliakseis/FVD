@@ -47,11 +47,11 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
             case SR_Index:
                 return {index.row() + 1};
             case SR_Title:
-                return QVariant(entity->m_videoInfo.videoTitle);
+                return entity->m_videoInfo.videoTitle;
             case SR_Description:
             {
                 QString s = entity->m_videoInfo.description;
-                return QVariant(s.remove(QRegExp("<[^>]*>")));
+                return s.remove(QRegExp("<[^>]*>"));
             }
             case SR_Status:
             {
@@ -85,7 +85,7 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
             case SR_Icon:
                 return entity->m_videoInfo.strategyName;
             case SR_Title:
-                return QVariant(entity->m_videoInfo.videoTitle);
+                return entity->m_videoInfo.videoTitle;
             case SR_Description:
                 return entity->m_videoInfo.description;
             case SR_Status:

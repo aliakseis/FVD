@@ -339,14 +339,7 @@ void FFmpegDecoder::openFileProcessing()
 
     if (m_videoStreamNumber >= 0)
     {
-        if (m_stableDisplay)
-        {
-            if (m_targetWidth == 0 || m_targetHeight == 0)
-            {
-                setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
-            }
-        }
-        else
+        if (!m_stableDisplay || m_targetWidth == 0 || m_targetHeight == 0)
         {
             setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
         }
