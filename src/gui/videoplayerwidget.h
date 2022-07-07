@@ -98,6 +98,8 @@ signals:
     void playingDownloadEntity(const DownloadEntity* entity);
     void playDownloadEntityAsynchronously(const QPointer<DownloadEntity>& entity);
 
+    void showPlaybutton(bool show);
+
 private:
     friend class VideoControl;
     friend class VideoBlackScreen;

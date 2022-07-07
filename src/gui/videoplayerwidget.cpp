@@ -110,7 +110,7 @@ void VideoPlayerWidget::processPreviewEntity()
     {
         setState(InitialState);
         hideSpinner();
-        m_controls->showPlaybutton(true);
+        emit showPlaybutton(true);
     }
 }
 
@@ -336,7 +336,7 @@ void VideoPlayerWidget::playFile(const QString& fileName)
         {
             decoder->play();
             setState(Playing);
-            m_controls->showPlaybutton(false);
+            emit showPlaybutton(false);
         }
 
         if (m_videoWidget->isFullScreen())
@@ -352,7 +352,7 @@ void VideoPlayerWidget::playFile(const QString& fileName)
     {
         m_progressBar->setDownloadedCounter(0);
         setState(InitialState);
-        m_controls->showPlaybutton(true);
+        emit showPlaybutton(true);
         QMessageBox::information(this, tr(PROJECT_NAME),
                                  tr("File %1 cannot be played as it doesn't exist.").arg(fileName));
     }
@@ -377,7 +377,7 @@ void VideoPlayerWidget::playPauseButtonAction()
 {
     if (state() == Paused || (state() == InitialState && m_currentEntity != nullptr))
     {
-        m_controls->showPlaybutton(false);
+        emit showPlaybutton(false);
         if (isPaused())
         {
             resumeVideo();
@@ -389,17 +389,17 @@ void VideoPlayerWidget::playPauseButtonAction()
     }
     else if (state() == PendingHeaderPaused)
     {
-        m_controls->showPlaybutton(false);
+        emit showPlaybutton(false);
         setState(PendingHeader);
     }
     else if (state() == Playing)
     {
-        m_controls->showPlaybutton(true);
+        emit showPlaybutton(true);
         pauseVideo();
     }
     else if (state() == PendingHeader)
     {
-        m_controls->showPlaybutton(true);
+        emit showPlaybutton(true);
         setState(PendingHeaderPaused);
     }
 }
@@ -419,7 +419,7 @@ void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/
         m_videoWidget->fullScreen(false);
     }
 
-    m_controls->showPlaybutton();
+    emit showPlaybutton(true);
 
     if (m_currentDownload != nullptr)
     {

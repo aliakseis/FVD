@@ -37,6 +37,8 @@ VideoControl::VideoControl(VideoPlayerWidget* parent)
     // preview start
     VERIFY(connect(this, SIGNAL(browse()), parent, SLOT(openVideoInBrowser())));
 
+    connect(parent, &VideoPlayerWidget::showPlaybutton, this, &VideoControl::onShowPlaybutton);
+
     m_height = geometry().height();
 
     background.load(":/control/background");
@@ -187,8 +189,8 @@ void VideoControl::on_btnPause_clicked() { videoPlayer->playPauseButtonAction();
 
 void VideoControl::on_btnStop_clicked()
 {
-    showPlaybutton(true);
     Q_ASSERT(videoPlayer);
+    emit videoPlayer->showPlaybutton(true);
     if (videoPlayer->state() != VideoPlayerWidget::InitialState)
     {
         videoPlayer->stopVideo(true);
@@ -199,7 +201,7 @@ void VideoControl::on_btnBrowser_clicked() { emit browse(); }
 
 void VideoControl::onProgramVolumeChange(double volume) { setVolume(volume * ui->progressBar->maximum(), true); }
 
-void VideoControl::showPlaybutton(bool show /* = true */)
+void VideoControl::onShowPlaybutton(bool show)
 {
     ui->btnPlay->setVisible(show);
     ui->btnPause->setVisible(!show);

@@ -17,7 +17,6 @@ public:
     explicit VideoControl(VideoPlayerWidget* parent = 0);
     ~VideoControl();
     void setVolume(int volume, bool onlyWidget = false);
-    void showPlaybutton(bool show = true);
 
     int getHeight() const { return m_height; };
     int getWidth() const;
@@ -34,6 +33,8 @@ protected:
 public slots:
     void on_btnPlay_clicked();
     void on_btnPause_clicked();
+
+    void onShowPlaybutton(bool show);
 
 private slots:
     void onProgramVolumeChange(double volume);
