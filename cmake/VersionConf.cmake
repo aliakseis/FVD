@@ -64,6 +64,8 @@ set(filecontent "
 	set(COMPANYNAME ${COMPANYNAME})
 	set(PRODUCTDOMAIN ${PROJECT_DOMAIN})
 	set(ICON_FILE     \"${ICON_FILE}\")
+	set(PLAY_ICON_FILE     \"${PLAY_ICON_FILE}\")
+	set(PAUSE_ICON_FILE     \"${PAUSE_ICON_FILE}\")
 	set(ICON_FILE_16bit     \"${ICON_FILE_16bit}\")
 	configure_file(\"${from_file}\" \"${to_file}\")
 	file(WRITE \"${CMAKE_CURRENT_BINARY_DIR}/version.hxx\" \"#define PROJECT_VERSION \\\"\${MAJOR_VER}.\${MINOR_VER1}.\${MINOR_VER2}.\${MINOR_VER3}\\\"\\n\")

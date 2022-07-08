@@ -47,12 +47,26 @@
 #endif  // Q_OS_MAC
 #include "ui_utils/uiutils.h"
 
-const char WindowGeometry[] = "WindowGeometry";
-const char WindowState[] = "WindowState";
+namespace {
 
-bool MainWindow::m_isInitialized = false;
+#if defined(Q_OS_WIN)
 
-static QString UnescapeParameters(QString text)
+HICON LoadIcon(const wchar_t* idr)
+{
+    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
+
+    int const cxButton = GetSystemMetrics(SM_CXSMICON);
+    return (HICON) LoadImageW(
+        appInstance,
+        idr,
+        IMAGE_ICON,
+        cxButton, cxButton, // use actual size
+        LR_DEFAULTCOLOR);
+}
+
+#endif
+
+QString UnescapeParameters(QString text)
 {
     static const struct {
         const char* ampersand_code;
@@ -77,6 +91,14 @@ static QString UnescapeParameters(QString text)
 
     return text;
 }
+
+} // namespace
+
+const char WindowGeometry[] = "WindowGeometry";
+const char WindowState[] = "WindowState";
+
+bool MainWindow::m_isInitialized = false;
+
 
 MainWindow::MainWindow(QWidget* parent)
     : ui_utils::MainWindowWithTray(parent, QIcon(":/images/fvdownloader.png"), PROJECT_FULLNAME_TRANSLATION),
@@ -170,6 +192,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     setAcceptDrops(true);
 
+#if defined(Q_OS_WIN)
+    m_hPlay = LoadIcon(L"IDI_ICON_PLAY");
+    m_hPause = LoadIcon(L"IDI_ICON_PAUSE");
+#endif
+
     m_isInitialized = true;
 }
 
@@ -182,9 +209,18 @@ MainWindow::~MainWindow()
 #if defined(Q_OS_WIN)
 bool MainWindow::nativeEvent(const QByteArray& /*eventType*/, void* message, long* /*result*/)
 {
-    if ((message != nullptr) && static_cast<MSG*>(message)->message == ui_utils::TaskBar::InitMessage())
+    if (auto msg = static_cast<MSG*>(message))
     {
-        m_taskBar.Init(winId());
+        if (msg->message == ui_utils::TaskBar::InitMessage())
+        {
+            m_taskBar.Init(winId());
+            m_taskBar.setButton(m_hPlay, tr("Play"));
+        }
+        else if (msg->message == WM_COMMAND 
+            && LOWORD(msg->wParam) == ui_utils::BUTTON_HIT_MESSAGE && HIWORD(msg->wParam) == 0x1800)
+        {
+            // TODO
+        }
     }
     return false;
 }

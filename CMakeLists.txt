@@ -261,6 +261,8 @@ endif()
 if(WIN32)
 	set(RESOURCE_OS    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/winres.rc")
 	set(ICON_FILE        "${CMAKE_SOURCE_DIR}/resources/images/downloader.ico")
+	set(PLAY_ICON_FILE        "${CMAKE_SOURCE_DIR}/resources/images/play.ico")
+	set(PAUSE_ICON_FILE        "${CMAKE_SOURCE_DIR}/resources/images/pause.ico")
 	set(RESOURCE_OS_IN "${CMAKE_CURRENT_SOURCE_DIR}/resources/winres.rc.in")
 #	VersionConf(${PROJECT_NAME} ${RESOURCE_OS_IN} ${RESOURCE_OS}) -- moved after the target generated
 #	configure_file(${RESOURCE_OS_IN} ${RESOURCE_OS} @ONLY)

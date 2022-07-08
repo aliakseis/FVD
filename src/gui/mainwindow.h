@@ -113,6 +113,10 @@ private:
 
 #if defined(Q_OS_WIN)
     ui_utils::TaskBar m_taskBar;
+
+    HICON m_hPlay{};
+    HICON m_hPause{};
+
     bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
 #endif
 

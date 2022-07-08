@@ -2,6 +2,10 @@
 
 IDI_ICON1               ICON                    "@ICON_FILE@"
 
+IDI_ICON_PLAY               ICON                    "@PLAY_ICON_FILE@"
+IDI_ICON_PAUSE               ICON                    "@PAUSE_ICON_FILE@"
+
+
 #define VER_FILEVERSION             @MAJOR_VER@,@MINOR_VER1@,@MINOR_VER2@,@MINOR_VER3@
 #define VER_FILEVERSION_STR         "@MAJOR_VER@.@MINOR_VER1@.@MINOR_VER2@.@MINOR_VER3@\0"
 

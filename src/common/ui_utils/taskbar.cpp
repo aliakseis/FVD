@@ -6,6 +6,8 @@
 #include <tchar.h>
 #include <Shobjidl.h>
 
+#pragma comment(lib, "Comctl32.lib")
+
 namespace ui_utils
 {
 
@@ -64,6 +66,7 @@ void TaskBar::Init(WId main)
             if (ChangeWindowMessageFilterEx_)
             {
                 ChangeWindowMessageFilterEx_((HWND)main, InitMessage(), MSGFLT_ALLOW, &cfs);
+                ChangeWindowMessageFilterEx_((HWND)main, WM_COMMAND, MSGFLT_ALLOW, &cfs);
             }
             else
             {
@@ -131,6 +134,50 @@ void TaskBar::setNormal()
     if (m_taskBar)
     {
         m_taskBar->SetProgressState((HWND)m_main, TBPF_NORMAL);
+    }
+}
+
+void TaskBar::setButton(HICON hIcon, const QString& tip)
+{
+    if (m_taskBar && SUCCEEDED(m_taskBar->HrInit()))
+    {
+        enum { NUM_ICONS = 1 };
+        int const cxButton = GetSystemMetrics(SM_CXSMICON);
+        if (auto himl = ImageList_Create(cxButton, cxButton, ILC_MASK, NUM_ICONS, 0))
+        {
+            HRESULT hr = m_taskBar->ThumbBarSetImageList((HWND)m_main, himl);
+            if (SUCCEEDED(hr))
+            {
+                THUMBBUTTON buttons[NUM_ICONS] = {};
+
+                // First button
+                buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+                buttons[0].dwFlags = THBF_ENABLED | THBF_DISMISSONCLICK;
+                buttons[0].iId = BUTTON_HIT_MESSAGE;
+                buttons[0].hIcon = hIcon;
+                wcscpy_s(buttons[0].szTip, qUtf16Printable(tip));
+
+                // Set the buttons to be the thumbnail toolbar
+                hr = m_taskBar->ThumbBarAddButtons((HWND)m_main, ARRAYSIZE(buttons), buttons);
+            }
+            ImageList_Destroy(himl);
+        }
+    }
+}
+
+void TaskBar::updateButton(HICON hIcon, const QString& tip)
+{
+    if (m_taskBar)
+    {
+        THUMBBUTTON buttons[1] = {};
+
+        // First button
+        buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+        buttons[0].dwFlags = THBF_ENABLED | THBF_DISMISSONCLICK;
+        buttons[0].iId = BUTTON_HIT_MESSAGE;
+        buttons[0].hIcon = hIcon;
+        wcscpy_s(buttons[0].szTip, qUtf16Printable(tip));
+        m_taskBar->ThumbBarUpdateButtons((HWND)m_main, 1, buttons);
     }
 }
 

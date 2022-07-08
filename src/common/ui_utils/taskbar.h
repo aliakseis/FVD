@@ -3,12 +3,16 @@
 #include <qglobal.h>
 #include "qwindowdefs.h"
 
+#include <QString>
+
 #if defined(Q_OS_WIN)
 
 struct ITaskbarList3;
 
 namespace ui_utils
 {
+
+enum { BUTTON_HIT_MESSAGE = 33345 };
 
 class TaskBar
 {
@@ -26,6 +30,10 @@ public:
     void setError();
     void setPaused();
     void setNormal();
+
+    void setButton(HICON hIcon, const QString& tip);
+    void updateButton(HICON hIcon, const QString& tip);
+
 private:
     ITaskbarList3* m_taskBar;
     bool isProgressInitialized;
