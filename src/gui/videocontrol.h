@@ -34,13 +34,13 @@ public slots:
     void on_btnPlay_clicked();
     void on_btnPause_clicked();
 
-    void onShowPlaybutton(bool show);
-
 private slots:
     void onProgramVolumeChange(double volume);
     void on_btnVolume_clicked();
     void on_btnStop_clicked();
     void on_btnBrowser_clicked();
+
+    void onShowPlaybutton(bool show);
 
 private:
     Ui::VideoControl* ui;

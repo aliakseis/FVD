@@ -160,6 +160,8 @@ MainWindow::MainWindow(QWidget* parent)
     m_askForSavingModelTimer.setSingleShot(true);
     VERIFY(connect(&m_askForSavingModelTimer, SIGNAL(timeout()), SLOT(condsiderSavingModel())));
 
+    connect(m_player, &VideoPlayerWidget::showPlaybutton, this, &MainWindow::onShowPlaybutton);
+
 #ifdef Q_OS_MAC
     VERIFY(connect(&DarwinSingleton::Instance(), SIGNAL(showPreferences()), SLOT(openPreferences())));
     VERIFY(connect(&DarwinSingleton::Instance(), SIGNAL(showAbout()), SLOT(about())));
@@ -219,7 +221,7 @@ bool MainWindow::nativeEvent(const QByteArray& /*eventType*/, void* message, lon
         else if (msg->message == WM_COMMAND 
             && LOWORD(msg->wParam) == ui_utils::BUTTON_HIT_MESSAGE && HIWORD(msg->wParam) == 0x1800)
         {
-            // TODO
+            m_player->playPauseButtonAction();
         }
     }
     return false;
@@ -683,4 +685,11 @@ void MainWindow::dropEvent(QDropEvent* event)
     SearchManager::Instance().addLinks(linksForDownload);
 
     event->acceptProposedAction();
+}
+
+void MainWindow::onShowPlaybutton(bool show)
+{
+#ifdef Q_OS_WIN
+    m_taskBar.updateButton(show ? m_hPlay : m_hPause, show ? tr("Play") : tr("Pause"));
+#endif
 }
