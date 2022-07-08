@@ -53,7 +53,7 @@ namespace {
 
 HICON LoadIcon(const wchar_t* idr)
 {
-    const HINSTANCE appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
+    const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
     int const cxButton = GetSystemMetrics(SM_CXSMICON);
     return (HICON) LoadImageW(
