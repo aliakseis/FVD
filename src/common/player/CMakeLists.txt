@@ -50,7 +50,6 @@ endif(DEVELOPER_OPENGL)
 set(HEADERS_LOCAL
         audioparsethread.h
         parsethread.h
-	performancecheck.h
 	fpicture.h
 	fqueue.h
 	timelimiterthread.h

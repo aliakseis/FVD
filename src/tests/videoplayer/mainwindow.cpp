@@ -14,8 +14,6 @@ MainWindow::MainWindow(QWidget* parent) :
 {
 	ui->setupUi(this);
 
-	qDebug() << "Performance choise: " << performanceCheck();
-
 	decoder1.setFrameListener(ui->labelVideoFrame);
 	//decoder2.setFrameListener(ui->labelVideoFrame_2);
 	connect(ui->audioSlider, SIGNAL(valueChanged(int)), &decoder1, SLOT(setVolume(int)));
