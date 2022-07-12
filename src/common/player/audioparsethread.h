@@ -19,8 +19,6 @@ private:
     void handlePacket(const AVPacket& packet);
 
 public:
-    std::atomic<double> m_audioStartClock;
-
     explicit AudioParseThread(FFmpegDecoder* parent)
         : m_isSeekingWhilePaused(false), m_ffmpeg(parent), m_audioCurrentPref(m_ffmpeg->m_audioSettings)
     {

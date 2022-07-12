@@ -115,12 +115,13 @@ void FFmpegDecoder::resetVariables()
 
     m_bytesLimiter = -1;
     m_bytesLimiterTotal = -1;
-    m_durationLimiter = -1;
     m_bytesCurrent = 0;
     m_fileProbablyNotFull = false;
     m_durationRecheckIsRun = false;
 
     m_durationLimiter = 0;
+
+    m_headerSize = 0;
 
     m_isPlaying = false;
 
