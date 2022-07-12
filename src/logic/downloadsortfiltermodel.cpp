@@ -9,6 +9,21 @@
 #include "downloadentity.h"
 #include "downloadlistmodel.h"
 
+#include <algorithm>
+
+namespace {
+
+template <typename T>
+auto getRowsSelection(const std::set<int>& newSelectionRows, T lam)
+{
+    QItemSelection selection;
+    std::transform(newSelectionRows.begin(), newSelectionRows.end(),
+        std::back_inserter(selection), lam);
+    return selection;
+}
+
+} // namespace
+
 DownloadSortFilterModel::DownloadSortFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent), m_isSorted(true), m_headerView(nullptr)
 {
@@ -48,9 +63,8 @@ void DownloadSortFilterModel::moveItemUp(int row)
 
     auto* model = qobject_cast<QAbstractItemView*>(QObject::parent());
     Q_ASSERT(model);
-    QItemSelection selection;
-    selection << QItemSelectionRange(index(row - 1, 0), index(row - 1, DL_LastColumn - 1));
-    model->selectionModel()->select(selection, QItemSelectionModel::ToggleCurrent);
+    model->selectionModel()->select({ index(row - 1, 0), index(row - 1, DL_LastColumn - 1) },
+        QItemSelectionModel::ToggleCurrent);
 
     emit dataChanged(index(row, 0), index(row - 1, DL_LastColumn - 1));
 }
@@ -63,9 +77,8 @@ void DownloadSortFilterModel::moveItemDown(int row)
 
     auto* model = qobject_cast<QAbstractItemView*>(QObject::parent());
     Q_ASSERT(model);
-    QItemSelection selection;
-    selection << QItemSelectionRange(index(row + 1, 0), index(row + 1, DL_LastColumn - 1));
-    model->selectionModel()->select(selection, QItemSelectionModel::ToggleCurrent);
+    model->selectionModel()->select({ index(row + 1, 0), index(row + 1, DL_LastColumn - 1) },
+        QItemSelectionModel::ToggleCurrent);
 
     emit dataChanged(index(row, 0), index(row + 1, DL_LastColumn - 1));
 }
@@ -102,11 +115,8 @@ void DownloadSortFilterModel::moveItemsUp(QItemSelectionModel* selectionModel)
 
         if (!newSelectionRows.empty() && !affectedRows.empty())
         {
-            QItemSelection selection;
-            for (int row : newSelectionRows)
-            {
-                selection << QItemSelectionRange(index(row, 0), index(row, DL_LastColumn - 1));
-            }
+            auto selection = getRowsSelection(newSelectionRows,
+                [this](int row) { return QItemSelectionRange(index(row, 0), index(row, DL_LastColumn - 1)); });
             selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
             emit dataChanged(index(*newSelectionRows.cbegin(), 0), index(*affectedRows.rbegin(), DL_LastColumn - 1));
         }
@@ -144,11 +154,8 @@ void DownloadSortFilterModel::moveItemsDown(QItemSelectionModel* selectionModel)
 
         if (!newSelectionRows.empty() && !affectedRows.empty())
         {
-            QItemSelection selection;
-            for (int row : newSelectionRows)
-            {
-                selection << QItemSelectionRange(index(row, 0), index(row, DL_LastColumn - 1));
-            }
+            auto selection = getRowsSelection(newSelectionRows,
+                [this](int row) { return QItemSelectionRange(index(row, 0), index(row, DL_LastColumn - 1)); });
             selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
             emit dataChanged(index(*newSelectionRows.cbegin(), 0), index(*affectedRows.rbegin(), DL_LastColumn - 1));
         }
@@ -312,9 +319,8 @@ bool DownloadSortFilterModel::dropMimeData(const QMimeData* data, Qt::DropAction
     auto* model = qobject_cast<QAbstractItemView*>(QObject::parent());
     Q_ASSERT(model);
     QItemSelectionModel* selectionModel = model->selectionModel();
-    QItemSelection selection;
-    selection << QItemSelectionRange(index(row, 0), index(row + (int)rows.size() - 1, DL_LastColumn - 1));
-    selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
+    selectionModel->select({ index(row, 0), index(row + (int)rows.size() - 1, DL_LastColumn - 1) },
+        QItemSelectionModel::ClearAndSelect);
 
     emit dataChanged(index(0, 0), index((int)m_sortedIndexes.size(), DL_LastColumn - 1));
 
