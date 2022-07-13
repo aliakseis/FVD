@@ -676,10 +676,28 @@ void MainWindow::dropEvent(QDropEvent* event)
         qDebug() << QString(PROJECT_NAME) + " takes " + someLink;
         pos += std::max(5, intrestedDataRx.matchedLength() - 5);
 
-        auto it = std::lower_bound(linksForDownload.begin(), linksForDownload.end(), someLink);
-        if (it == linksForDownload.end() || *it != someLink)
+        QUrl url(someLink);
+        if (!url.isValid() || !url.hasQuery())
         {
-            linksForDownload.insert(it, someLink);
+            continue;
+        }
+
+        auto it = std::lower_bound(linksForDownload.begin(), linksForDownload.end(), someLink);
+        if (it == linksForDownload.end())
+        {
+            linksForDownload.push_back(someLink);
+        }
+        else if (!someLink.startsWith(*it))
+        {
+            auto itNext = std::next(it);
+            if (itNext == linksForDownload.end() || !itNext->startsWith(someLink))
+            {
+                linksForDownload.insert(it, someLink);
+            }
+            else
+            {
+                *itNext = someLink;
+            }
         }
     }
     SearchManager::Instance().addLinks(linksForDownload);
