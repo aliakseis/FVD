@@ -104,7 +104,7 @@
         </property>
        </widget>
       </item>
-      <item>
+      <!--item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -119,11 +119,34 @@
          </size>
         </property>
        </spacer>
-      </item>
+      </item-->
       <item>
        <widget class="QPushButton" name="btnClear">
         <property name="text">
          <string>Clear list</string>
+        </property>
+       </widget>
+      </item>
+      <!--item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item-->
+      <item>
+       <widget class="QPushButton" name="btnPasteURLs">
+        <property name="text">
+         <string>Paste URLs</string>
         </property>
        </widget>
       </item>

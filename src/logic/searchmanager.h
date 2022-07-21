@@ -6,6 +6,8 @@
 #include <QPair>
 #include <QScopedPointer>
 #include <QVector>
+#include <QMimeData>
+
 #include <array>
 #include <iterator>
 #include <unordered_set>
@@ -70,6 +72,7 @@ public:
         onLibraryFilesAdded(param);
     }
 
+    bool addLinks(const QMimeData& urls);
     void addLinks(const QStringList& urls);
 
 private:

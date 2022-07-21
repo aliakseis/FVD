@@ -66,32 +66,6 @@ HICON LoadIcon(const wchar_t* idr)
 
 #endif
 
-QString UnescapeParameters(QString text)
-{
-    static const struct {
-        const char* ampersand_code;
-        const char replacement;
-    } kEscapeToChars[] = {
-        {"%2F", '/'},
-        {"%3A", ':'},
-        {"%3D", '='},
-        {"%3F", '?'},
-    };
-
-    text.replace("&amp;", "&", Qt::CaseInsensitive);
-
-    if (!text.contains('%')) {
-        return text;
-    }
-
-    for (const auto& r : kEscapeToChars)
-    {
-        text.replace(QLatin1String(r.ampersand_code), QLatin1String(&r.replacement, 1), Qt::CaseInsensitive);
-    }
-
-    return text;
-}
-
 } // namespace
 
 const char WindowGeometry[] = "WindowGeometry";
@@ -644,65 +618,13 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
-    QString text;
-    QRegExp intrestedDataRx("(http|https):[^\\s\\n]+", Qt::CaseInsensitive);
-
-    if (event->mimeData()->hasHtml())
+    if (auto mimeData = event->mimeData())
     {
-        text = UnescapeParameters(event->mimeData()->html());
-        intrestedDataRx = QRegExp(R"((http|https):[^:"'<>\s\n]+)", Qt::CaseInsensitive);
-    }
-    else if (event->mimeData()->hasText())
-    {
-        text = event->mimeData()->text();
-    }
-    else if (event->mimeData()->hasFormat("text/uri-list"))
-    {
-        text = event->mimeData()->data("text/uri-list");
-    }
-    else
-    {
-        return;
-    }
-
-    qDebug() << "Some data dropped to program. Trying to manage it.";
-
-    int pos = 0;
-    QStringList linksForDownload;
-    while ((pos = intrestedDataRx.indexIn(text, pos)) != -1)
-    {
-        QString someLink = intrestedDataRx.cap(0);
-        QString typeOfLink = intrestedDataRx.cap(1);
-        qDebug() << QString(PROJECT_NAME) + " takes " + someLink;
-        pos += std::max(5, intrestedDataRx.matchedLength() - 5);
-
-        QUrl url(someLink);
-        if (!url.isValid() || !url.hasQuery())
+        if (SearchManager::Instance().addLinks(*mimeData))
         {
-            continue;
-        }
-
-        auto it = std::lower_bound(linksForDownload.begin(), linksForDownload.end(), someLink);
-        if (it == linksForDownload.end())
-        {
-            linksForDownload.push_back(someLink);
-        }
-        else if (!someLink.startsWith(*it))
-        {
-            auto itNext = std::next(it);
-            if (itNext == linksForDownload.end() || !itNext->startsWith(someLink))
-            {
-                linksForDownload.insert(it, someLink);
-            }
-            else
-            {
-                *itNext = someLink;
-            }
+            event->acceptProposedAction();
         }
     }
-    SearchManager::Instance().addLinks(linksForDownload);
-
-    event->acceptProposedAction();
 }
 
 void MainWindow::onShowPlaybutton(bool show)

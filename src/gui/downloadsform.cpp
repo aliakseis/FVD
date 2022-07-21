@@ -77,6 +77,9 @@ DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
 
     VERIFY(connect(ui->leSearch, SIGNAL(returnPressed()), SLOT(onSearch())));
     VERIFY(connect(ui->btnSearch, SIGNAL(clicked()), SLOT(onSearch())));
+    VERIFY(connect(ui->btnPasteURLs, SIGNAL(clicked()), SLOT(onPasteURLs())));
+    ui->btnPasteURLs->setShortcut(QKeySequence::Paste);
+
     VERIFY(connect(ui->downloadsTreeView, SIGNAL(customContextMenuRequested(QPoint)),
                    SLOT(onDownloadsContextMenu(QPoint))));
     VERIFY(
@@ -557,3 +560,14 @@ void DownloadsForm::copySelectionToClipboard()
 }
 
 void DownloadsForm::onVerticalScrollChanged(int /*unused*/) { hideFloatingControl(); }
+
+void DownloadsForm::onPasteURLs()
+{
+    if (auto clipboard = QApplication::clipboard())
+    {
+        if (auto mimeData = clipboard->mimeData())
+        {
+            SearchManager::Instance().addLinks(*mimeData);
+        }
+    }
+}

@@ -57,6 +57,8 @@ private slots:
 
     void onSearch();
 
+    void onPasteURLs();
+
     void removeDownload();
     void restartDownload();
 
