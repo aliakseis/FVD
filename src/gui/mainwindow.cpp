@@ -12,8 +12,8 @@
 #include <QToolButton>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QPushButton>
 
-#include "QPushButton"
 #include "branding.hxx"
 #include "downloadentity.h"
 #include "downloadsform.h"
