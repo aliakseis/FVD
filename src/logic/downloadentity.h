@@ -246,7 +246,7 @@ private:
     void onFileToBeReleased(const QString& filename) override;
     void onNeedLogin(utilities::ICredentialsRetriever*) override {}
     void onReplyInvalidated() override {}
-    void onStart(const QByteArray&) override {}
+    void onStart(const QByteArray& data) override;
 
     void doSetVisibilityState(VisibilityState value);
 

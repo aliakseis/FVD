@@ -2,7 +2,6 @@
 
 #include <QDir>
 #include <QMessageBox>
-#include <cmath>
 
 #include "branding.hxx"
 #include "global_functions.h"
@@ -15,6 +14,10 @@
 #include "utilities/translation.h"
 
 #include "player/ffmpegdecoder.h"
+
+#include <cmath>
+#include <cctype>
+#include <algorithm>
 
 static double getVideoDuration(const QString& file)
 {
@@ -81,6 +84,36 @@ void DownloadEntity::onFinished()
 
     setState(kFinished);
     emit finished();
+}
+
+void DownloadEntity::onStart(const QByteArray& data)
+{
+    auto pData = data.begin();
+    const auto pDataEnd = data.end();
+    while ((pData = std::find_if(pData, pDataEnd, [](char ch) {
+        return std::isdigit(static_cast<unsigned char>(ch));
+        })) != pDataEnd)
+    {
+        const auto localEnd = std::find_if(pData, pDataEnd, [](char ch) {
+            return ch != '/' && !std::isdigit(static_cast<unsigned char>(ch));
+        });
+
+        if (localEnd - pData == 10)
+        {
+            QLatin1String s(&*pData, &*localEnd);
+            const auto published = QDateTime::fromString(s, QStringLiteral("MM/dd/yyyy"));
+            if (published.isValid())
+            {
+                getParent()->m_videoInfo.published = published;
+                return;
+            }
+        }
+
+        if (localEnd == pDataEnd)
+            break;
+
+        pData = std::next(localEnd);
+    }
 }
 
 void DownloadEntity::onFileCreated(const QString& filename)
