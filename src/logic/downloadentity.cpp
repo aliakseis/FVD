@@ -109,8 +109,9 @@ void DownloadEntity::onStart(const QByteArray& data)
             }
         }
 
-        if (localEnd == pDataEnd)
+        if (localEnd == pDataEnd) {
             break;
+        }
 
         pData = std::next(localEnd);
     }
