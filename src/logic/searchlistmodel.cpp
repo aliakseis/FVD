@@ -164,7 +164,6 @@ QVariant SearchListModel::headerData(int section, Qt::Orientation orientation, i
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
     {
-        QVariant res;
         switch (section)
         {
         case SR_Index:
