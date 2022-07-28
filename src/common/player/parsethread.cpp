@@ -223,10 +223,10 @@ void ParseThread::sendSeekPacket()
 
 void ParseThread::fixDuration()
 {
-    auto* parent = (FFmpegDecoder*)this->parent();
+    auto* parent = static_cast<FFmpegDecoder*>(this->parent());
     int ret;
     AVPacket packet;
-    if (parent->m_frameTotalCount <= 0 && parent->m_duration <= 0)
+    if (parent->m_duration <= 0)
     {
         if (parent->m_bytesLimiter >= 0)
         {
@@ -239,13 +239,11 @@ void ParseThread::fixDuration()
         parent->m_durationRecheckIsRun = true;
 
         // Reset rechecking vars
-        parent->m_frameTotalCount = 0;
         parent->m_duration = 0;
         while ((ret = av_read_frame(parent->m_formatContext, &packet)) >= 0)
         {
             if (packet.stream_index == parent->m_videoStreamNumber)
             {
-                parent->m_frameTotalCount++;
                 if (packet.pts != AV_NOPTS_VALUE)
                 {
                     parent->m_duration = packet.pts;

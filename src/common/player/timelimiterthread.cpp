@@ -26,7 +26,6 @@ void TimeLimiterThread::run()
     if (m_parent->m_fileProbablyNotFull)
     {
         m_parent->m_duration = 0;
-        m_parent->m_frameTotalCount = 0;
     }
     while (m_parent->m_bytesLimiter >= 0)
     {
@@ -65,7 +64,6 @@ void TimeLimiterThread::run()
                     }
                     if (m_parent->m_fileProbablyNotFull)
                     {
-                        m_parent->m_frameTotalCount++;
                         m_parent->m_duration = m_parent->m_durationLimiter;
                     }
                 }
@@ -93,7 +91,6 @@ void TimeLimiterThread::run()
             {
                 m_parent->m_durationLimiter = packet.dts;
             }
-            m_parent->m_frameTotalCount++;
             m_parent->m_duration = m_parent->m_durationLimiter;
         }
     }

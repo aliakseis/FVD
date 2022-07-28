@@ -91,7 +91,6 @@ void FFmpegDecoder::resetVariables()
     m_audioSwrContext = nullptr;
     m_videoStream = nullptr;
     m_audioStream = nullptr;
-    m_frameTotalCount = 0;
     m_duration = 0;
 
     m_imageCovertContext = nullptr;
@@ -408,15 +407,14 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
     }
     else if (m_videoStreamNumber >= 0)
     {
-        const int64_t format_duration = (m_formatContext->duration / av_q2d(m_videoStream->time_base)) / 1000000LL;
-        m_frameTotalCount = (m_videoStream->nb_frames > 0) ? m_videoStream->nb_frames : -1;
         if (m_streamDurationDetection)
         {
             m_duration = (m_videoStream->duration > 0) ? m_videoStream->duration : -1;
         }
         else
         {
-            m_duration = (m_videoStream->duration > 0) ? m_videoStream->duration : format_duration;
+            m_duration = (m_videoStream->duration > 0) ? m_videoStream->duration
+                : (m_formatContext->duration / av_q2d(m_videoStream->time_base)) / 1000000LL;
         }
     }
 
@@ -767,16 +765,6 @@ void FFmpegDecoder::startLimiterThread()
     }
 }
 
-bool FFmpegDecoder::seekMs(int64_t tsms)
-{
-    int64_t DesiredFrameNumber = av_rescale(tsms, m_formatContext->streams[m_videoStreamNumber]->time_base.den,
-                                            m_formatContext->streams[m_videoStreamNumber]->time_base.num);
-    DesiredFrameNumber /= 1000;
-
-    return seekFrame(DesiredFrameNumber);
-}
-
-bool FFmpegDecoder::seekFrame(int64_t frame) { return seekDuration(((double)frame / m_frameTotalCount) * m_duration); }
 
 bool FFmpegDecoder::seekDuration(int64_t duration)
 {
@@ -1009,8 +997,6 @@ float FFmpegDecoder::aspectRatio() const
     }
     return aspect_ratio;
 }
-
-int64_t FFmpegDecoder::framesCount() const { return m_frameTotalCount; }
 
 int64_t FFmpegDecoder::headerSize() const { return FFMAX(0, m_headerSize - 8); }
 

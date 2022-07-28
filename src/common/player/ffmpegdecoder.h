@@ -65,14 +65,11 @@ public:
     FFmpegDecoder& operator=(const FFmpegDecoder&) = delete;
 
     void openFile(QString file);
-    bool seekMs(int64_t ts);
-    bool seekFrame(int64_t frame);
     bool seekDuration(int64_t duration);
     bool seekByPercent(float percent, int64_t totalDuration = -1);
 
     int64_t seekPostion() const;
     int64_t duration() const;
-    int64_t framesCount() const;
     int64_t headerSize() const;
 
     double volume() const;
@@ -154,7 +151,6 @@ private:
 
     // Real frame number and duration from video stream
     int64_t m_duration;
-    int64_t m_frameTotalCount;
     bool m_streamDurationDetection;
 
     // Closing loop
