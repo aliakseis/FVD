@@ -182,6 +182,8 @@ private:
     QMutex m_seekFlagsMtx;
     InterruptibleWaitCondition m_seekFlagsCV;
 
+    std::atomic_uint m_generation = 0;
+
     // Downloading packet
     AVPacket m_downloadingPacket;
 

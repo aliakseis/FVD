@@ -4,7 +4,7 @@
 
 struct VideoFrame
 {
-    double m_base;
+    unsigned int m_generation;
     double m_pts;
     int64_t m_duration;
     FPicture m_image;

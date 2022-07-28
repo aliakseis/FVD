@@ -134,6 +134,7 @@ void VideoParseThread::run()
             // Seeking part
             if (packet.data == m_ffmpeg->m_seekPacket.data)
             {
+                ++m_ffmpeg->m_generation;
                 avcodec_flush_buffers(m_ffmpeg->m_videoCodecContext);
 
                 while (true)
@@ -198,7 +199,6 @@ void VideoParseThread::run()
 
                             m_videoStartClock = av_gettime() / 1000000. - stamp;
                             m_ffmpeg->m_videoPTS = stamp;
-                            m_ffmpeg->m_videoFramesQueue.setBasePts(m_videoStartClock, stamp);
 
                             m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
                             m_ffmpeg->m_seekFlagsCV.wakeAll();
@@ -315,7 +315,7 @@ void VideoParseThread::run()
                 // If target frame not good, it will be reallocated
                 m_ffmpeg->m_videoFrameData.copyToForSure(&current_frame->m_image);
 
-                current_frame->m_base = m_videoStartClock;
+                current_frame->m_generation = m_ffmpeg->m_generation;
                 current_frame->m_pts = pts;
                 current_frame->m_duration = duration_stamp;
 

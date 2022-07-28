@@ -138,6 +138,7 @@ void AudioParseThread::run()
             // Seeking audio
             if (packet.data == m_ffmpeg->m_seekPacket.data)
             {
+                ++m_ffmpeg->m_generation;
                 avcodec_flush_buffers(m_ffmpeg->m_audioCodecContext);
                 Pa_AbortStream(m_ffmpeg->m_stream);
                 while (true)
@@ -182,8 +183,6 @@ void AudioParseThread::run()
                             if (flush_packet_found)
                             {
                                 m_ffmpeg->m_videoPTS = m_ffmpeg->m_audioPTS.load();
-                                m_ffmpeg->m_videoFramesQueue.setBasePts(av_gettime() / 1000000. - m_ffmpeg->m_audioPTS,
-                                                                        m_ffmpeg->m_audioPTS);
                             }
                         }
                         else
