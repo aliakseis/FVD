@@ -275,6 +275,8 @@ void OpenGLDisplay::paintGL()
     glUniform1i(impl->textureUniformV, 2);
     // Use the vertex array way to draw graphics
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glFlush();
 }
 
 //////////////////////////////////////////////////////////////////////////////

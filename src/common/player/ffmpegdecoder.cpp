@@ -677,11 +677,11 @@ void FFmpegDecoder::correctDisplay(bool is_ceil)
         double aspect_revert = 1. / aspectRatio();
         if (!is_ceil)
         {
-            m_targetWidth = m_targetWidth - (m_targetWidth % 16);  // m_targetWidth must devided by 16
+            m_targetWidth = m_targetWidth - (m_targetWidth % 16);  // m_targetWidth must be divisible by 16
         }
         else
         {
-            m_targetWidth = (m_targetWidth - (m_targetWidth % 16)) << 4;  // m_targetWidth must devided by 16
+            m_targetWidth = (m_targetWidth - (m_targetWidth % 16)) << 4;  // m_targetWidth must be divisible by 16
         }
         m_targetHeight = aspect_revert * m_targetWidth;
     }
@@ -744,7 +744,6 @@ void FFmpegDecoder::finishedDisplayingFrame()
     m_videoFramesQueue.m_read_counter =
         (m_videoFramesQueue.m_read_counter + 1) % std::size(m_videoFramesQueue.m_frames);
     m_videoFramesCV.wakeAll();
-    locker.unlock();
 }
 
 void FFmpegDecoder::startLimiterThread()

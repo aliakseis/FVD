@@ -7,8 +7,6 @@ extern "C"
 
 void TimeLimiterThread::run()
 {
-    QScopedPointer<FFmpegDecoder> thread_data(new FFmpegDecoder());
-    // This is case when main (ffmpeg thread) closing before thread limitation starts work
     if (isAbort())
     {
         return;
@@ -17,12 +15,13 @@ void TimeLimiterThread::run()
     {
         return;
     }
+
+    QScopedPointer<FFmpegDecoder> thread_data(new FFmpegDecoder());
     if (!thread_data->openFileDecoder(m_parent->m_openedFilePath))
     {
         return;
     }
     AVPacket packet;
-    int ret;
     if (m_parent->m_fileProbablyNotFull)
     {
         m_parent->m_duration = 0;
@@ -42,8 +41,7 @@ void TimeLimiterThread::run()
                 return;
             }
 
-            ret = av_read_frame(thread_data->m_formatContext, &packet);
-            if (ret >= 0)
+            if (av_read_frame(thread_data->m_formatContext, &packet) >= 0)
             {
                 m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
 
@@ -78,7 +76,7 @@ void TimeLimiterThread::run()
         preciseSleep(0.1);
     }
 
-    while (m_parent->m_fileProbablyNotFull && (ret = av_read_frame(thread_data->m_formatContext, &packet)) >= 0)
+    while (m_parent->m_fileProbablyNotFull && av_read_frame(thread_data->m_formatContext, &packet) >= 0)
     {
         m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
         if (packet.stream_index == thread_data->m_videoStreamNumber)
