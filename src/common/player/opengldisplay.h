@@ -16,8 +16,6 @@ public:
     explicit OpenGLDisplay(QWidget* parent = nullptr);
     ~OpenGLDisplay() override;
 
-    void InitDrawBuffer(unsigned bsize);
-
     void showPicture(const QImage& img) override;
     void showPicture(const QPixmap& picture) override;
 
@@ -33,6 +31,8 @@ protected:
     void paintGL() override;
 
 private:
+    void InitDrawBuffer(unsigned bsize);
+
     struct OpenGLDisplayImpl;
     QScopedPointer<OpenGLDisplayImpl> impl;
 };

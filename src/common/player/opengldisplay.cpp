@@ -24,7 +24,7 @@ enum
 struct OpenGLDisplay::OpenGLDisplayImpl
 {
     GLvoid* mBufYuv{nullptr};
-    int mFrameSize{0};
+    unsigned int mFrameSize{0};
 
     QOpenGLShader* mVShader;
     QOpenGLShader* mFShader;
@@ -55,7 +55,7 @@ OpenGLDisplay::~OpenGLDisplay() { delete[] reinterpret_cast<unsigned char*>(impl
 
 void OpenGLDisplay::InitDrawBuffer(unsigned bsize)
 {
-    if (impl->mFrameSize != bsize)
+    if (impl->mFrameSize < bsize)
     {
         delete[] reinterpret_cast<unsigned char*>(impl->mBufYuv);
         impl->mFrameSize = bsize;
