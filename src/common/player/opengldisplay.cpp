@@ -404,5 +404,5 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 void OpenGLDisplay::displayFrame()
 {
     update();
-    VideoDisplay::displayFrame();
+    displayFrameFinished();
 }

@@ -25,7 +25,7 @@ void WidgetDisplay::currentDisplay()
 void WidgetDisplay::displayFrame()
 {
     emit display();
-    VideoDisplay::displayFrame();
+    displayFrameFinished();
 }
 
 void WidgetDisplay::renderFrame(const FPicture& frame)

@@ -28,5 +28,7 @@ public:
     virtual bool resizeWithDecoder() const = 0;
 
 protected:
+    void displayFrameFinished();
+
     FFmpegDecoder* m_decoder;
 };
