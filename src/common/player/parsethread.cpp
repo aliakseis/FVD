@@ -12,7 +12,7 @@ extern "C"
 
 bool ParseThread::readFrame(AVPacket* packet)
 {
-    auto* parent = (FFmpegDecoder*)this->parent();
+    auto* parent = static_cast<FFmpegDecoder*>(this->parent());
     if (parent->m_bytesLimiter >= 0 && parent->m_bytesLimiter - parent->m_bytesCurrent < PLAYBACK_AVPACKET_MAX)
     {
         parent->m_downloading = true;
@@ -70,15 +70,24 @@ bool ParseThread::readFrame(AVPacket* packet)
 void ParseThread::run()
 {
     TAG("ffmpeg_threads") << "Parse thread started";
-    auto* parent = (FFmpegDecoder*)this->parent();
+    auto* parent = static_cast<FFmpegDecoder*>(this->parent());
     AVPacket packet;
     bool eof = false;
 
-    // detection real framesize
+    // detecting real framesize
     fixDuration();
 
-    startAudioThread(parent);
-    startVideoThread(parent);
+    if (parent->m_audioStreamNumber >= 0)
+    {
+        parent->m_mainAudioThread = new AudioParseThread(parent);
+        parent->m_mainAudioThread->start();
+    }
+
+    if (parent->m_videoStreamNumber >= 0)
+    {
+        parent->m_mainVideoThread = new VideoParseThread(parent);
+        parent->m_mainVideoThread->start();
+    }
 
     while (true)
     {
@@ -155,36 +164,14 @@ void ParseThread::run()
     TAG("ffmpeg_threads") << "Decoding ended";
 }
 
-void ParseThread::startAudioThread(FFmpegDecoder* parent)
-{
-    if (parent->m_audioStreamNumber < 0)
-    {
-        return;
-    }
-
-    parent->m_mainAudioThread = new AudioParseThread(parent);
-    parent->m_mainAudioThread->start();
-}
-
-void ParseThread::startVideoThread(FFmpegDecoder* parent)
-{
-    if (parent->m_videoStreamNumber < 0)
-    {
-        return;
-    }
-
-    parent->m_mainVideoThread = new VideoParseThread(parent);
-    parent->m_mainVideoThread->start();
-}
-
 void ParseThread::sendSeekPacket()
 {
-    auto* parent = (FFmpegDecoder*)this->parent();
+    auto* parent = static_cast<FFmpegDecoder*>(this->parent());
 
     QMutexLocker ml(&parent->m_seekFlagsMtx);
 
     if (m_seekDuration >= 0 && ((((parent->m_seekFlags & 0x10) != 0) && ((parent->m_seekFlags & 0x20) != 0)) ||
-                                parent->m_seekFlags == 0x00))  // seeking flags reseted
+                                parent->m_seekFlags == 0x00))  // seeking flags reset
     {
         TAG("ffmpeg_seek") << "Begin seek";
 
@@ -224,7 +211,6 @@ void ParseThread::sendSeekPacket()
 void ParseThread::fixDuration()
 {
     auto* parent = static_cast<FFmpegDecoder*>(this->parent());
-    int ret;
     AVPacket packet;
     if (parent->m_duration <= 0)
     {
@@ -232,7 +218,7 @@ void ParseThread::fixDuration()
         {
             parent->m_fileProbablyNotFull = true;
             emit parent->fileProbablyNotFull();
-            // If file not full the code of check will not work correctly
+            // If file not full the check code will not work correctly
             return;
         }
 
@@ -240,7 +226,7 @@ void ParseThread::fixDuration()
 
         // Reset rechecking vars
         parent->m_duration = 0;
-        while ((ret = av_read_frame(parent->m_formatContext, &packet)) >= 0)
+        while (av_read_frame(parent->m_formatContext, &packet) >= 0)
         {
             if (packet.stream_index == parent->m_videoStreamNumber)
             {

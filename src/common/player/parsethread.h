@@ -19,7 +19,4 @@ public:
         setObjectName("ParseThread");
     }
     void run() override;
-
-    static void startAudioThread(FFmpegDecoder* parent);
-    static void startVideoThread(FFmpegDecoder* parent);
 };
