@@ -26,6 +26,9 @@ struct OpenGLDisplay::OpenGLDisplayImpl
     GLvoid* mBufYuv{nullptr};
     unsigned int mFrameSize{0};
 
+    int mW{0};
+    int mH{0};
+
     QOpenGLShader* mVShader;
     QOpenGLShader* mFShader;
     QOpenGLShaderProgram* mShaderProgram;
@@ -213,8 +216,8 @@ void OpenGLDisplay::resizeGL(int w, int h)
         h = 1;  // set the height to 1
     }
 
-    // Set the viewport
-    glViewport(0, 0, w, h);
+    impl->mW = w;
+    impl->mH = h;
     update();
 }
 
@@ -226,6 +229,10 @@ void OpenGLDisplay::paintGL()
     {
         return;
     }
+
+    // https://stackoverflow.com/questions/33059185/qopenglwidgets-resizegl-is-not-the-place-to-call-glviewport
+    // Set the viewport
+    glViewport(0, 0, impl->mW, impl->mH);
 
     // Load y data texture
     // Activate the texture unit GL_TEXTURE0
@@ -396,6 +403,6 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame()
 {
-    emit update();
+    update();
     VideoDisplay::displayFrame();
 }
