@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <mutex>
 
+#include "private/qwidget_p.h"
+
 enum
 {
     PROGRAM_VERTEX_ATTRIBUTE = 0,
@@ -52,6 +54,7 @@ OpenGLDisplay::OpenGLDisplay(QWidget* parent) : QOpenGLWidget(parent), impl(new 
 {
     impl->m_postponedUpdater.setSingleShot(true);
     connect(&impl->m_postponedUpdater, SIGNAL(timeout()), SLOT(update()));
+    connect(this, &OpenGLDisplay::sendPaintEvent, this, &OpenGLDisplay::onSendPaintEvent);
 }
 
 OpenGLDisplay::~OpenGLDisplay() { delete[] reinterpret_cast<unsigned char*>(impl->mBufYuv); }
@@ -404,5 +407,12 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 void OpenGLDisplay::displayFrame()
 {
     update();
+    sendPaintEvent();
     displayFrameFinished();
+}
+
+void OpenGLDisplay::onSendPaintEvent()
+{
+    QWidgetPrivate *d = qt_widget_private(this);
+    d->sendPaintEvent(QRect(QPoint(0, 0), size()));
 }

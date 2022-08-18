@@ -30,6 +30,11 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 
+protected slots:
+    void onSendPaintEvent();
+signals:
+    void sendPaintEvent();
+
 private:
     void InitDrawBuffer(unsigned bsize);
 
