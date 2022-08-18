@@ -403,6 +403,11 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame()
 {
-    update();
+    QMetaObject::invokeMethod(this, [this]
+        {
+            setUpdatesEnabled(true);
+            update();
+        },
+        Qt::BlockingQueuedConnection);
     displayFrameFinished();
 }
