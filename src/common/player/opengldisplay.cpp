@@ -10,6 +10,7 @@
 #include <QResizeEvent>
 #include <QTimer>
 #include <algorithm>
+#include <atomic>
 #include <mutex>
 
 enum
@@ -44,6 +45,8 @@ struct OpenGLDisplay::OpenGLDisplayImpl
     std::mutex m_mutex;
 
     QTimer m_postponedUpdater;
+
+    std::atomic_bool m_pendingUpdate = false;
 };
 
 /*************************************************************************/
@@ -403,11 +406,14 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame()
 {
-    QMetaObject::invokeMethod(this, [this]
-        {
-            setUpdatesEnabled(true);
-            update();
-        },
-        Qt::BlockingQueuedConnection);
+    if (!(impl->m_pendingUpdate.exchange(true)))
+    {
+        QMetaObject::invokeMethod(this, [this]
+            {
+                impl->m_pendingUpdate = false;
+                setUpdatesEnabled(true);
+                update();
+            });
+    }
     displayFrameFinished();
 }
