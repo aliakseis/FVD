@@ -265,12 +265,10 @@ set(HEADERS_SCRIPTING
 
 set(HEADERS_TOMOC_SCRIPTING
 	scripting/scriptprovider.h
-        #scripting/scriptextension.h
 	scripting/scriptstrategy.h
 )
 
 set(SOURCES_SCRIPTING
-        #scripting/scriptextension.cpp
 	scripting/scriptprovider.cpp
 	scripting/scriptstrategy.cpp
 )
@@ -496,8 +494,6 @@ add_library(${FUNCTIONAL_MODULE} STATIC
 		${Qt5Gui_LIBRARIES}
 		${Qt5Widgets_LIBRARIES}
 		${Qt5Xml_LIBRARIES}
-		#${Qt5Webkit_LIBRARIES}
-		#${Qt5WebKitWidgets_LIBRARIES}
 		${Qt5Network_LIBRARIES}
 		${Qt5ScriptTools_LIBRARIES}
 	)
