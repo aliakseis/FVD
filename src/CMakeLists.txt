@@ -214,7 +214,6 @@ set(HEADERS_LOGIC
 	logic/basefacademodel.h
 	logic/errors.h
 	logic/downloadmanager.h
-	logic/entityholder.h
 	logic/configurableproxyfactory.h
 	logic/entityfilenames.h
 	logic/strategiescommon.h
@@ -239,7 +238,6 @@ set(SOURCES_LOGIC
 	logic/downloadlistmodel.cpp
 	logic/downloadmanager.cpp
 	logic/downloadsortfiltermodel.cpp	
-	logic/entityholder.cpp
 	logic/errors.cpp
 	logic/librarymodel.cpp
 	logic/libraryqmllistener.cpp

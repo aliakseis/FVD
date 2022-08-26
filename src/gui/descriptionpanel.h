@@ -2,7 +2,6 @@
 
 #include <QWidget>
 
-#include "entityholder.h"
 
 namespace Ui
 {

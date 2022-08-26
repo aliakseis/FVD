@@ -74,7 +74,7 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
     ctxt->setContextProperty("libraryModel", m_proxyModel);
     ctxt->engine()->addImageProvider(QLatin1String("imageprovider"), new QmlImageProvider());
     m_view->setSource(QUrl("qrc:/qml2/LibraryView.qml"));
-    ui->verticalLayout->addWidget(QWidget::createWindowContainer(m_view, this));
+    ui->verticalLayout->addWidget(QWidget::createWindowContainer(m_view));
 
     utilities::Tr::MakeRetranslatable(this, ui);
 }

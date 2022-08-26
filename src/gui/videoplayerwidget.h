@@ -5,7 +5,6 @@
 
 #include "download/downloader.h"
 #include "downloadentity.h"
-#include "entityholder.h"
 #include "player/videoplayer.h"
 #include "videowidget.h"
 
@@ -19,7 +18,7 @@ class VideoWidget;
 class Spinner;
 class PlayerHeader;
 
-class VideoPlayerWidget : public QFrame, public EntityHolder, public VideoPlayer
+class VideoPlayerWidget : public QFrame, public VideoPlayer
 {
     Q_OBJECT
 public:
@@ -54,6 +53,8 @@ public:
     void updateLayout(bool fromPendingHeaderPaused = false);
 
     DownloadEntity* currentDownload() const { return m_currentDownload; }
+
+    RemoteVideoEntity* entity() const { return m_currentEntity;  }
 
     void exitFullScreen();
 
@@ -114,6 +115,7 @@ private:
     Spinner* m_spinner;
     VideoWidget* m_videoWidget;
     PlayerHeader* m_playerHeader{};
+    RemoteVideoEntity* m_currentEntity{};
 };
 
 VideoPlayerWidget* VideoPlayerWidgetInstance();

@@ -163,7 +163,7 @@ void VideoPlayerWidget::downloadingToPreview(qint64 bytesReceived, qint64 bytesT
 
 void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity)
 {
-    EntityHolder::setEntity(entity);
+    m_currentEntity = entity;
     if (state() == InitialState)
     {
         if ((m_currentDownload != nullptr) && m_currentDownload->visibilityState() == visTemp)
@@ -179,7 +179,7 @@ void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity)
         }
         else
         {
-            m_playerHeader->setVideoTitle(QString());
+            m_playerHeader->setVideoTitle({});
             m_descriptionPanel->resetDescription();
         }
 
@@ -198,7 +198,7 @@ void VideoPlayerWidget::openVideoInBrowser()
 void VideoPlayerWidget::playDownloadEntity(DownloadEntity* entity)
 {
     Q_ASSERT(entity);
-    EntityHolder::setEntity(entity->getParent());
+    m_currentEntity = entity->getParent();
     emit playDownloadEntityAsynchronously(entity);
 }
 
@@ -439,7 +439,7 @@ void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/
     {
         m_currentFile = QString();
         m_progressBar->resetProgress();
-        m_playerHeader->setVideoTitle(QString());
+        m_playerHeader->setVideoTitle({});
         m_descriptionPanel->resetDescription();
     }
     setState(InitialState);

@@ -102,7 +102,7 @@ void VideoProgressBar::resetProgress()
     m_played = 0;
     repaint();
 
-    setToolTip(QString());
+    setToolTip({});
     if (underMouse())
     {
         QToolTip::hideText();
