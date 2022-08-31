@@ -106,8 +106,6 @@ private:
     SearchResultForm* m_searchResultFrom;
     LibraryForm* m_libraryForm;
 
-    VideoPlayerWidget* m_player;
-
     QFileSystemWatcher* libraryWatcher;
     static bool m_isInitialized;
     bool m_isModelFileOutdated;

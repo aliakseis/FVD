@@ -95,15 +95,15 @@ MainWindow::MainWindow(QWidget* parent)
     setContextMenuPolicy(Qt::NoContextMenu);
     Tr::SetTr(this, &QMainWindow::setWindowTitle, PROJECT_FULLNAME_TRANSLATION);
 
-    m_player = ui->dockFrame;
+    const auto player = ui->dockFrame;
 
-    m_player->setProgressbar(ui->videoProgress);
-    m_player->setVideoHeader(m_playerHeader);
-    m_downloadsForm = new DownloadsForm(m_player, this);
+    player->setProgressbar(ui->videoProgress);
+    player->setVideoHeader(m_playerHeader);
+    m_downloadsForm = new DownloadsForm(player, this);
 
-    ui->dockWidget->installEventFilter(m_player);
+    ui->dockWidget->installEventFilter(player);
     ui->dockWidget->setTitleBarWidget(m_playerHeader);
-    ui->dockWidget->setDisplayForFullscreen(m_player->getCurrentDisplay());
+    ui->dockWidget->setDisplayForFullscreen(player->getCurrentDisplay());
 
     ui->mainToolBar->addWidget(m_mainToolbar);
 
@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_libraryForm->manageWidget()->installEventFilter(ui->dockWidget);
     setCentralWidget(m_centralWidget);
 
-    VERIFY(connect(m_player->videoWidget(), SIGNAL(leaveFullScreen()), ui->dockWidget, SLOT(onLeaveFullScreen())));
+    VERIFY(connect(player->videoWidget(), SIGNAL(leaveFullScreen()), ui->dockWidget, SLOT(onLeaveFullScreen())));
     VERIFY(connect(m_mainToolbar, SIGNAL(settings()), SLOT(openPreferences())));
     VERIFY(connect(m_mainToolbar, SIGNAL(search()), SLOT(activateSearchForm())));
     VERIFY(connect(m_mainToolbar, SIGNAL(downloads(const DownloadEntity*)),
@@ -140,7 +140,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_askForSavingModelTimer.setSingleShot(true);
     VERIFY(connect(&m_askForSavingModelTimer, SIGNAL(timeout()), SLOT(condsiderSavingModel())));
 
-    connect(m_player, &VideoPlayerWidget::showPlaybutton, this, &MainWindow::onShowPlaybutton);
+    connect(player, &VideoPlayerWidget::showPlaybutton, this, &MainWindow::onShowPlaybutton);
 
 #ifdef Q_OS_MAC
     VERIFY(connect(&DarwinSingleton::Instance(), SIGNAL(showPreferences()), SLOT(openPreferences())));
@@ -201,7 +201,7 @@ bool MainWindow::nativeEvent(const QByteArray& /*eventType*/, void* message, lon
         else if (msg->message == WM_COMMAND 
             && LOWORD(msg->wParam) == ui_utils::BUTTON_HIT_MESSAGE && HIWORD(msg->wParam) == 0x1800)
         {
-            m_player->playPauseButtonAction();
+            ui->dockFrame->playPauseButtonAction();
         }
     }
     return false;
@@ -225,7 +225,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::prepareToExit()
 {
-    m_player->exitFullScreen();
+    ui->dockFrame->exitFullScreen();
     if ((m_downloadsForm != nullptr) &&
         QSettings().value(app_settings::ClearDownloadsOnExit, app_settings::ClearDownloadsOnExit_Default).toBool())
     {
@@ -326,24 +326,19 @@ void MainWindow::openPreferences()
 
 void MainWindow::onSearchItemActivated(RemoteVideoEntity* entity, const DownloadEntity* dEntity)
 {
-    m_player->setEntity(entity);
+    const auto player = ui->dockFrame;
+    player->setEntity(entity);
     // TODO: move this logic to setEntity(...)
-    if (entity != nullptr)
+    if (player->state() == VideoPlayerWidget::InitialState || sender() == player)
     {
-        if (m_player->state() == VideoPlayerWidget::InitialState || sender() == m_player)
-        {
-            if (dEntity != nullptr)
-            {
-                ui->descriptionWidget->setDescription(entity->m_videoInfo.strategyName, entity->m_videoInfo.description,
-                                                      dEntity->currentResolution());
-            }
-        }
-    }
-    else
-    {
-        if (m_player->state() == VideoPlayerWidget::InitialState || sender() == m_player)
+        if (entity == nullptr)
         {
             resetDockWidgetPlayer();
+        }
+        else if (dEntity != nullptr)
+        {
+            ui->descriptionWidget->setDescription(entity->m_videoInfo.strategyName, entity->m_videoInfo.description,
+                                                    dEntity->currentResolution());
         }
     }
 }
@@ -354,7 +349,7 @@ void MainWindow::onDownloadItemActivated(const DownloadEntity* entity)
     {
         onSearchItemActivated(entity->getParent(), entity);
     }
-    else if (m_player->state() == VideoPlayerWidget::InitialState)
+    else if (ui->dockFrame->state() == VideoPlayerWidget::InitialState)
     {
         resetDockWidgetPlayer();
     }
@@ -379,7 +374,7 @@ CustomDockWidget* MainWindow::dockWidget() { return ui->dockWidget; }
 
 QWidget* MainWindow::videoControlWidget() { return ui->videoControl; }
 
-VideoPlayerWidget* MainWindow::getPlayer() { return m_player; }
+VideoPlayerWidget* MainWindow::getPlayer() { return ui->dockFrame; }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
