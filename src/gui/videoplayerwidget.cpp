@@ -508,9 +508,6 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     const int minDescHeight = m_descriptionPanel->minimumHeight();
 
     int minPlayerHeight = currHeight - controlsHeight - minDescHeight;
-
-    static auto* progressWidget = findChild<QWidget*>("videoProgress");
-
     int playerWidth = currWidth;
     int yPos = 1;
     FFmpegDecoder* dec = getDecoder();
@@ -593,9 +590,12 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     m_spinner->move(0, 0);
     m_spinner->resize(playerWidth, yPos);
 
-    int progressHeight = progressWidget->height();
-    progressWidget->move(0, yPos - (progressHeight + PROGRESSBAR_VISIBLE_HEIGHT) / 2);
-    progressWidget->resize(playerWidth, progressHeight);
+    if (m_progressBar != nullptr)
+    {
+        int progressHeight = m_progressBar->height();
+        m_progressBar->move(0, yPos - (progressHeight + PROGRESSBAR_VISIBLE_HEIGHT) / 2);
+        m_progressBar->resize(playerWidth, progressHeight);
+    }
 
     int controlsPos = (playerWidth - m_controls->getWidth()) / 2;
     if (controlsPos < 0)
