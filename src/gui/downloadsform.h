@@ -65,8 +65,6 @@ private slots:
     void onVerticalScrollChanged(int);
 
 private:
-    static inline void openFolder(const QString& fileName);
-
     /// \brief	Deletes listed items.
     /// \param	deleteCompletely	true to delete downloaded files, false leaved files only if they completely
     /// downloaded.

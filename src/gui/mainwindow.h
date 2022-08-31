@@ -90,7 +90,6 @@ protected:
 private:
     void loadModelData();
     void saveModelData();
-    static void resetDockWidgetPlayer();
 
 private:
     Ui::MainWindow* ui;

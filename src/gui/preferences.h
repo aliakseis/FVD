@@ -54,9 +54,6 @@ private:
     void setPrefStyleSheet();
     inline void initPreferences();
     inline void fillLanguageComboBox();
-    static void setListSites(const QString& strSite, QListWidget* listSites, const QStringList& langs);
-    static void setContentSize(QListWidget* wdt);
-    static QString getCheckedSites(QListWidget* lWidg);
 
     void showEvent(QShowEvent*) override;
 

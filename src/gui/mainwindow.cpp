@@ -66,6 +66,12 @@ HICON LoadIcon(const wchar_t* idr)
 
 #endif
 
+void resetDockWidgetPlayer()
+{
+    VideoPlayerWidgetInstance()->setEntity(nullptr);
+    VideoPlayerWidgetInstance()->setDefaultPreviewPicture();
+}
+
 } // namespace
 
 const char WindowGeometry[] = "WindowGeometry";
@@ -579,12 +585,6 @@ void MainWindow::openDownloadsTab(DownloadEntity* selEntity) { m_mainToolbar->op
 void MainWindow::openLibraryTab(DownloadEntity* selEntity) { m_mainToolbar->openLibraryTab(selEntity); }
 
 int MainWindow::getCurrTabIndex() { return m_mainToolbar->getCurrTabIndex(); }
-
-void MainWindow::resetDockWidgetPlayer()
-{
-    VideoPlayerWidgetInstance()->setEntity(nullptr);
-    VideoPlayerWidgetInstance()->setDefaultPreviewPicture();
-}
 
 void MainWindow::showHideNotify()
 {

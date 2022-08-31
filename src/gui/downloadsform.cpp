@@ -26,7 +26,10 @@
 #endif
 #include "searchmanager.h"
 
-using namespace utilities;
+static void openFolder(const QString& fileName)
+{
+    utilities::SelectFile(fileName, global_functions::GetVideoFolder());
+}
 
 DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
     : QFrame(parent), ui(new Ui::DownloadsForm), videoPlayer(video_widget), control(nullptr)
@@ -377,11 +380,6 @@ void DownloadsForm::onActivated(const DownloadEntity* selEntity)
 
 void DownloadsForm::onPreferencesChanged() { m_model->considerStartNextDownload(); }
 
-void DownloadsForm::openFolder(const QString& fileName)
-{
-    utilities::SelectFile(fileName, global_functions::GetVideoFolder());
-}
-
 void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCompletely)
 {
     hideFloatingControl();
@@ -500,7 +498,7 @@ QWidget* DownloadsForm::manageWidget() const { return ui->manageLabel; }
 void DownloadsForm::clearDownloadsList(bool silent /* =false*/)
 {
     if (m_model->rowCount() > 0 &&
-        (silent || QMessageBox::question(nullptr, Tr::Tr(PROJECT_FULLNAME_TRANSLATION),
+        (silent || QMessageBox::question(nullptr, utilities::Tr::Tr(PROJECT_FULLNAME_TRANSLATION),
                                          tr("<b>Are you sure want to clear the download list?</b>"),
                                          QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
     {

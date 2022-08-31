@@ -19,6 +19,50 @@
 #include "ui_preferences.h"
 #include "utilities/translatable.h"
 
+namespace {
+
+void setContentSize(QListWidget* wdt)
+{
+    QSize size = wdt->size();
+    int shforCcol = wdt->sizeHintForColumn(0);
+    int shforRow = wdt->sizeHintForRow(0);
+    int countItem = wdt->count();
+    int heightView = ((countItem * shforCcol - 1) / size.width() + 1) * shforRow;
+    wdt->setMinimumHeight(heightView + 5);
+}
+
+void setListSites(const QString& strSite, QListWidget* listSites, const QStringList& langs)
+{
+    listSites->clear();
+    QStringList sites = strSite.split(";", QString::SkipEmptyParts);
+    foreach (const QString& str, langs)
+    {
+        auto* item = new QListWidgetItem(str, listSites);
+        item->setCheckState(sites.contains(str) ? Qt::Checked : Qt::Unchecked);
+    }
+
+    setContentSize(listSites);
+}
+
+QString getCheckedSites(QListWidget* lWidg)
+{
+    QStringList sites;
+
+    for (int i = 0; i < lWidg->count(); i++)
+    {
+        QListWidgetItem* item = lWidg->item(i);
+        if (item->checkState() == Qt::Checked)
+        {
+            sites << item->text();
+        }
+    }
+
+    return sites.join(";");
+}
+
+
+} // namespace
+
 Preferences::Preferences(QWidget* parent)
     : QDialog(parent),
       ui(new Ui::Preferences)
@@ -397,18 +441,6 @@ void Preferences::onCurrItemLangChanged(QListWidgetItem* item)
     }
 }
 
-void Preferences::setListSites(const QString& strSite, QListWidget* listSites, const QStringList& langs)
-{
-    listSites->clear();
-    QStringList sites = strSite.split(";", QString::SkipEmptyParts);
-    foreach (const QString& str, langs)
-    {
-        auto* item = new QListWidgetItem(str, listSites);
-        item->setCheckState(sites.contains(str) ? Qt::Checked : Qt::Unchecked);
-    }
-
-    setContentSize(listSites);
-}
 
 void Preferences::onCurrTabChanged(int index)
 {
@@ -428,21 +460,6 @@ void Preferences::onCurrTabChanged(int index)
     resize(minimumSize());
 }
 
-QString Preferences::getCheckedSites(QListWidget* lWidg)
-{
-    QStringList sites;
-
-    for (int i = 0; i < lWidg->count(); i++)
-    {
-        QListWidgetItem* item = lWidg->item(i);
-        if (item->checkState() == Qt::Checked)
-        {
-            sites << item->text();
-        }
-    }
-
-    return sites.join(";");
-}
 
 void Preferences::onProxyStateChanged(int state)
 {
@@ -451,15 +468,6 @@ void Preferences::onProxyStateChanged(int state)
     ui->leProxyPort->setEnabled(is_enable);
 }
 
-void Preferences::setContentSize(QListWidget* wdt)
-{
-    QSize size = wdt->size();
-    int shforCcol = wdt->sizeHintForColumn(0);
-    int shforRow = wdt->sizeHintForRow(0);
-    int countItem = wdt->count();
-    int heightView = ((countItem * shforCcol - 1) / size.width() + 1) * shforRow;
-    wdt->setMinimumHeight(heightView + 5);
-}
 
 #ifdef DEVELOPER_FEATURES
 void Preferences::onAppendDeveloperLog()
