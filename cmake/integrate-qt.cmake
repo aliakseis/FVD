@@ -297,7 +297,7 @@ macro(INSTALL_QT5PLUGINS TARGET_NAME)
 		set(DLIBS_TO_COPY_DEBUG "")
 
 		string(REGEX REPLACE "(bin|lib)/Qt5Core(.*)" "bin" qtBinPath ${qtCoreLocation})
-		set(MISC_LIBS Qt5QuickTemplates2 icuuc49 icuin49 icudt49 icuuc51 icuin51 icudt51 D3DCompiler_43)
+		set(MISC_LIBS Qt5QuickTemplates2 opengl32sw icuuc49 icuin49 icudt49 icuuc51 icuin51 icudt51 D3DCompiler_43)
 		foreach(miscLib ${MISC_LIBS})
 			set(miscLib_release "${qtBinPath}/${miscLib}.${dllExtension}")
 			if(EXISTS "${miscLib_release}")
