@@ -3,6 +3,7 @@
 #include <QMutex>
 #include <QThread>
 #include <QWaitCondition>
+#include <QDeadlineTimer>
 
 class InterruptibleWaitCondition;  // clang?
 
@@ -27,7 +28,7 @@ private:
 class InterruptibleWaitCondition
 {
 public:
-    bool wait(QMutex* lock, unsigned long time = ULONG_MAX)
+    bool wait(QMutex* lock, QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever))
     {
         ThreadControl* control = dynamic_cast<ThreadControl*>(QThread::currentThread());
         if (control != 0)
@@ -39,7 +40,7 @@ public:
             control->setWaiter(this);
         }
 
-        const bool result = m_condition.wait(lock, time);
+        const bool result = m_condition.wait(lock, deadline);
 
         if (control != 0)
         {
@@ -50,7 +51,7 @@ public:
     }
 
     template <typename P>
-    bool wait(P pred, QMutex* lock, unsigned long time = ULONG_MAX)
+    bool wait(P pred, QMutex* lock, QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever))
     {
         ThreadControl* control = dynamic_cast<ThreadControl*>(QThread::currentThread());
         if (control != 0)
@@ -66,7 +67,7 @@ public:
 
         while (!(control != 0 && control->isAbort() || pred()))
         {
-            result = m_condition.wait(lock, time);
+            result = m_condition.wait(lock, deadline);
             if (!result)
             {
                 break;

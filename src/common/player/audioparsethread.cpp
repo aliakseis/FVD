@@ -341,7 +341,7 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
 
         // Audio sync
         double dsync = m_ffmpeg->videoClock() - m_ffmpeg->audioClock();
-        if (fabs(dsync) > 0.1)
+        if (fabs(dsync) > 0.15)
         {
             if (dsync > 0)
             {

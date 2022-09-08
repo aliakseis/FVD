@@ -31,6 +31,13 @@ void setHandler(LoggerTagHandler* handler)
 
 QDebug filter(const QString& tag)
 {
+    if (!m_handler)
+    {
+        auto debug = qDebug();
+        debug << tag;
+        return debug;
+    }
+
 	QtMsgType tagId = m_handler ? m_handler->getTagId(tag) : QtRejectedLoggerTagMsg;
 
 	if (tagId != QtRejectedLoggerTagMsg)

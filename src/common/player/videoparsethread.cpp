@@ -257,10 +257,10 @@ void VideoParseThread::run()
             m_videoClock += m_frameDelay;
 
             // Skipping frames
-            double curTime;
-            if (!seekDone && m_videoStartClock + pts <= (curTime = av_gettime() / 1000000.))
+            const double delay = m_videoStartClock + pts - av_gettime() / 1000000.;
+            if (!seekDone && delay <= 0)
             {
-                if (m_videoStartClock + pts < curTime - 1.)
+                if (delay < -1.)
                 {
                     InterlockedAdd(m_videoStartClock, 1.);  // adjust clock
                 }
@@ -275,18 +275,23 @@ void VideoParseThread::run()
             }
             else
             {
+                bool proceed = false;
+
+                QDeadlineTimer tm = seekDone ? QDeadlineTimer(QDeadlineTimer::Forever)
+                    : QDeadlineTimer(delay * 1000);
+
                 {
                     QMutexLocker locker(&m_ffmpeg->m_videoFramesMutex);
 
-                    m_ffmpeg->m_videoFramesCV.wait(
+                    proceed = m_ffmpeg->m_videoFramesCV.wait(
                         [this]()
                         {
                             return m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused ||
                                    m_ffmpeg->m_videoFramesQueue.m_busy < VIDEO_PICTURE_QUEUE_SIZE;
                         },
-                        &m_ffmpeg->m_videoFramesMutex);
+                        &m_ffmpeg->m_videoFramesMutex, tm);
 
-                    Q_ASSERT(
+                    Q_ASSERT(!proceed ||
                         isAbort() || m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused ||
                         !(m_ffmpeg->m_videoFramesQueue.m_write_counter == m_ffmpeg->m_videoFramesQueue.m_read_counter &&
                           m_ffmpeg->m_videoFramesQueue.m_busy > 0));  // It can crash on memcpy if that
@@ -298,34 +303,41 @@ void VideoParseThread::run()
                     return;
                 }
 
-                if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+                if (proceed)
                 {
-                    continue;
-                }
+                    if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
+                    {
+                        continue;
+                    }
 
-                if (seekDone)
+                    if (seekDone)
+                    {
+                        m_isSeekingWhilePaused = false;
+                    }
+
+                    int wrcount = m_ffmpeg->m_videoFramesQueue.m_write_counter;
+                    VideoFrame* current_frame = &m_ffmpeg->m_videoFramesQueue.m_frames[wrcount];
+                    m_ffmpeg->frameToImage();
+
+                    // If target frame not good, it will be reallocated
+                    m_ffmpeg->m_videoFrameData.copyToForSure(&current_frame->m_image);
+
+                    current_frame->m_generation = m_ffmpeg->m_generation;
+                    current_frame->m_pts = pts;
+                    current_frame->m_duration = duration_stamp;
+
+                    m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) %
+                        std::size(m_ffmpeg->m_videoFramesQueue.m_frames);
+
+                    QMutexLocker locker(&m_ffmpeg->m_videoFramesMutex);
+                    m_ffmpeg->m_videoFramesQueue.m_busy++;
+                    Q_ASSERT(m_ffmpeg->m_videoFramesQueue.m_busy <= VIDEO_PICTURE_QUEUE_SIZE);
+                    m_ffmpeg->m_videoFramesCV.wakeAll();
+                }
+                else
                 {
-                    m_isSeekingWhilePaused = false;
+                    TAG("ffmpeg_sync") << "Frame wait abandoned";
                 }
-
-                int wrcount = m_ffmpeg->m_videoFramesQueue.m_write_counter;
-                VideoFrame* current_frame = &m_ffmpeg->m_videoFramesQueue.m_frames[wrcount];
-                m_ffmpeg->frameToImage();
-
-                // If target frame not good, it will be reallocated
-                m_ffmpeg->m_videoFrameData.copyToForSure(&current_frame->m_image);
-
-                current_frame->m_generation = m_ffmpeg->m_generation;
-                current_frame->m_pts = pts;
-                current_frame->m_duration = duration_stamp;
-
-                m_ffmpeg->m_videoFramesQueue.m_write_counter = (m_ffmpeg->m_videoFramesQueue.m_write_counter + 1) %
-                                                               std::size(m_ffmpeg->m_videoFramesQueue.m_frames);
-
-                QMutexLocker locker(&m_ffmpeg->m_videoFramesMutex);
-                m_ffmpeg->m_videoFramesQueue.m_busy++;
-                Q_ASSERT(m_ffmpeg->m_videoFramesQueue.m_busy <= VIDEO_PICTURE_QUEUE_SIZE);
-                m_ffmpeg->m_videoFramesCV.wakeAll();
             }
             frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
         }
