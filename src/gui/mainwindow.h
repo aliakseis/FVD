@@ -77,6 +77,8 @@ private Q_SLOTS:
 
     void onShowPlaybutton(bool show);
 
+    void onPeriodicUpdate();
+
 protected:
     void changeEvent(QEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;

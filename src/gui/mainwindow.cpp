@@ -13,6 +13,7 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QPushButton>
+#include <QStorageInfo>
 
 #include "branding.hxx"
 #include "downloadentity.h"
@@ -93,7 +94,6 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
     setContextMenuPolicy(Qt::NoContextMenu);
-    Tr::SetTr(this, &QMainWindow::setWindowTitle, PROJECT_FULLNAME_TRANSLATION);
 
     const auto player = ui->dockFrame;
 
@@ -141,6 +141,11 @@ MainWindow::MainWindow(QWidget* parent)
     VERIFY(connect(&m_askForSavingModelTimer, SIGNAL(timeout()), SLOT(condsiderSavingModel())));
 
     connect(player, &VideoPlayerWidget::showPlaybutton, this, &MainWindow::onShowPlaybutton);
+
+    onPeriodicUpdate();
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::onPeriodicUpdate);
+    timer->start(1000);
 
 #ifdef Q_OS_MAC
     VERIFY(connect(&DarwinSingleton::Instance(), SIGNAL(showPreferences()), SLOT(openPreferences())));
@@ -627,4 +632,12 @@ void MainWindow::onShowPlaybutton(bool show)
 #ifdef Q_OS_WIN
     m_taskBar.updateButton(show ? m_hPlay : m_hPause, show ? tr("Play") : tr("Pause"));
 #endif
+}
+
+void MainWindow::onPeriodicUpdate()
+{
+    QStorageInfo storageInfo(global_functions::GetVideoFolder());
+    const auto gigsAvailable = storageInfo.bytesAvailable() / static_cast<double>(1 << 30);
+    ::Tr::SetTr(this, &QWidget::setWindowTitle, PROJECT_FULLNAME_TRANSLATION,
+        tr(" [Disk free space: %1 GB]").arg(gigsAvailable, 0, 'f', 1));
 }
