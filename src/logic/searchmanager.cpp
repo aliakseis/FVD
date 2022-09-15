@@ -370,7 +370,7 @@ bool SearchManager::addLinks(const QMimeData& urls)
         pos += std::max(5, intrestedDataRx.matchedLength() - 5);
 
         QUrl url(someLink);
-        if (!url.isValid() || !url.hasQuery())
+        if (!url.isValid() || url.path().length() < 2) // ignore sole slash
         {
             continue;
         }
