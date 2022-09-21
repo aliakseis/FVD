@@ -356,7 +356,7 @@ macro(INSTALL_QT5QML TARGET_NAME)
 			${CMAKE_COMMAND} -E copy_directory ${qtQmlPath} $<TARGET_FILE_DIR:${TARGET_NAME}>/qml/
 	    	)
 
-		install(DIRECTORY ${qtQmlPath} DESTINATION qml)
+		install(DIRECTORY ${qtQmlPath} DESTINATION qml PATTERN "*.pdb" EXCLUDE)
 
 	endif(WIN32 OR APPLE)
 endmacro(INSTALL_QT5QML TARGET_NAME)
