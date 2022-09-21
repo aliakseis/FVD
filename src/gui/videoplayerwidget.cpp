@@ -460,30 +460,6 @@ void VideoPlayerWidget::resizeEvent(QResizeEvent* event)
     updateLayout();
 }
 
-void VideoPlayerWidget::wheelEvent(QWheelEvent* event)
-{
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
-
-    if (event->orientation() != Qt::Horizontal)
-    {
-        if (getDecoder() != nullptr)
-        {
-            double newVolume = getDecoder()->volume() + ((double)numSteps / 20);
-            if (newVolume < 0)
-            {
-                newVolume = 0;
-            }
-            else if (newVolume > 1.)
-            {
-                newVolume = 1.;
-            }
-            getDecoder()->setVolume(newVolume);
-        }
-    }
-    event->accept();
-}
-
 bool VideoPlayerWidget::eventFilter(QObject* object, QEvent* event)
 {
     if (event->type() == QEvent::KeyRelease)
