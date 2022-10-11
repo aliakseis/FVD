@@ -376,6 +376,10 @@ bool SearchManager::addLinks(const QMimeData& urls)
         }
 
         auto it = std::lower_bound(linksForDownload.begin(), linksForDownload.end(), someLink);
+        if (it != linksForDownload.begin() && someLink.startsWith(*std::prev(it)))
+        {
+            continue;
+        }
         if (it == linksForDownload.end())
         {
             linksForDownload.push_back(someLink);
@@ -390,6 +394,14 @@ bool SearchManager::addLinks(const QMimeData& urls)
             else
             {
                 *itNext = someLink;
+
+                it = std::next(itNext);
+                itNext = it;
+                while (itNext != linksForDownload.end() && itNext->startsWith(someLink))
+                {
+                    ++itNext;
+                }
+                linksForDownload.erase(it, itNext);
             }
         }
     }
