@@ -2,9 +2,10 @@
 
 #include <memory>
 
-#include "videodisplay.h"
 
 class FFmpegDecoder;
+class VideoDisplay;
+
 
 class VideoPlayer
 {

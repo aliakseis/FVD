@@ -3,12 +3,9 @@
 #include <QFrame>
 #include <QPointer>
 
-#include "download/downloader.h"
 #include "downloadentity.h"
 #include "player/videoplayer.h"
-#include "videowidget.h"
 
-// class DownloadEntity;
 class VideoControl;
 class VideoProgressBar;
 class RemoteVideoEntity;
