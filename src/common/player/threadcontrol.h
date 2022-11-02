@@ -5,6 +5,9 @@
 #include <QWaitCondition>
 #include <QDeadlineTimer>
 
+#include <type_traits>
+#include <utility>
+
 class InterruptibleWaitCondition;  // clang?
 
 class ThreadControl
@@ -28,28 +31,6 @@ private:
 class InterruptibleWaitCondition
 {
 public:
-    bool wait(QMutex* lock, QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever))
-    {
-        ThreadControl* control = dynamic_cast<ThreadControl*>(QThread::currentThread());
-        if (control != 0)
-        {
-            if (control->isAbort())
-            {
-                return true;
-            }
-            control->setWaiter(this);
-        }
-
-        const bool result = m_condition.wait(lock, deadline);
-
-        if (control != 0)
-        {
-            control->setWaiter(nullptr);
-        }
-
-        return result;
-    }
-
     template <typename P>
     bool wait(P pred, QMutex* lock, QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever))
     {
@@ -80,6 +61,11 @@ public:
         }
 
         return result;
+    }
+
+    bool wait(QMutex* lock, QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever))
+    {
+        return this->wait(std::false_type(), lock, std::move(deadline));
     }
 
     void wakeOne() { m_condition.wakeOne(); }
