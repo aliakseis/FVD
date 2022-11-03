@@ -49,8 +49,8 @@ public:
 
     void updateLayout(bool fromPendingHeaderPaused = false);
 
+    void setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity);
     DownloadEntity* currentDownload() const { return m_currentDownload; }
-
     RemoteVideoEntity* entity() const { return m_currentEntity;  }
 
     void exitFullScreen();
@@ -64,7 +64,6 @@ protected:
     void setDefaultDisplay() override;
 
 public slots:
-    void setEntity(RemoteVideoEntity* entity);
     void playDownloadEntity(DownloadEntity* entity);
     void playPauseButtonAction();
 
@@ -108,6 +107,7 @@ private:
     VideoProgressBar* m_progressBar;
     QString m_currentFile;
     QPointer<DownloadEntity> m_currentDownload;
+    QPointer<DownloadEntity> m_selectedDownload;
     Spinner* m_spinner;
     VideoWidget* m_videoWidget;
     PlayerHeader* m_playerHeader{};

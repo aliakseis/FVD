@@ -69,7 +69,7 @@ HICON LoadIcon(const wchar_t* idr)
 
 void resetDockWidgetPlayer()
 {
-    VideoPlayerWidgetInstance()->setEntity(nullptr);
+    VideoPlayerWidgetInstance()->setEntity(nullptr, nullptr);
     VideoPlayerWidgetInstance()->setDefaultPreviewPicture();
 }
 
@@ -332,7 +332,7 @@ void MainWindow::openPreferences()
 void MainWindow::onSearchItemActivated(RemoteVideoEntity* entity, const DownloadEntity* dEntity)
 {
     const auto player = ui->dockFrame;
-    player->setEntity(entity);
+    player->setEntity(entity, const_cast<DownloadEntity*>(dEntity));
     // TODO: move this logic to setEntity(...)
     if (player->state() == VideoPlayerWidget::InitialState || sender() == player)
     {

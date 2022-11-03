@@ -161,9 +161,10 @@ void VideoPlayerWidget::downloadingToPreview(qint64 bytesReceived, qint64 bytesT
     }
 }
 
-void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity)
+void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity)
 {
     m_currentEntity = entity;
+    m_selectedDownload = downloadEntity;
     if (state() == InitialState)
     {
         if ((m_currentDownload != nullptr) && m_currentDownload->visibilityState() == visTemp)
@@ -246,7 +247,8 @@ void VideoPlayerWidget::startPreviewDownload()
             getDecoder()->close(true);
         }
 
-        DownloadEntity* current = m_currentEntity->actualDownload();
+        DownloadEntity* current = (m_selectedDownload != nullptr)
+            ? m_selectedDownload : m_currentEntity->actualDownload();
 
         if (current == nullptr)
         {
