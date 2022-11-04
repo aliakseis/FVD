@@ -159,9 +159,6 @@ private:
     // Basic file path
     QString m_openedFilePath;
 
-    // Output video image
-    bool m_stableDisplay;
-
     int m_targetWidth;
     int m_targetHeight;
 

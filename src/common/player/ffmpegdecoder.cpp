@@ -32,8 +32,6 @@ void preciseSleep(double sec) { QThread::usleep(sec * 1000000UL); }
 
 FFmpegDecoder::FFmpegDecoder()
 {
-    m_stableDisplay = true;
-
     // no detection using
     m_streamDurationDetection = false;
 
@@ -339,7 +337,7 @@ void FFmpegDecoder::openFileProcessing()
 
     if (m_videoStreamNumber >= 0)
     {
-        if (!m_stableDisplay || m_targetWidth == 0 || m_targetHeight == 0)
+        if (m_targetWidth == 0 || m_targetHeight == 0)
         {
             setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
         }
