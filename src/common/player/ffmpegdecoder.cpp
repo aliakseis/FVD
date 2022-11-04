@@ -351,20 +351,15 @@ void FFmpegDecoder::openFileProcessing()
 
 bool FFmpegDecoder::openFileDecoder(const QString& file)
 {
-    if (m_openedFilePath != file)
-    {
-        m_openedFilePath = file;
-    }
-
-    const QString& path(file);
+    m_openedFilePath = file;
     // Open video file
     const int error = avformat_open_input(&m_formatContext,
 #ifdef Q_OS_WIN
-                                          path.toUtf8().constData(),
+        file.toUtf8().constData(),
 #else
-                                          QFile::encodeName(path).constData(),
+        QFile::encodeName(file).constData(),
 #endif  // Q_OS_WIN
-                                          nullptr, nullptr);
+        nullptr, nullptr);
     if (error != 0)
     {
         qWarning() << "Couldn't open '" + file + "'"
@@ -970,16 +965,6 @@ double FFmpegDecoder::getDuration(const QString& file)
     }
     close();
     return result;
-}
-
-
-int64_t FFmpegDecoder::seekPostion() const
-{
-    if (m_mainParseThread != nullptr)
-    {
-        return m_mainParseThread->m_seekDuration;
-    }
-    return -2;
 }
 
 float FFmpegDecoder::aspectRatio() const

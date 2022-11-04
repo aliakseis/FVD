@@ -68,7 +68,6 @@ public:
     bool seekDuration(int64_t duration);
     bool seekByPercent(float percent, int64_t totalDuration = -1);
 
-    int64_t seekPostion() const;
     int64_t duration() const;
     int64_t headerSize() const;
 
