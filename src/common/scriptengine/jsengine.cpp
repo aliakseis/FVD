@@ -50,8 +50,8 @@ bool JSEngine::loadFile(const QString& filename)
 
 QVariant JSEngine::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments)
 {
-	auto func = (!object.isEmpty()) ? JSEngine::scriptEngine()->globalObject().property(object).property(method)
-		: JSEngine::scriptEngine()->globalObject().property(method);
+	auto func = (object.isEmpty()) ? JSEngine::scriptEngine()->globalObject().property(method)
+		: JSEngine::scriptEngine()->globalObject().property(object).property(method);
 
 	if (!func.isCallable())
 	{
@@ -59,7 +59,7 @@ QVariant JSEngine::invokeFunction(const QString& object, const QString& method, 
 	}
 
     QJSValueList m_callParams;
-    foreach(QVariant arg, arguments)
+    for (const auto& arg : arguments)
 	{
 		switch (arg.type())
 		{

@@ -42,7 +42,7 @@ bool PythonEngine::loadFile(const QString& filename)
 
 QVariant PythonEngine::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments /*= QVariantList()*/)
 {
-    QString callable = (!object.isEmpty()) ? object + QStringLiteral(".") + method : method;
+    QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
     return pythonQtInstance()->getMainModule().call(callable, arguments);
 }
 
