@@ -52,8 +52,8 @@ private slots:
 
 private:
     void setPrefStyleSheet();
-    inline void initPreferences();
-    inline void fillLanguageComboBox();
+    void initPreferences();
+    void fillLanguageComboBox();
 
     void showEvent(QShowEvent*) override;
 

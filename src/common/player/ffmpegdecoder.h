@@ -79,10 +79,10 @@ public:
     QRect setPreferredSize(const QSize& size, int scr_xleft = 0, int scr_ytop = 0);
     QRect setPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0);
     QRect getPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0) const;
-    inline bool isPlaying() const { return m_isPlaying; }
-    inline bool isPaused() const { return m_isPaused; }
+    bool isPlaying() const { return m_isPlaying; }
+    bool isPaused() const { return m_isPaused; }
 
-    inline bool isFileLoaded() const { return m_formatContext != NULL; }
+    bool isFileLoaded() const { return m_formatContext != nullptr; }
 
     void setFrameListener(VideoDisplay* listener);
 

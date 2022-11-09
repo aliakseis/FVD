@@ -34,8 +34,8 @@ private:
                                   const QString& sectionName);
 
     void createActions();
-    inline void showSearchButton();
-    inline void showStopButton();
+    void showSearchButton();
+    void showStopButton();
     void updatePrevNextState();
     void doSearch(QString query, int page = 1);
     void copySelectionToClipboard();

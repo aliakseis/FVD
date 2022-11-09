@@ -9,11 +9,11 @@ class QConnectionObjectEx : public QObject
 {
     Q_DECLARE_PRIVATE(QObject)
 public:
-    inline bool isSender(const QObject* receiver, const char* signal) const
+    bool isSender(const QObject* receiver, const char* signal) const
     { return d_func()->isSender(receiver, signal); }
-    inline QObjectList receiverList(const char* signal) const
+    QObjectList receiverList(const char* signal) const
     { return d_func()->receiverList(signal); }
-    inline QObjectList senderList() const
+    QObjectList senderList() const
     { return d_func()->senderList(); }
     QObjectPrivate* dFunc() { return d_func(); }
     const QObjectPrivate* dFunc() const { return d_func(); }
