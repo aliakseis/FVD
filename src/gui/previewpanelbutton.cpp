@@ -10,24 +10,24 @@ void PreviewPanelButton::setImages(Type type)
     {
     case LeftArrow:
         m_pixmap.load(QString::fromUtf8(":/previewpanel/left_default"));
-        m_pushedPixmap.load(QString::fromUtf8(":/previewpanel/left_clicked"));
+        m_pressedPixmap.load(QString::fromUtf8(":/previewpanel/left_clicked"));
         break;
     case RightArrow:
         m_pixmap.load(QString::fromUtf8(":/previewpanel/right_default"));
-        m_pushedPixmap.load(QString::fromUtf8(":/previewpanel/right_clicked"));
+        m_pressedPixmap.load(QString::fromUtf8(":/previewpanel/right_clicked"));
         break;
     default:  // Scale
         m_pixmap.load(QString::fromUtf8(":/previewpanel/scale_default"));
-        m_pushedPixmap.load(QString::fromUtf8(":/previewpanel/scale_clicked"));
+        m_pressedPixmap.load(QString::fromUtf8(":/previewpanel/scale_clicked"));
     }
     setPixmap(m_pixmap);
 }
 
 void PreviewPanelButton::mousePressEvent(QMouseEvent* event)
 {
-    if (!m_pushedPixmap.isNull())
+    if (!m_pressedPixmap.isNull())
     {
-        setPixmap(m_pushedPixmap);
+        setPixmap(m_pressedPixmap);
     }
     QLabel::mousePressEvent(event);
 }

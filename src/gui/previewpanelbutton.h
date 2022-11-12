@@ -18,10 +18,10 @@ public:
     void setImages(Type type);
 
 protected:
-    void mousePressEvent(QMouseEvent* event);
-    void mouseReleaseEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    QPixmap m_pushedPixmap;
+    QPixmap m_pressedPixmap;
     QPixmap m_pixmap;
 };

@@ -14,14 +14,14 @@ void MouseHoverButton::mousePressEvent(QMouseEvent* event)
         QList<QSize> normalOnSizes = m_defIcon.availableSizes(QIcon::Normal, QIcon::On);
         if (!normalOnSizes.empty())
         {
-            // use normal/on image as pushed one
-            m_pushedIcon = m_defIcon.pixmap(*normalOnSizes.begin(), QIcon::Normal, QIcon::On);
+            // use normal/on image as the pressed one
+            m_pressedIcon = m_defIcon.pixmap(*normalOnSizes.begin(), QIcon::Normal, QIcon::On);
         }
     }
     QToolButton::mousePressEvent(event);
     if (event->buttons() & Qt::LeftButton)
     {
-        setIcon(m_pushedIcon);
+        setIcon(m_pressedIcon);
     }
 }
 

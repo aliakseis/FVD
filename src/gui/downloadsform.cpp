@@ -223,7 +223,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
         }
         else if (act == ui->actionClearList)
         {
-            bool deleteCompletely = (qApp->keyboardModifiers() & Qt::ShiftModifier) != 0;  // if shift pushed
+            bool deleteCompletely = (qApp->keyboardModifiers() & Qt::ShiftModifier) != 0;  // if shift pressed
             deleteItems(QModelIndexList() << index, deleteCompletely);
         }
     }
