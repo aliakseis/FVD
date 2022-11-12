@@ -220,6 +220,11 @@
     <string>Show in folder</string>
    </property>
   </action>
+  <action name="actionSelectResolution">
+   <property name="text">
+    <string>Select resolution</string>
+   </property>
+  </action>
   <action name="actionClearList">
    <property name="text">
     <string>Remove from list</string>

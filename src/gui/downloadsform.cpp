@@ -20,6 +20,7 @@
 #include "ui_downloadsform.h"
 #include "ui_mainwindow.h"
 #include "videowidget.h"
+#include "videoqualitydialog.h"
 
 #ifdef DEVELOPER_FEATURES
 #include <QMouseEvent>
@@ -193,6 +194,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
 
         menu.addAction(ui->actionOpenFile);
         menu.addAction(ui->actionOpenFolder);
+        menu.addAction(ui->actionSelectResolution);
         if (MainWindow::Instance()->libraryForm()->exists(entity))
         {
             menu.addAction(ui->actionShowInLibrary);
@@ -208,6 +210,12 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
         else if (act == ui->actionOpenFolder)
         {
             openFolder(entity->filename());
+        }
+        else if (act == ui->actionSelectResolution)
+        {
+            VideoQualityDialog dialog(entity->getParent());
+            dialog.move(QCursor::pos());
+            dialog.exec();
         }
         else if (act == ui->actionShowInLibrary)
         {
