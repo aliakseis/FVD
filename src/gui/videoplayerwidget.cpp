@@ -248,7 +248,7 @@ void VideoPlayerWidget::startPreviewDownload()
         }
 
         DownloadEntity* current = (m_selectedDownload != nullptr)
-            ? m_selectedDownload : m_currentEntity->actualDownload();
+            ? m_selectedDownload.data() : m_currentEntity->actualDownload();
 
         if (current == nullptr)
         {
