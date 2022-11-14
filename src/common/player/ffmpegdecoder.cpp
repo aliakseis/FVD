@@ -231,7 +231,7 @@ void FFmpegDecoder::closeProcessing()
 
     if (m_audioFrame != nullptr)
     {
-        av_free(m_audioFrame);
+        av_frame_free(&m_audioFrame);
     }
 
     if (m_audioSwrContext != nullptr)
@@ -242,7 +242,7 @@ void FFmpegDecoder::closeProcessing()
     // Free the YUV frame
     if (m_videoFrame != nullptr)
     {
-        av_free(m_videoFrame);
+        av_frame_free(&m_videoFrame);
     }
 
     // Close the codec
