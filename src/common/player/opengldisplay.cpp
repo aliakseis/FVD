@@ -274,25 +274,25 @@ void OpenGLDisplay::renderFrame(const FPicture& data)
 {
     std::unique_lock<std::mutex> lock(impl->m_mutex);
 
-    impl->mVideoW = data.width;
-    impl->mVideoH = data.height;
+    impl->mVideoW = data.width();
+    impl->mVideoH = data.height();
 
-    InitDrawBuffer(data.height * data.width * 3 / 2);
+    InitDrawBuffer(data.height() * data.width() * 3 / 2);
 
     auto dst = reinterpret_cast<unsigned char*>(impl->mBufYuv);
-    int width = data.width;
-    int height = data.height;
+    int width = data.width();
+    int height = data.height();
     for (int i = 0; i < 3; ++i)
     {
-        auto src = data.data[i];
+        auto src = data.data()[i];
         for (int j = 0; j < height; ++j)
         {
             memcpy(dst, src, width);
             dst += width;
-            src += data.linesize[i];
+            src += data.linesize()[i];
         }
-        width = data.width / 2;
-        height = data.height / 2;
+        width = data.width() / 2;
+        height = data.height() / 2;
     }
 }
 

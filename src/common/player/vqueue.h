@@ -15,8 +15,6 @@ struct VQueue
             m_frames[i].m_image.free();
         }
 
-        memset(&m_frames, 0, sizeof(m_frames));
-
         // Reset readers
         m_write_counter = 0;
         m_read_counter = 0;

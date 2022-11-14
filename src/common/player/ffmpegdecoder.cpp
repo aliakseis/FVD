@@ -616,7 +616,7 @@ bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
 {
     if (m_videoFrame->format == m_pixelFormat)
     {
-        std::swap(*m_videoFrame, static_cast<AVFrame&>(videoFrameData));
+        std::swap(m_videoFrame, videoFrameData.m_frame);
     }
     else
     {
@@ -650,7 +650,7 @@ bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
 
         // Doing conversion
         VERIFY(sws_scale(m_imageCovertContext, m_videoFrame->data, m_videoFrame->linesize, 0, m_videoFrame->height,
-            videoFrameData.data, videoFrameData.linesize) > 0);
+            videoFrameData.data(), videoFrameData.linesize()) > 0);
     }
     return true;
 }
@@ -930,9 +930,9 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                     if (avcodec_receive_frame(m_videoCodecContext, m_videoFrame) == 0
                         && frameToImage(pic))
                     {
-                        Q_ASSERT(pic.format == AV_PIX_FMT_RGB24);
-                        auto image = QImage(pic.width, pic.height, QImage::Format_RGB888);
-                        memcpy(image.bits(), pic.data[0], pic.width * pic.height * 3);
+                        Q_ASSERT(pic.format() == AV_PIX_FMT_RGB24);
+                        auto image = QImage(pic.width(), pic.height(), QImage::Format_RGB888);
+                        memcpy(image.bits(), pic.data()[0], pic.width() * pic.height() * 3);
                         Q_ASSERT(!image.isNull());
 
                         QByteArray ba;
