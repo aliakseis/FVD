@@ -614,38 +614,44 @@ double FFmpegDecoder::volume() const { return m_volume; }
 
 bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
 {
-    int width = m_videoFrame->width;
-    int height = m_videoFrame->height;
-
-    if (m_resizeWithDecoder)
+    if (m_videoFrame->format == m_pixelFormat)
     {
-        QMutexLocker locker(&m_resizeMutex);
-        if (m_targetWidth > 0 && m_targetHeight > 0)
+        std::swap(*m_videoFrame, static_cast<AVFrame&>(videoFrameData));
+    }
+    else
+    {
+        int width = m_videoFrame->width;
+        int height = m_videoFrame->height;
+
+        if (m_resizeWithDecoder)
         {
-            width = m_targetWidth;
-            height = m_targetHeight;
+            QMutexLocker locker(&m_resizeMutex);
+            if (m_targetWidth > 0 && m_targetHeight > 0)
+            {
+                width = m_targetWidth;
+                height = m_targetHeight;
+            }
         }
+
+        videoFrameData.reallocForSure(m_pixelFormat, width, height);
+
+        // Prepare image conversion
+        m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
+            (AVPixelFormat)m_videoFrame->format, width, height, m_pixelFormat,
+            m_resizeWithDecoder ? SWS_BICUBIC : SWS_POINT,
+            nullptr, nullptr, nullptr);
+
+        Q_ASSERT(m_imageCovertContext != nullptr);
+
+        if (m_imageCovertContext == nullptr)
+        {
+            return false;
+        }
+
+        // Doing conversion
+        VERIFY(sws_scale(m_imageCovertContext, m_videoFrame->data, m_videoFrame->linesize, 0, m_videoFrame->height,
+            videoFrameData.data, videoFrameData.linesize) > 0);
     }
-
-    videoFrameData.reallocForSure(m_pixelFormat, width, height);
-
-    // Prepare image conversion
-    m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
-                                                (AVPixelFormat)m_videoFrame->format, width, height, m_pixelFormat,
-                                                m_resizeWithDecoder? SWS_BICUBIC : SWS_POINT,
-                                                nullptr, nullptr, nullptr);
-
-    Q_ASSERT(m_imageCovertContext != nullptr);
-
-    if (m_imageCovertContext == nullptr)
-    {
-        return false;
-    }
-
-    // Doing conversion
-    VERIFY(sws_scale(m_imageCovertContext, m_videoFrame->data, m_videoFrame->linesize, 0, m_videoFrame->height,
-                     videoFrameData.data, videoFrameData.linesize) > 0);
-
     return true;
 }
 
