@@ -30,7 +30,7 @@ void WidgetDisplay::displayFrame()
 
 void WidgetDisplay::renderFrame(const FPicture& frame)
 {
-    m_image = QImage(frame.data[0], frame.width, frame.height, QImage::Format_RGB888);
+    m_image = QImage(frame.data()[0], frame.width(), frame.height(), QImage::Format_RGB888);
 }
 
 AVPixelFormat WidgetDisplay::preferablePixelFormat() const { return AV_PIX_FMT_RGB24; }
