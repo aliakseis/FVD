@@ -229,8 +229,6 @@ void FFmpegDecoder::closeProcessing()
         av_free(m_imageCovertContext);
     }
 
-    m_videoFrameData.free();
-
     if (m_audioFrame != nullptr)
     {
         av_free(m_audioFrame);
@@ -614,7 +612,7 @@ void FFmpegDecoder::setVolume(int volume, int steep) { setVolume((double)volume 
 
 double FFmpegDecoder::volume() const { return m_volume; }
 
-FPicture* FFmpegDecoder::frameToImage()
+bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
 {
     int width = m_videoFrame->width;
     int height = m_videoFrame->height;
@@ -629,7 +627,7 @@ FPicture* FFmpegDecoder::frameToImage()
         }
     }
 
-    m_videoFrameData.reallocForSure(m_pixelFormat, width, height);
+    videoFrameData.reallocForSure(m_pixelFormat, width, height);
 
     // Prepare image conversion
     m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
@@ -641,14 +639,14 @@ FPicture* FFmpegDecoder::frameToImage()
 
     if (m_imageCovertContext == nullptr)
     {
-        return nullptr;
+        return false;
     }
 
     // Doing conversion
     VERIFY(sws_scale(m_imageCovertContext, m_videoFrame->data, m_videoFrame->linesize, 0, m_videoFrame->height,
-                     m_videoFrameData.data, m_videoFrameData.linesize) > 0);
+                     videoFrameData.data, videoFrameData.linesize) > 0);
 
-    return &m_videoFrameData;
+    return true;
 }
 
 void FFmpegDecoder::setTargetSize(int w, int h, bool is_ceil)
@@ -880,6 +878,8 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
         setPixelFormat(AV_PIX_FMT_RGB24);
         setResizeWithDecoder(true);
         setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
+
+        FPicture pic;
         for (const auto percent : percents)
         {
             int frame = m_duration * percent;
@@ -906,30 +906,27 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                         continue;
                     }
 
-                    FPicture* pic{};
-
-                    if (packet.stream_index == m_videoStreamNumber)
+                    if (packet.stream_index != m_videoStreamNumber)
                     {
-                        const int ret = avcodec_send_packet(m_videoCodecContext, &packet);
-                        if (ret < 0)
-                        {
-                            av_packet_unref(&packet);
-                            break;
-                        }
-
-                        if (avcodec_receive_frame(m_videoCodecContext, m_videoFrame) == 0)
-                        {
-                            pic = frameToImage();
-                        }
+                        av_packet_unref(&packet);
+                        continue;
                     }
+
+                    const int ret = avcodec_send_packet(m_videoCodecContext, &packet);
 
                     av_packet_unref(&packet);
 
-                    if (pic != nullptr)
+                    if (ret < 0)
                     {
-                        Q_ASSERT(pic->format == AV_PIX_FMT_RGB24);
-                        auto image = QImage(pic->width, pic->height, QImage::Format_RGB888);
-                        memcpy(image.bits(), pic->data[0], pic->width * pic->height * 3);
+                        break;
+                    }
+
+                    if (avcodec_receive_frame(m_videoCodecContext, m_videoFrame) == 0
+                        && frameToImage(pic))
+                    {
+                        Q_ASSERT(pic.format == AV_PIX_FMT_RGB24);
+                        auto image = QImage(pic.width, pic.height, QImage::Format_RGB888);
+                        memcpy(image.bits(), pic.data[0], pic.width * pic.height * 3);
                         Q_ASSERT(!image.isNull());
 
                         QByteArray ba;

@@ -207,7 +207,6 @@ private:
     SwsContext* m_imageCovertContext;
     QMutex m_resizeMutex;
     bool m_resizeWithDecoder;
-    FPicture m_videoFrameData;
     AVPixelFormat m_pixelFormat;
 
     // Video and audio threads stuff
@@ -233,7 +232,7 @@ private:
 
     void resetVariables();
     void closeProcessing();
-    FPicture* frameToImage();
+    bool frameToImage(FPicture& videoFrameData);
     double audioClock() const;
     double videoClock() const;
 

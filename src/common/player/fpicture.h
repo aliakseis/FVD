@@ -40,12 +40,6 @@ struct FPicture : public AVFrame
         }
     }
 
-    void copyToForSure(FPicture* dest)
-    {
-        dest->reallocForSure(static_cast<AVPixelFormat>(format), width, height);
-        av_frame_copy(dest, this);
-    }
-
 private:
     void reset()
     {

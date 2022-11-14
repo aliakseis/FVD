@@ -317,10 +317,7 @@ void VideoParseThread::run()
 
                     int wrcount = m_ffmpeg->m_videoFramesQueue.m_write_counter;
                     VideoFrame* current_frame = &m_ffmpeg->m_videoFramesQueue.m_frames[wrcount];
-                    m_ffmpeg->frameToImage();
-
-                    // If target frame not good, it will be reallocated
-                    m_ffmpeg->m_videoFrameData.copyToForSure(&current_frame->m_image);
+                    m_ffmpeg->frameToImage(current_frame->m_image);
 
                     current_frame->m_generation = m_ffmpeg->m_generation;
                     current_frame->m_pts = pts;
