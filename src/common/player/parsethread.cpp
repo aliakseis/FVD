@@ -7,6 +7,7 @@
 extern "C"
 {
 #include <libavformat/avformat.h>
+#include <libavutil/time.h>
 }
 
 
@@ -76,6 +77,8 @@ void ParseThread::run()
 
     // detecting real framesize
     fixDuration();
+
+    parent->m_videoStartClock = av_gettime() / 1000000.;
 
     if (parent->m_audioStreamNumber >= 0)
     {

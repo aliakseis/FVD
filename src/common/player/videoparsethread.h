@@ -14,8 +14,6 @@ private:
     FFmpegDecoder* m_ffmpeg;
 
 public:
-    std::atomic<double> m_videoStartClock;
-
     explicit VideoParseThread(FFmpegDecoder* parent) : m_isSeekingWhilePaused(false), m_ffmpeg(parent)
     {
         setObjectName("VideoParseThread");

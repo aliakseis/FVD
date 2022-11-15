@@ -94,7 +94,8 @@ void FFmpegDecoder::resetVariables()
     m_imageCovertContext = nullptr;
 
     m_audioPTS = 0;
-    m_videoPTS = 0;
+
+    m_videoStartClock = 0;
 
     m_mainParseThread = nullptr;
     m_mainVideoThread = nullptr;
@@ -727,13 +728,8 @@ QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xle
     return {scr_xleft + x, scr_ytop + y, FFMAX(width, 1), FFMAX(height, 1)};
 }
 
-double FFmpegDecoder::videoClock() const { return m_videoPTS; }
-
-double FFmpegDecoder::audioClock() const { return m_audioPTS; }
-
 void FFmpegDecoder::finishedDisplayingFrame()
 {
-    m_videoPTS = m_videoFramesQueue.m_frames[m_videoFramesQueue.m_read_counter].m_pts;
     QMutexLocker locker(&m_videoFramesMutex);
     m_videoFramesQueue.m_busy--;
     Q_ASSERT(m_videoFramesQueue.m_busy >= 0);
@@ -787,7 +783,7 @@ void FFmpegDecoder::seekWhilePaused()
 {
     if (m_isPaused)
     {
-        InterlockedAdd(m_mainVideoThread->m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
+        InterlockedAdd(m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
         m_pauseTimer = av_gettime() / 1000000.;
 
         m_mainAudioThread->m_isSeekingWhilePaused = true;
@@ -826,7 +822,7 @@ bool FFmpegDecoder::pauseResume()
     {
         TAG("ffmpeg_pause") << "Unpause";
         TAG("ffmpeg_pause") << "Move >> " << av_gettime() / 1000000. - m_pauseTimer;
-        InterlockedAdd(m_mainVideoThread->m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
+        InterlockedAdd(m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
         m_isPaused = false;
     }
     else

@@ -38,7 +38,7 @@ void DisplayThread::run()
 
         // Frame skip
         if ((ff->m_videoFramesQueue.m_busy > 1 &&
-            m_parent->m_videoStartClock + current_frame->m_pts < (av_gettime() / 1000000.))
+            ff->m_videoStartClock + current_frame->m_pts < (av_gettime() / 1000000.))
             || ff->m_generation != current_frame->m_generation)
         {
             TAG("ffmpeg_threads") << __FUNCTION__ << "Framedrop: " << current_frame->m_pts;
@@ -53,7 +53,7 @@ void DisplayThread::run()
         }
 
         double delay;
-        while (!isAbort() && (delay = m_parent->m_videoStartClock + current_frame->m_pts - av_gettime() / 1000000.) > 0
+        while (!isAbort() && (delay = ff->m_videoStartClock + current_frame->m_pts - av_gettime() / 1000000.) > 0
             && ff->m_generation == current_frame->m_generation)
         {
             // wait time must be not too short or too long. Bounds: 0.001 < target_waittime < 3.0 secs.

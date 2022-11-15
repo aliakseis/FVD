@@ -180,10 +180,6 @@ void AudioParseThread::run()
                         if (packet.pts != AV_NOPTS_VALUE)
                         {
                             m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
-                            if (flush_packet_found)
-                            {
-                                m_ffmpeg->m_videoPTS = m_ffmpeg->m_audioPTS.load();
-                            }
                         }
                         else
                         {
@@ -339,19 +335,11 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels * m_ffmpeg->m_audioFrame->sample_rate *
                                             av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
 
-        // Audio sync
-        double dsync = m_ffmpeg->videoClock() - m_ffmpeg->audioClock();
-        if (fabs(dsync) > 0.15)
+        const double delta = av_gettime() / 1000000. - m_ffmpeg->m_videoStartClock - m_ffmpeg->m_audioPTS;
+        if (fabs(delta) > 0.1)
         {
-            if (dsync > 0)
-            {
-                InterlockedAdd(m_ffmpeg->m_audioPTS, frame_clock);
-                TAG("ffmpeg_sync") << "Skip audio frame (new audio pts: " << m_ffmpeg->m_audioPTS << ")";
-                continue;  // Skip audio frame
-            }
-
-            TAG("ffmpeg_sync") << "Audio wait for video";
-            preciseSleep(0.1);  // Wait
+            TAG("ffmpeg_sync") << "Audio sync delta = " << delta;
+            InterlockedAdd(m_ffmpeg->m_videoStartClock, delta / 2);
         }
 
         if (write_size > 0)

@@ -146,7 +146,8 @@ private:
 
     // Syncronization
     std::atomic<double> m_audioPTS;
-    std::atomic<double> m_videoPTS;
+
+    std::atomic<double> m_videoStartClock;
 
     // Real frame number and duration from video stream
     int64_t m_duration;
@@ -233,8 +234,6 @@ private:
     void resetVariables();
     void closeProcessing();
     bool frameToImage(FPicture& videoFrameData);
-    double audioClock() const;
-    double videoClock() const;
 
 private:
     void setPixelFormat(AVPixelFormat format);
