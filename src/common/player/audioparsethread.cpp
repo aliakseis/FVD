@@ -355,11 +355,14 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
 
             if (m_ffmpeg->m_stream != nullptr)
             {
-                auto* realData = (int16_t*)write_data;
                 const double volume = m_ffmpeg->m_volume;
-                for (unsigned int i = 0; i < write_size / 2; ++i)
+                if (volume != 1)
                 {
-                    realData[i] *= volume;
+                    auto* realData = (int16_t*)write_data;
+                    for (unsigned int i = 0; i < write_size / 2; ++i)
+                    {
+                        realData[i] *= volume;
+                    }
                 }
 
                 Pa_WriteStream(m_ffmpeg->m_stream, write_data, framesToWrite);
