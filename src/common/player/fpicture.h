@@ -20,26 +20,15 @@ struct FPicture
         av_frame_unref(m_frame);
     }
 
-    void alloc(AVPixelFormat pix_fmt, int width, int height)
-    {
-        // avpicture_alloc(this, pix_fmt, width, height);
-        m_frame->width = width;
-        m_frame->height = height;
-        m_frame->format = pix_fmt;
-        av_frame_get_buffer(m_frame, 1);  // ?
-    }
-
     void realloc(AVPixelFormat pix_fmt, int width, int height)
-    {
-        free();
-        alloc(pix_fmt, width, height);
-    }
-
-    void reallocForSure(AVPixelFormat pix_fmt, int width, int height)
     {
         if (pix_fmt != m_frame->format || width != m_frame->width || height != m_frame->height)
         {
-            realloc(pix_fmt, width, height);
+            free();
+            m_frame->width = width;
+            m_frame->height = height;
+            m_frame->format = pix_fmt;
+            av_frame_get_buffer(m_frame, 1);  // ?
         }
     }
 

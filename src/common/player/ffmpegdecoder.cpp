@@ -634,7 +634,7 @@ bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
             }
         }
 
-        videoFrameData.reallocForSure(m_pixelFormat, width, height);
+        videoFrameData.realloc(m_pixelFormat, width, height);
 
         // Prepare image conversion
         m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
