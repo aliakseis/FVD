@@ -124,4 +124,6 @@ private:
     QTimer m_askForSavingModelTimer;
 
     bool m_ShowSysTrayNotification = true;
+
+    QString m_gigsAvailable;
 };  // class MainWindow

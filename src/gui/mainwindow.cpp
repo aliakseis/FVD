@@ -637,7 +637,12 @@ void MainWindow::onShowPlaybutton(bool show)
 void MainWindow::onPeriodicUpdate()
 {
     QStorageInfo storageInfo(global_functions::GetVideoFolder());
-    const auto gigsAvailable = storageInfo.bytesAvailable() / static_cast<double>(1 << 30);
-    ::Tr::SetTr(this, &QWidget::setWindowTitle, PROJECT_FULLNAME_TRANSLATION,
-        tr(" [Disk free space: %1 GB]").arg(gigsAvailable, 0, 'f', 1));
+    const auto freeSpace = storageInfo.bytesAvailable() / static_cast<double>(1 << 30);
+    const auto gigsAvailable = QString::number(freeSpace, 'f', (freeSpace >= 9.5)? 0 : 1);
+    if (gigsAvailable != m_gigsAvailable)
+    {
+        m_gigsAvailable = gigsAvailable;
+        ::Tr::SetTr(this, &QWidget::setWindowTitle, PROJECT_FULLNAME_TRANSLATION,
+            tr(" [Disk free space: %1 GB]").arg(gigsAvailable));
+    }
 }
