@@ -95,6 +95,8 @@ void FFmpegDecoder::resetVariables()
 
     m_audioPTS = 0;
 
+    m_frameDisplayingRequested = false;
+
     m_videoStartClock = 0;
 
     m_mainParseThread = nullptr;
@@ -223,7 +225,10 @@ void FFmpegDecoder::closeProcessing()
     }
 
     // Free videoFrames
-    m_videoFramesQueue.clear();
+    {
+        QMutexLocker locker(&m_videoFramesMutex);
+        m_videoFramesQueue.clear();
+    }
 
     if (m_imageCovertContext != nullptr)
     {
@@ -731,11 +736,15 @@ QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xle
 void FFmpegDecoder::finishedDisplayingFrame()
 {
     QMutexLocker locker(&m_videoFramesMutex);
-    m_videoFramesQueue.m_busy--;
-    Q_ASSERT(m_videoFramesQueue.m_busy >= 0);
-    // avoiding assert in VideoParseThread::run()
-    m_videoFramesQueue.m_read_counter =
-        (m_videoFramesQueue.m_read_counter + 1) % std::size(m_videoFramesQueue.m_frames);
+    if (m_videoFramesQueue.m_busy > 0)
+    {
+        m_videoFramesQueue.m_busy--;
+        Q_ASSERT(m_videoFramesQueue.m_busy >= 0);
+        // avoiding assert in VideoParseThread::run()
+        m_videoFramesQueue.m_read_counter =
+            (m_videoFramesQueue.m_read_counter + 1) % std::size(m_videoFramesQueue.m_frames);
+    }
+    m_frameDisplayingRequested = false;
     m_videoFramesCV.wakeAll();
 }
 

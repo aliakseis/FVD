@@ -219,6 +219,8 @@ private:
 
     VQueue m_videoFramesQueue;
 
+    bool m_frameDisplayingRequested;
+
     QMutex m_videoFramesMutex;
     InterruptibleWaitCondition m_videoFramesCV;
 

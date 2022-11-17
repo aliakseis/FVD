@@ -43,7 +43,7 @@ struct OpenGLDisplay::OpenGLDisplayImpl
 
     QTimer m_postponedUpdater;
 
-    std::atomic_bool m_pendingUpdate = false;
+    //std::atomic_bool m_pendingUpdate = false;
 };
 
 /*************************************************************************/
@@ -385,14 +385,15 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame()
 {
-    if (!(impl->m_pendingUpdate.exchange(true)))
-    {
+    //if (!(impl->m_pendingUpdate.exchange(true)))
+    //{
         QMetaObject::invokeMethod(this, [this]
             {
-                impl->m_pendingUpdate = false;
+                //impl->m_pendingUpdate = false;
                 setUpdatesEnabled(true);
                 update();
+                displayFrameFinished();
             });
-    }
-    displayFrameFinished();
+    //}
+    //displayFrameFinished();
 }

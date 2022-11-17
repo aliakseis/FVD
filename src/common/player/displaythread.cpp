@@ -25,7 +25,9 @@ void DisplayThread::run()
 
         {
             QMutexLocker locker(&ff->m_videoFramesMutex);
-            ff->m_videoFramesCV.wait([ff]() { return ff->m_videoFramesQueue.m_busy != 0; }, &ff->m_videoFramesMutex);
+            ff->m_videoFramesCV.wait([ff]() { 
+                    return !ff->m_frameDisplayingRequested && ff->m_videoFramesQueue.m_busy != 0;
+                }, &ff->m_videoFramesMutex);
         }
         // Break thread
         if (isAbort())
@@ -71,6 +73,7 @@ void DisplayThread::run()
 
         if (ff->m_frameListener != nullptr)
         {
+            ff->m_frameDisplayingRequested = true;
             ff->m_frameListener->displayFrame();
         }
         else
