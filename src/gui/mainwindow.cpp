@@ -138,14 +138,13 @@ MainWindow::MainWindow(QWidget* parent)
                    SLOT(onDownloadFinished(const QString&))));
 
     m_askForSavingModelTimer.setSingleShot(true);
-    VERIFY(connect(&m_askForSavingModelTimer, SIGNAL(timeout()), SLOT(condsiderSavingModel())));
+    connect(&m_askForSavingModelTimer, &QTimer::timeout, this, &MainWindow::condsiderSavingModel);
 
     connect(player, &VideoPlayerWidget::showPlaybutton, this, &MainWindow::onShowPlaybutton);
 
     onPeriodicUpdate();
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &MainWindow::onPeriodicUpdate);
-    timer->start(1000);
+    connect(&m_periodicUpdateTimer, &QTimer::timeout, this, &MainWindow::onPeriodicUpdate);
+    m_periodicUpdateTimer.start(1000);
 
 #ifdef Q_OS_MAC
     VERIFY(connect(&DarwinSingleton::Instance(), SIGNAL(showPreferences()), SLOT(openPreferences())));
@@ -189,6 +188,9 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    m_askForSavingModelTimer.stop();
+    m_periodicUpdateTimer.stop();
+
     SearchManager::Instance().clearScriptStrategies();
     delete ui;
 }

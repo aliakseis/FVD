@@ -126,4 +126,6 @@ private:
     bool m_ShowSysTrayNotification = true;
 
     QString m_gigsAvailable;
+
+    QTimer m_periodicUpdateTimer;
 };  // class MainWindow
