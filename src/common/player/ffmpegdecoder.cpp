@@ -227,6 +227,8 @@ void FFmpegDecoder::closeProcessing()
     // Free videoFrames
     {
         QMutexLocker locker(&m_videoFramesMutex);
+        m_videoFramesCV.wait([this]() { return !m_frameDisplayingRequested; },
+            &m_videoFramesMutex, QDeadlineTimer(5000));
         m_videoFramesQueue.clear();
     }
 
