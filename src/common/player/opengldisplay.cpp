@@ -50,6 +50,7 @@ struct OpenGLDisplay::OpenGLDisplayImpl
 
 OpenGLDisplay::OpenGLDisplay(QWidget* parent) : QOpenGLWidget(parent), impl(new OpenGLDisplayImpl())
 {
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
     impl->m_postponedUpdater.setSingleShot(true);
     connect(&impl->m_postponedUpdater, SIGNAL(timeout()), SLOT(update()));
 }

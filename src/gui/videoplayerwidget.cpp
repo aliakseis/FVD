@@ -485,7 +485,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     const int controlsHeight = m_controls->getHeight();
     const int minDescHeight = m_descriptionPanel->minimumHeight();
 
-    int minPlayerHeight = currHeight - controlsHeight - minDescHeight;
+    const int minPlayerHeight = currHeight - controlsHeight - minDescHeight;
     int playerWidth = currWidth;
     int yPos = 1;
     FFmpegDecoder* dec = getDecoder();
