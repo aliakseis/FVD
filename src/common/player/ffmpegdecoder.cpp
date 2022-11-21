@@ -741,9 +741,9 @@ void FFmpegDecoder::finishedDisplayingFrame(unsigned int frameDisplayingGenerati
         // avoiding assert in VideoParseThread::run()
         m_videoFramesQueue.m_read_counter =
             (m_videoFramesQueue.m_read_counter + 1) % std::size(m_videoFramesQueue.m_frames);
+        m_frameDisplayingRequested = false;
+        m_videoFramesCV.wakeAll();
     }
-    m_frameDisplayingRequested = false;
-    m_videoFramesCV.wakeAll();
 }
 
 void FFmpegDecoder::startLimiterThread()
