@@ -463,12 +463,8 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
         }
     }
 
-    // Multithread decoding
-    int perfect_threads = QThread::idealThreadCount();
-    if (m_videoStreamNumber >= 0)
-    {
-        m_videoCodecContext->thread_count = perfect_threads > 0 ? perfect_threads : 1;
-    }
+    m_videoCodecContext->thread_count = 2;
+    m_videoCodecContext->flags2 |= AV_CODEC_FLAG2_FAST;
 
     // Find the decoder for the video stream
     if (m_videoStreamNumber >= 0)
