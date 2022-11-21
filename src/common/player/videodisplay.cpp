@@ -12,7 +12,10 @@ void VideoDisplay::setDecoderObject(FFmpegDecoder* decoder)
     m_decoder = decoder;
 }
 
-void VideoDisplay::displayFrameFinished() { m_decoder->finishedDisplayingFrame(); }
+void VideoDisplay::displayFrameFinished(unsigned int videoGeneration) 
+{ 
+    m_decoder->finishedDisplayingFrame(videoGeneration); 
+}
 
 void VideoDisplay::showPicture(const QImage& picture)
 {

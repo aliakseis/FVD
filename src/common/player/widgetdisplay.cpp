@@ -22,10 +22,10 @@ void WidgetDisplay::currentDisplay()
     }
 }
 
-void WidgetDisplay::displayFrame()
+void WidgetDisplay::displayFrame(unsigned int videoGeneration)
 {
     emit display();
-    displayFrameFinished();
+    displayFrameFinished(videoGeneration);
 }
 
 void WidgetDisplay::renderFrame(const FPicture& frame)

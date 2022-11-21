@@ -95,6 +95,7 @@ void FFmpegDecoder::resetVariables()
 
     m_audioPTS = 0;
 
+    ++m_videoGeneration;
     m_frameDisplayingRequested = false;
 
     m_videoStartClock = 0;
@@ -228,8 +229,6 @@ void FFmpegDecoder::closeProcessing()
     // Free videoFrames
     {
         QMutexLocker locker(&m_videoFramesMutex);
-        m_videoFramesCV.wait([this]() { return !m_frameDisplayingRequested; },
-            &m_videoFramesMutex, QDeadlineTimer(5000));
         m_videoFramesQueue.clear();
     }
 
@@ -732,10 +731,10 @@ QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xle
     return {scr_xleft + x, scr_ytop + y, FFMAX(width, 1), FFMAX(height, 1)};
 }
 
-void FFmpegDecoder::finishedDisplayingFrame()
+void FFmpegDecoder::finishedDisplayingFrame(unsigned int frameDisplayingGeneration)
 {
     QMutexLocker locker(&m_videoFramesMutex);
-    if (m_videoFramesQueue.m_busy > 0)
+    if (m_videoFramesQueue.m_busy > 0 && frameDisplayingGeneration == m_videoGeneration)
     {
         m_videoFramesQueue.m_busy--;
         Q_ASSERT(m_videoFramesQueue.m_busy >= 0);

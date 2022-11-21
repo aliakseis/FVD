@@ -18,7 +18,7 @@ public:
     VideoDisplay();
     virtual ~VideoDisplay();
     virtual void renderFrame(const FPicture& frame) = 0;
-    virtual void displayFrame() = 0;
+    virtual void displayFrame(unsigned int videoGeneration) = 0;
     void setDecoderObject(FFmpegDecoder* decoder);
 
     virtual void showPicture(const QImage& picture);
@@ -28,7 +28,7 @@ public:
     virtual bool resizeWithDecoder() const = 0;
 
 protected:
-    void displayFrameFinished();
+    void displayFrameFinished(unsigned int videoGeneration);
 
     FFmpegDecoder* m_decoder;
 };

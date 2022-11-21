@@ -384,16 +384,16 @@ AVPixelFormat OpenGLDisplay::preferablePixelFormat() const { return AV_PIX_FMT_Y
 
 bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
-void OpenGLDisplay::displayFrame()
+void OpenGLDisplay::displayFrame(unsigned int videoGeneration)
 {
     //if (!(impl->m_pendingUpdate.exchange(true)))
     //{
-        QMetaObject::invokeMethod(this, [this]
+        QMetaObject::invokeMethod(this, [this, videoGeneration]
             {
                 //impl->m_pendingUpdate = false;
                 setUpdatesEnabled(true);
                 update();
-                displayFrameFinished();
+                displayFrameFinished(videoGeneration);
             });
     //}
     //displayFrameFinished();

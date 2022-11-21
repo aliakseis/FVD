@@ -44,7 +44,7 @@ void DisplayThread::run()
             || ff->m_generation != current_frame->m_generation)
         {
             TAG("ffmpeg_threads") << __FUNCTION__ << "Framedrop: " << current_frame->m_pts;
-            ff->finishedDisplayingFrame();
+            ff->finishedDisplayingFrame(ff->m_videoGeneration);
             continue;
         }
 
@@ -74,11 +74,11 @@ void DisplayThread::run()
         if (ff->m_frameListener != nullptr)
         {
             ff->m_frameDisplayingRequested = true;
-            ff->m_frameListener->displayFrame();
+            ff->m_frameListener->displayFrame(ff->m_videoGeneration);
         }
         else
         {
-            ff->finishedDisplayingFrame();
+            ff->finishedDisplayingFrame(ff->m_videoGeneration);
         }
     }
 }

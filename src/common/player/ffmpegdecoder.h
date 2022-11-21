@@ -106,7 +106,7 @@ public:
     int64_t limiterBytes() const;
     bool isBrokenDuration() const;
 
-    void finishedDisplayingFrame();
+    void finishedDisplayingFrame(unsigned int frameDisplayingGeneration);
 
 private:
     // Frame display listener
@@ -220,6 +220,7 @@ private:
     VQueue m_videoFramesQueue;
 
     bool m_frameDisplayingRequested;
+    unsigned int m_videoGeneration = 0;
 
     QMutex m_videoFramesMutex;
     InterruptibleWaitCondition m_videoFramesCV;
