@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QSharedPointer>
 #include <QString>
+#include <QTimer>
 
 #include "branding.hxx"
 #include "globals.h"
@@ -410,27 +411,44 @@ bool SearchManager::addLinks(const QMimeData& urls)
     return true;
 }
 
-void SearchManager::addLinks(const QStringList& urls)
+void SearchManager::addLinks(QStringList urls)
 {
-    for (const auto& url : urls)
+    if (urls.empty())
+        return;
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, [this, timer, urls=std::move(urls)]() mutable {
+        if (urls.empty()) {
+            timer->stop();
+            timer->deleteLater();
+            return;
+        }
+        const auto url = urls.front();
+        urls.pop_front();
+        addLink(url);
+    });
+    timer->start();
+}
+
+void SearchManager::addLink(const QString& url)
+{
+    for (const auto& strat : qAsConst(m_scriptStrategies))
     {
-        for (const auto& strat : qAsConst(m_scriptStrategies))
+        EntitiesSetItem_t rve(new RemoteVideoEntity());
+
+        rve->m_videoInfo.id = url;
+        rve->m_videoInfo.videoTitle = url;
+        rve->m_videoInfo.description = url;
+        // Don't set rve->m_videoInfo.thumbnailUrl
+        rve->m_videoInfo.originalUrl = url;
+        rve->m_videoInfo.strategyName = strat->name();
+
+        rve->setCreatedByUrl();
+
+        if (m_allEntities.insert(rve).second)
         {
-            EntitiesSetItem_t rve(new RemoteVideoEntity());
-
-            rve->m_videoInfo.id = url;
-            rve->m_videoInfo.videoTitle = url;
-            rve->m_videoInfo.description = url;
-            // Don't set rve->m_videoInfo.thumbnailUrl
-            rve->m_videoInfo.originalUrl = url;
-            rve->m_videoInfo.strategyName = strat->name();
-
-            rve->setCreatedByUrl();
-
-            if (m_allEntities.insert(rve).second)
-            {
-                rve->requestStartDownload();
-            }
+            rve->requestStartDownload();
         }
     }
 }
+

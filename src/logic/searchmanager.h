@@ -73,13 +73,15 @@ public:
     }
 
     bool addLinks(const QMimeData& urls);
-    void addLinks(const QStringList& urls);
+    void addLinks(QStringList urls);
 
 private:
     SearchManager();
 
     static DownloadEntity* createLibraryDE(const QString& fileName);
     void InitializeStrategies();
+
+    void addLink(const QString& url);
 
 private:
     struct rveHasher
