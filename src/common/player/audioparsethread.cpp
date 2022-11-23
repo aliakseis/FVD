@@ -335,7 +335,7 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels * m_ffmpeg->m_audioFrame->sample_rate *
                                             av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
 
-        const double delta = av_gettime() / 1000000. - m_ffmpeg->m_videoStartClock - m_ffmpeg->m_audioPTS;
+        const double delta = getCurrentTime() - m_ffmpeg->m_videoStartClock - m_ffmpeg->m_audioPTS;
         if (fabs(delta) > 0.1)
         {
             TAG("ffmpeg_sync") << "Audio sync delta = " << delta;

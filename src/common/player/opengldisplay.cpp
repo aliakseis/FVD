@@ -43,7 +43,7 @@ struct OpenGLDisplay::OpenGLDisplayImpl
 
     QTimer m_postponedUpdater;
 
-    //std::atomic_bool m_pendingUpdate = false;
+    std::atomic_bool m_pendingUpdate = false;
 };
 
 /*************************************************************************/
@@ -208,8 +208,6 @@ void OpenGLDisplay::initializeGL()
 
 void OpenGLDisplay::paintGL()
 {
-    std::unique_lock<std::mutex> lock(impl->m_mutex);
-
     if (impl->mBufYuv == nullptr)
     {
         return;
@@ -229,27 +227,31 @@ void OpenGLDisplay::paintGL()
     glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
     glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
-    // Use the memory mBufYuv data to create a real y data texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW, impl->mVideoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 impl->mBufYuv);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // Load u data texture
-    glActiveTexture(GL_TEXTURE1);  // Activate texture unit GL_TEXTURE1
-    glBindTexture(GL_TEXTURE_2D, impl->id_u);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // Load v data texture
-    glActiveTexture(GL_TEXTURE2);  // Activate texture unit GL_TEXTURE2
-    glBindTexture(GL_TEXTURE_2D, impl->id_v);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH * 5 / 4);
+    {
+        std::unique_lock<std::mutex> lock(impl->m_mutex);
+
+            // Use the memory mBufYuv data to create a real y data texture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW, impl->mVideoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+            impl->mBufYuv);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // Load u data texture
+        glActiveTexture(GL_TEXTURE1);  // Activate texture unit GL_TEXTURE1
+        glBindTexture(GL_TEXTURE_2D, impl->id_u);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
+            GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // Load v data texture
+        glActiveTexture(GL_TEXTURE2);  // Activate texture unit GL_TEXTURE2
+        glBindTexture(GL_TEXTURE_2D, impl->id_v);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW / 2, impl->mVideoH / 2, 0, GL_LUMINANCE,
+            GL_UNSIGNED_BYTE, static_cast<char*>(impl->mBufYuv) + impl->mVideoW * impl->mVideoH * 5 / 4);
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -271,30 +273,33 @@ void OpenGLDisplay::paintGL()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void OpenGLDisplay::renderFrame(const FPicture& data)
+void OpenGLDisplay::renderFrame(const FPicture& data, unsigned int videoGeneration)
 {
-    std::unique_lock<std::mutex> lock(impl->m_mutex);
-
-    impl->mVideoW = data.width();
-    impl->mVideoH = data.height();
-
-    InitDrawBuffer(data.height() * data.width() * 3 / 2);
-
-    auto dst = reinterpret_cast<unsigned char*>(impl->mBufYuv);
-    int width = data.width();
-    int height = data.height();
-    for (int i = 0; i < 3; ++i)
     {
-        auto src = data.data()[i];
-        for (int j = 0; j < height; ++j)
+        std::unique_lock<std::mutex> lock(impl->m_mutex);
+
+        impl->mVideoW = data.width();
+        impl->mVideoH = data.height();
+
+        InitDrawBuffer(data.height() * data.width() * 3 / 2);
+
+        auto dst = reinterpret_cast<unsigned char*>(impl->mBufYuv);
+        int width = data.width();
+        int height = data.height();
+        for (int i = 0; i < 3; ++i)
         {
-            memcpy(dst, src, width);
-            dst += width;
-            src += data.linesize()[i];
+            auto src = data.data()[i];
+            for (int j = 0; j < height; ++j)
+            {
+                memcpy(dst, src, width);
+                dst += width;
+                src += data.linesize()[i];
+            }
+            width = data.width() / 2;
+            height = data.height() / 2;
         }
-        width = data.width() / 2;
-        height = data.height() / 2;
     }
+    displayFrameFinished(videoGeneration);
 }
 
 void OpenGLDisplay::showPicture(const QImage& img)
@@ -386,15 +391,15 @@ bool OpenGLDisplay::resizeWithDecoder() const { return false; }
 
 void OpenGLDisplay::displayFrame(unsigned int videoGeneration)
 {
-    //if (!(impl->m_pendingUpdate.exchange(true)))
-    //{
-        QMetaObject::invokeMethod(this, [this, videoGeneration]
+    if (!(impl->m_pendingUpdate.exchange(true)))
+    {
+        QMetaObject::invokeMethod(this, [this]
             {
-                //impl->m_pendingUpdate = false;
+                impl->m_pendingUpdate = false;
                 setUpdatesEnabled(true);
                 update();
-                displayFrameFinished(videoGeneration);
+                //displayFrameFinished(videoGeneration);
             });
-    //}
+    }
     //displayFrameFinished();
 }

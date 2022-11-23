@@ -17,7 +17,7 @@ class VideoDisplay
 public:
     VideoDisplay();
     virtual ~VideoDisplay();
-    virtual void renderFrame(const FPicture& frame) = 0;
+    virtual void renderFrame(const FPicture& frame, unsigned int videoGeneration) = 0;
     virtual void displayFrame(unsigned int videoGeneration) = 0;
     void setDecoderObject(FFmpegDecoder* decoder);
 

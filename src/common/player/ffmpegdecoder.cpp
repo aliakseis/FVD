@@ -30,6 +30,12 @@ extern "C"
 
 void preciseSleep(double sec) { QThread::usleep(sec * 1000000UL); }
 
+double getCurrentTime()
+{
+    return av_gettime() / 1000000.;
+}
+
+
 FFmpegDecoder::FFmpegDecoder()
 {
     // no detection using
@@ -581,7 +587,7 @@ void FFmpegDecoder::play(bool isPaused)
 
     if (isPaused)
     {
-        m_pauseTimer = av_gettime() / 1000000.;
+        m_pauseTimer = getCurrentTime();
     }
 
     // Sync threads
@@ -734,7 +740,7 @@ QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xle
 void FFmpegDecoder::finishedDisplayingFrame(unsigned int frameDisplayingGeneration)
 {
     QMutexLocker locker(&m_videoFramesMutex);
-    if (m_videoFramesQueue.m_busy > 0 && frameDisplayingGeneration == m_videoGeneration)
+    if (m_frameDisplayingRequested && m_videoFramesQueue.m_busy > 0 && frameDisplayingGeneration == m_videoGeneration)
     {
         m_videoFramesQueue.m_busy--;
         Q_ASSERT(m_videoFramesQueue.m_busy >= 0);
@@ -790,8 +796,8 @@ void FFmpegDecoder::seekWhilePaused()
 {
     if (m_isPaused)
     {
-        InterlockedAdd(m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
-        m_pauseTimer = av_gettime() / 1000000.;
+        InterlockedAdd(m_videoStartClock, getCurrentTime() - m_pauseTimer);
+        m_pauseTimer = getCurrentTime();
 
         m_mainAudioThread->m_isSeekingWhilePaused = true;
         m_mainVideoThread->m_isSeekingWhilePaused = true;
@@ -828,8 +834,8 @@ bool FFmpegDecoder::pauseResume()
     if (m_isPaused)
     {
         TAG("ffmpeg_pause") << "Unpause";
-        TAG("ffmpeg_pause") << "Move >> " << av_gettime() / 1000000. - m_pauseTimer;
-        InterlockedAdd(m_videoStartClock, av_gettime() / 1000000. - m_pauseTimer);
+        TAG("ffmpeg_pause") << "Move >> " << getCurrentTime() - m_pauseTimer;
+        InterlockedAdd(m_videoStartClock, getCurrentTime() - m_pauseTimer);
         m_isPaused = false;
     }
     else
@@ -837,7 +843,7 @@ bool FFmpegDecoder::pauseResume()
         TAG("ffmpeg_pause") << "Pause";
         m_isPaused = true;
         m_videoFramesCV.wakeAll();
-        m_pauseTimer = av_gettime() / 1000000.;
+        m_pauseTimer = getCurrentTime();
     }
 
     return true;

@@ -37,10 +37,11 @@ void DisplayThread::run()
         }
 
         VideoFrame* current_frame = &ff->m_videoFramesQueue.m_frames[ff->m_videoFramesQueue.m_read_counter];
+        ff->m_frameDisplayingRequested = true;
 
         // Frame skip
         if ((ff->m_videoFramesQueue.m_busy > 1 &&
-            ff->m_videoStartClock + current_frame->m_pts < (av_gettime() / 1000000.))
+            ff->m_videoStartClock + current_frame->m_pts < getCurrentTime())
             || ff->m_generation != current_frame->m_generation)
         {
             TAG("ffmpeg_threads") << __FUNCTION__ << "Framedrop: " << current_frame->m_pts;
@@ -51,15 +52,25 @@ void DisplayThread::run()
         // Give it time to render frame
         if (ff->m_frameListener != nullptr)
         {
-            ff->m_frameListener->renderFrame(current_frame->m_image);
+            ff->m_frameListener->renderFrame(current_frame->m_image, ff->m_videoGeneration);
         }
 
-        double delay;
-        while (!isAbort() && (delay = ff->m_videoStartClock + current_frame->m_pts - av_gettime() / 1000000.) > 0
+        while (!isAbort()
             && ff->m_generation == current_frame->m_generation)
         {
-            // wait time must be not too short or too long. Bounds: 0.001 < target_waittime < 3.0 secs.
-            preciseSleep(qBound<double>(0.001, delay / 2., 3.0));
+            const double delay = ff->m_videoStartClock + current_frame->m_pts - getCurrentTime();
+            if (delay < 0.005) {
+                break;
+            }
+
+            if (delay > 0.1)
+            {
+                preciseSleep(0.1);
+                continue;
+            }
+
+            preciseSleep(delay);
+            break;
         }
         // Break thread
         if (isAbort())
@@ -73,7 +84,6 @@ void DisplayThread::run()
 
         if (ff->m_frameListener != nullptr)
         {
-            ff->m_frameDisplayingRequested = true;
             ff->m_frameListener->displayFrame(ff->m_videoGeneration);
         }
         else

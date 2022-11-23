@@ -30,7 +30,7 @@ void VideoParseThread::run()
     TAG("ffmpeg_threads") << "Video thread started";
     AVPacket packet;
 
-    m_ffmpeg->m_videoStartClock = av_gettime() / 1000000.;
+    m_ffmpeg->m_videoStartClock = getCurrentTime();
     m_videoClock = 0;
 
     // Help displaying thread
@@ -113,7 +113,7 @@ void VideoParseThread::run()
                             pts = 0;
                         }
                         const double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * (double)pts;
-                        const double curTime = av_gettime() / 1000000.;
+                        const double curTime = getCurrentTime();
                         m_ffmpeg->m_videoStartClock = curTime - stamp;
 
                         m_ffmpeg->m_pauseTimer = curTime;
@@ -195,7 +195,7 @@ void VideoParseThread::run()
                                                              &m_ffmpeg->m_seekFlagsMtx);
                             }
 
-                            m_ffmpeg->m_videoStartClock = av_gettime() / 1000000. - stamp;
+                            m_ffmpeg->m_videoStartClock = getCurrentTime() - stamp;
 
                             m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
                             m_ffmpeg->m_seekFlagsCV.wakeAll();
@@ -247,14 +247,13 @@ void VideoParseThread::run()
             }
 
             /* update video clock for next frame */
-            m_frameDelay = av_q2d(m_ffmpeg->m_videoCodecContext->time_base);
-            /* for MPEG2, the frame can be repeated, so we update the
-                    clock accordingly */
-            m_frameDelay += m_ffmpeg->m_videoFrame->repeat_pict * (m_frameDelay * 0.5);
-            m_videoClock += m_frameDelay;
+            double frameDelay = av_q2d(m_ffmpeg->m_videoCodecContext->time_base);
+            /* for MPEG2, the frame can be repeated, so we update the clock accordingly */
+            frameDelay += m_ffmpeg->m_videoFrame->repeat_pict * (frameDelay * 0.5);
+            m_videoClock += frameDelay;
 
             // Skipping frames
-            const double delay = m_ffmpeg->m_videoStartClock + pts - av_gettime() / 1000000.;
+            const double delay = m_ffmpeg->m_videoStartClock + pts - getCurrentTime();
             if (!seekDone && delay <= 0)
             {
                 if (delay < -1.)

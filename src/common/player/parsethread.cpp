@@ -78,7 +78,7 @@ void ParseThread::run()
     // detecting real framesize
     fixDuration();
 
-    parent->m_videoStartClock = av_gettime() / 1000000.;
+    parent->m_videoStartClock = getCurrentTime();
 
     if (parent->m_audioStreamNumber >= 0)
     {

@@ -37,6 +37,7 @@ enum
 #include "vqueue.h"
 
 void preciseSleep(double sec);
+double getCurrentTime();
 
 // Threads-helpers
 class ParseThread;

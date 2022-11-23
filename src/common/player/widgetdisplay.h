@@ -13,7 +13,7 @@ class WidgetDisplay : public QLabel, public VideoDisplay
 public:
     WidgetDisplay(QWidget* parent = 0);
     ~WidgetDisplay() {}
-    void renderFrame(const FPicture& frame);
+    void renderFrame(const FPicture& frame, unsigned int videoGeneration) override;
     void displayFrame(unsigned int videoGeneration) override;
     AVPixelFormat preferablePixelFormat() const override;
     bool resizeWithDecoder() const override;

@@ -28,7 +28,7 @@ void WidgetDisplay::displayFrame(unsigned int videoGeneration)
     displayFrameFinished(videoGeneration);
 }
 
-void WidgetDisplay::renderFrame(const FPicture& frame)
+void WidgetDisplay::renderFrame(const FPicture& frame, unsigned int videoGeneration)
 {
     m_image = QImage(frame.data()[0], frame.width(), frame.height(), QImage::Format_RGB888);
 }
