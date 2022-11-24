@@ -49,16 +49,19 @@ void DisplayThread::run()
             continue;
         }
 
+        const auto pts = current_frame->m_pts;
+        const auto generation = current_frame->m_generation;
+        const auto duration = current_frame->m_duration;
+
         // Give it time to render frame
         if (ff->m_frameListener != nullptr)
         {
             ff->m_frameListener->renderFrame(current_frame->m_image, ff->m_videoGeneration);
         }
 
-        while (!isAbort()
-            && ff->m_generation == current_frame->m_generation)
+        while (!isAbort() && ff->m_generation == generation)
         {
-            const double delay = ff->m_videoStartClock + current_frame->m_pts - getCurrentTime();
+            const double delay = ff->m_videoStartClock + pts - getCurrentTime();
             if (delay < 0.005) {
                 break;
             }
@@ -80,7 +83,7 @@ void DisplayThread::run()
         }
 
         // It's time to display converted frame
-        emit ff->changedFramePosition(current_frame->m_duration, ff->m_duration);
+        emit ff->changedFramePosition(duration, ff->m_duration);
 
         if (ff->m_frameListener != nullptr)
         {
