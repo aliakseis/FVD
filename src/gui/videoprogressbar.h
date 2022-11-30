@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QProgressBar>
+#include <QPixmap>
 
 class VideoProgressBar : public QProgressBar
 {
@@ -9,7 +10,6 @@ public:
     explicit VideoProgressBar(QWidget* parent = 0);
 
     virtual ~VideoProgressBar();
-    int getScale() const;
     void resetProgress();
 
 protected:
@@ -17,20 +17,12 @@ protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
-    /**
-     * The downloaded count (in scale)
-     */
-    int m_downloaded;
+    int getClickerOffset();
 
-    /**
-     * The played count (in scale)
-     */
-    int m_played;
+    QPixmap m_clicker;
 
-    /**
-     * One scale delimeter for m_downloaded and m_played
-     */
-    int m_scale;
+    double m_downloadedRatio{};
+    double m_playedRatio{};
 
     /**
      * True if mouse button pressed
@@ -47,8 +39,8 @@ private:
      */
     qint64 m_downloadedTotalOriginal;
 public slots:
-    void setDownloadedCounter(int downloaded);
-    void setPlayedCounter(int played);
+    void setDownloadedCounter(double downloaded);
+    void setPlayedCounter(double played);
     void seekingEnable(bool enable = true);
 public slots:
     void displayDownloadProgress(qint64 downloaded, qint64 total);

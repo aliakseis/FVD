@@ -14,11 +14,10 @@
 #include <cmath>
 
 VideoProgressBar::VideoProgressBar(QWidget* parent)
-    : QProgressBar(parent), m_scale(1000), m_btn_down(false), m_seekDisabled(false), m_downloadedTotalOriginal(0)
+    : QProgressBar(parent),
+    m_clicker(":/images/video_seek_cursor.png"),
+    m_btn_down(false), m_seekDisabled(false), m_downloadedTotalOriginal(0)
 {
-    m_downloaded = 0;
-    m_played = 0;
-
     setWindowTitle("Video Progress Bar");
     resize(500, 200);
     installEventFilter(this);
@@ -46,60 +45,52 @@ void VideoProgressBar::paintEvent(QPaintEvent* event)
     gradient.setColorAt(0, QColor(235, 235, 235));
     gradient.setColorAt(1, QColor(207, 213, 217));
     painter.setBrush(gradient);
-    painter.drawRect(0, margintop, ((double)m_downloaded / m_scale) * width(), lineheight);
+    painter.drawRect(0, margintop, std::lround(m_downloadedRatio * width()), lineheight);
 
     // 3 step : playing line
     gradient.setColorAt(0, QColor(209, 63, 70));
     gradient.setColorAt(1, QColor(177, 10, 11));
     painter.setBrush(gradient);
-    painter.drawRect(0, margintop, ((double)m_played / m_scale) * width(), lineheight);
+    painter.drawRect(0, margintop, std::lround(m_playedRatio * width()), lineheight);
 
-    QPixmap clicker = QPixmap(":/images/video_seek_cursor.png");
-    painter.drawPixmap(QRect((m_played / (m_scale - (double)clicker.width() * m_scale / (width()))) * width() - 1 -
-                                 (double)clicker.width() * m_played / m_scale * 1.8,
-                             1, clicker.width(), clicker.height()),
-                       clicker, clicker.rect());
+    painter.drawPixmap({ getClickerOffset(), 1, m_clicker.width(), m_clicker.height() },
+        m_clicker, m_clicker.rect());
 }
 
-void VideoProgressBar::setDownloadedCounter(int downloaded)
+void VideoProgressBar::setDownloadedCounter(double downloaded)
 {
-    downloaded = std::clamp(downloaded, 0, m_scale);
+    downloaded = std::clamp(downloaded, 0., 1.);
 
-    if (m_downloaded == downloaded)
+    const auto prevDownloadedOffset = std::lround(m_downloadedRatio * width());
+
+    m_downloadedRatio = downloaded;
+
+    if (prevDownloadedOffset != std::lround(downloaded * width()))
     {
-        return;
+        repaint();
     }
-
-    m_downloaded = downloaded;
-
-    repaint();
 }
 
-void VideoProgressBar::setPlayedCounter(int played)
+void VideoProgressBar::setPlayedCounter(double played)
 {
-    if (played < 0)
-    {
-        played = 0;
-    }
+    played = std::clamp(played, 0., 1.);
 
-    if (m_played == played)
-    {
-        return;
-    }
+    const auto prevClickerOffset = getClickerOffset();
 
     // FIXME: when file is broken, decoder can take part of it as a full part.
 
-    m_played = played;
+    m_playedRatio = played;
 
-    repaint();
+    if (prevClickerOffset != getClickerOffset())
+    {
+        repaint();
+    }
 }
-
-int VideoProgressBar::getScale() const { return m_scale; }
 
 void VideoProgressBar::resetProgress()
 {
-    m_downloaded = 0;
-    m_played = 0;
+    m_downloadedRatio = 0;
+    m_playedRatio = 0;
     repaint();
 
     setToolTip({});
@@ -173,8 +164,7 @@ void VideoProgressBar::displayDownloadProgress(qint64 downloaded, qint64 total)
     m_downloadedTotalOriginal = total;
     // download progress must represents seeking value
     downloaded = (downloaded >= total) ? downloaded : qMax<qint64>(downloaded - PLAYBACK_AVPACKET_MAX, 0);
-    int progress = ((double)downloaded / total) * getScale();
-    setDownloadedCounter(progress);
+    setDownloadedCounter((double)downloaded / total);
 }
 
 void VideoProgressBar::displayPlayedProgress(qint64 frame, qint64 total)
@@ -201,15 +191,7 @@ void VideoProgressBar::displayPlayedProgress(qint64 frame, qint64 total)
         total = durationAssumption;
     }
 
-    int progress = ((double)frame / total) * getScale();
-    if (!m_seekDisabled)
-    {
-        setPlayedCounter(progress);
-    }
-    else
-    {
-        setPlayedCounter(0);
-    }
+    setPlayedCounter(m_seekDisabled? 0. : (double)frame / total);
 
     const auto durationSecs = std::lround(decoder->getDurationSecs(total));
     if (durationSecs > 0)
@@ -226,3 +208,10 @@ void VideoProgressBar::displayPlayedProgress(qint64 frame, qint64 total)
 }
 
 void VideoProgressBar::seekingEnable(bool enable /* = true*/) { m_seekDisabled = !enable; }
+
+int VideoProgressBar::getClickerOffset()
+{
+    static const double scale = 1.;
+    return (m_playedRatio / (scale - (double)m_clicker.width() * scale / (width()))) * width() - 1 -
+        (double)m_clicker.width() * m_playedRatio / scale * 1.8;
+}
