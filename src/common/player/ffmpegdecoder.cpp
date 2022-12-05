@@ -201,7 +201,10 @@ void FFmpegDecoder::close(bool isBlocking)
                 VERIFY(connect(m_mainDisplayThread, SIGNAL(finished()), &m_closingEventLoop, SLOT(quit())));
                 m_closingEventLoop.exec();
             }
-            m_mainDisplayThread->wait();
+            if (m_mainDisplayThread != nullptr)
+            {
+                m_mainDisplayThread->wait();
+            }
         }
         if (m_mainTimeLimiterThread != nullptr)
         {
