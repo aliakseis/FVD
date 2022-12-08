@@ -4,6 +4,7 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QGuiApplication>
 
 #include "player/ffmpegdecoder.h"
 #include "ui_videocontrol.h"
@@ -37,7 +38,7 @@ VideoControl::VideoControl(VideoPlayerWidget* parent)
     ui->btnPause->hide();
 
     // preview start
-    VERIFY(connect(this, SIGNAL(browse()), parent, SLOT(openVideoInBrowser())));
+    connect(this, &VideoControl::browse, parent, &VideoPlayerWidget::openVideoInBrowser);
 
     connect(parent, &VideoPlayerWidget::showPlaybutton, this, &VideoControl::onShowPlaybutton);
 
@@ -214,7 +215,10 @@ void VideoControl::on_btnStop_clicked()
     }
 }
 
-void VideoControl::on_btnBrowser_clicked() { emit browse(); }
+void VideoControl::on_btnBrowser_clicked() 
+{ 
+    emit browse((QGuiApplication::keyboardModifiers() & Qt::AltModifier) != 0);
+}
 
 void VideoControl::onProgramVolumeChange(double volume) { setVolume(volume * ui->progressBar->maximum(), true); }
 

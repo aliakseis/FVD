@@ -71,7 +71,7 @@ private slots:
     void processPreviewEntity();
     void downloadingToPreview(qint64 bytesReceived, qint64 bytesTotal);
     void setVideoFilename(const QString& fileName);
-    void openVideoInBrowser();
+    void openVideoInBrowser(bool alt);
     void onPlayDownloadEntityAsynchronously(const QPointer<DownloadEntity>& entity);
     void onDownloadStateChanged(Downloadable::State newState, Downloadable::State prevState);
 

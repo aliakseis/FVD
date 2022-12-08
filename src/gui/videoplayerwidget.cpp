@@ -7,6 +7,7 @@
 
 #include "descriptionpanel.h"
 #include "downloadentity.h"
+#include "global_functions.h"
 #include "mainwindow.h"
 #include "player/ffmpegdecoder.h"
 #include "playerheader.h"
@@ -188,9 +189,16 @@ void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* dow
     }
 }
 
-void VideoPlayerWidget::openVideoInBrowser()
+void VideoPlayerWidget::openVideoInBrowser(bool alt)
 {
-    if (m_currentEntity != nullptr)
+    if (alt)
+    {
+        if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
+        {
+            utilities::SelectFile(download->filename(), global_functions::GetVideoFolder());
+        }
+    }
+    else if (m_currentEntity != nullptr)
     {
         QDesktopServices::openUrl(m_currentEntity->m_videoInfo.originalUrl);
     }

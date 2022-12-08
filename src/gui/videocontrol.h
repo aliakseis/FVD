@@ -23,7 +23,7 @@ public:
 
 signals:
     void download();
-    void browse();
+    void browse(bool alt);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
