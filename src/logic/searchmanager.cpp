@@ -413,10 +413,11 @@ bool SearchManager::addLinks(const QMimeData& urls)
 
 void SearchManager::addLinks(QStringList urls)
 {
-    if (urls.empty())
+    if (urls.empty()) {
         return;
+    }
 
-    QTimer *timer = new QTimer(this);
+    auto *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, [this, timer, urls=std::move(urls)]() mutable {
         if (urls.empty()) {
             timer->stop();

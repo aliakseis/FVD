@@ -1,10 +1,7 @@
 #include "downloader_signal_catchers.h"
 
 
-namespace download
-{
-
-namespace detail
+namespace download::detail
 {
 
 NetworkReplyCatcher::NetworkReplyCatcher(QNetworkReply* source) : BaseType(source) {}
@@ -31,8 +28,6 @@ AuthenticationHelperCatcher::~AuthenticationHelperCatcher()
     disconnectOnAuthNeedLogin();
 }
 
-
-} // namespace detail
 
 } // namespace download
 

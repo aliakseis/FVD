@@ -254,8 +254,9 @@ QString multiArg(const QString& str, int numArgs, const QString* args)
     if (numbersUsed.empty())
     {
         result = str;
-        for (int i = 0; i < numArgs; ++i)
+        for (int i = 0; i < numArgs; ++i) {
             result += args[i];
+        }
         return result;
     }
 
