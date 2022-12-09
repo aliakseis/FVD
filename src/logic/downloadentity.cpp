@@ -278,7 +278,7 @@ bool DownloadEntity::doRestart()
 
 QVariant DownloadEntity::progress() const
 {
-    return (m_downloadedSize > 0) ? m_downloadedSize * 100.F / totalFileSize() : QVariant(QVariant::Double);
+    return (m_downloadedSize > 0) ? m_downloadedSize * 100. / totalFileSize() : QVariant(QVariant::Double);
 }
 
 void DownloadEntity::onFileToBeReleased(const QString& filename)
