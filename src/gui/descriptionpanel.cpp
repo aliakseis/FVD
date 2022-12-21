@@ -7,10 +7,10 @@
 #include "ui_descriptionpanel.h"
 #include "videoplayerwidget.h"
 
-DescriptionPanel::DescriptionPanel(QWidget* parent) : QWidget(parent), ui(new Ui::DescriptionPanel)
+DescriptionPanel::DescriptionPanel(VideoPlayerWidget* parent) : QWidget(parent), ui(new Ui::DescriptionPanel)
 {
     ui->setupUi(this);
-    ((VideoPlayerWidget*)parent)->m_descriptionPanel = this;
+    parent->m_descriptionPanel = this;
 }
 
 DescriptionPanel::~DescriptionPanel() { delete ui; }

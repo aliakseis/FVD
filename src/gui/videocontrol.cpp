@@ -26,8 +26,6 @@ VideoControl::VideoControl(VideoPlayerWidget* parent)
     parent->setControl(this);
     videoPlayer = parent;
 
-    Q_ASSERT(videoPlayer->metaObject()->className() == QString("VideoPlayerWidget"));
-
     // Default value from the decoder
     int volume = videoPlayer->getDecoder()->volume() * ui->progressBar->maximum();
     m_isVolumeOn = (volume == 0);

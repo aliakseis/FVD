@@ -16,8 +16,8 @@
 CustomDockWidget::CustomDockWidget(QWidget* widget)
     : QDockWidget(widget), m_state(ShownDocked), m_prevState(ShownDocked)
 {
-    Q_ASSERT(parent()->metaObject()->className() == QString("MainWindow"));
-    m_parent = (MainWindow*)parent();
+    Q_ASSERT(qobject_cast<MainWindow*>(parent()) != nullptr);
+    m_parent = static_cast<MainWindow*>(parent());
 }
 
 void CustomDockWidget::setDisplayForFullscreen(VideoDisplay* display)

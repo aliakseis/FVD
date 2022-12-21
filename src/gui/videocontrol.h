@@ -2,12 +2,12 @@
 
 #include <QWidget>
 
-#include "videoplayerwidget.h"
-
 namespace Ui
 {
 class VideoControl;
 }
+
+class VideoPlayerWidget;
 
 class VideoControl : public QWidget
 {
