@@ -54,33 +54,12 @@ bool VideoControl::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == ui->progressBar)
     {
-        QEvent::Type eventType = event->type();
-        switch (eventType)
+        const QEvent::Type eventType = event->type();
+        if (eventType == QEvent::MouseMove && static_cast<QMouseEvent*>(event)->buttons() & Qt::LeftButton
+            || eventType == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
         {
-        case QEvent::MouseMove:
-        {
-            auto* mEvent = static_cast<QMouseEvent*>(event);
-            if (mEvent->buttons() & Qt::LeftButton)
-            {
-                float percent = (mEvent->x() * 1.0) / ui->progressBar->width();
-                percent *= 100;
-                setVolume(qBound(0, (int)percent, 100));
-            }
-        }
-        break;
-
-        case QEvent::MouseButtonRelease:
-        {
-            auto* mEvent = static_cast<QMouseEvent*>(event);
-            if (mEvent->button() == Qt::LeftButton)
-            {
-                float percent = (mEvent->x() * 1.0) / ui->progressBar->width();
-                percent *= 100;
-                setVolume(qBound(0, (int)percent, 100));
-            }
-        }
-        break;
-        default:;
+            const int percent = static_cast<QMouseEvent*>(event)->x() * 101 / ui->progressBar->width();
+            setVolume(qBound(0, percent, 100));
         }
     }
     return QWidget::eventFilter(obj, event);
@@ -173,27 +152,27 @@ void VideoControl::switchVolumeButton(bool volumeOn)
     QIcon progressBarIcon;
     if (m_isVolumeOn && !volumeOn)
     {
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_default"), QSize(), QIcon::Normal, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_clicked"), QSize(), QIcon::Normal, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_default"), QSize(), QIcon::Disabled, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_default"), QSize(), QIcon::Disabled, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_hover"), QSize(), QIcon::Active, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_hover"), QSize(), QIcon::Active, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_default"), QSize(), QIcon::Selected, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_off_default"), QSize(), QIcon::Selected, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_off_default", QSize(), QIcon::Normal, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_off_clicked", QSize(), QIcon::Normal, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_off_default", QSize(), QIcon::Disabled, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_off_default", QSize(), QIcon::Disabled, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_off_hover", QSize(), QIcon::Active, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_off_hover", QSize(), QIcon::Active, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_off_default", QSize(), QIcon::Selected, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_off_default", QSize(), QIcon::Selected, QIcon::On);
         ui->btnVolume->setIcon(progressBarIcon);
         m_isVolumeOn = volumeOn;
     }
     else if (!m_isVolumeOn && volumeOn)
     {
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_default"), QSize(), QIcon::Normal, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_clicked"), QSize(), QIcon::Normal, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_default"), QSize(), QIcon::Disabled, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_default"), QSize(), QIcon::Disabled, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_hover"), QSize(), QIcon::Active, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_hover"), QSize(), QIcon::Active, QIcon::On);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_default"), QSize(), QIcon::Selected, QIcon::Off);
-        progressBarIcon.addFile(QString::fromUtf8(":/control/sound_on_default"), QSize(), QIcon::Selected, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_on_default", QSize(), QIcon::Normal, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_on_clicked", QSize(), QIcon::Normal, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_on_default", QSize(), QIcon::Disabled, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_on_default", QSize(), QIcon::Disabled, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_on_hover", QSize(), QIcon::Active, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_on_hover", QSize(), QIcon::Active, QIcon::On);
+        progressBarIcon.addFile(":/control/sound_on_default", QSize(), QIcon::Selected, QIcon::Off);
+        progressBarIcon.addFile(":/control/sound_on_default", QSize(), QIcon::Selected, QIcon::On);
         ui->btnVolume->setIcon(progressBarIcon);
         m_isVolumeOn = volumeOn;
     }
