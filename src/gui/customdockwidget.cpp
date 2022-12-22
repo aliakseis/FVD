@@ -8,9 +8,8 @@
 #include "libraryform.h"
 #include "mainwindow.h"
 #include "playerheader.h"
+#include "previewpanelbutton.h"
 #include "searchresultform.h"
-#include "ui_playerheader.h"
-#include "videoplayerwidget.h"
 #include "videowidget.h"
 
 CustomDockWidget::CustomDockWidget(QWidget* widget)
@@ -23,7 +22,7 @@ CustomDockWidget::CustomDockWidget(QWidget* widget)
 void CustomDockWidget::setDisplayForFullscreen(VideoDisplay* display)
 {
     Q_ASSERT(display != nullptr);
-    m_display = (VideoWidget*)display;
+    m_display = static_cast<VideoWidget*>(display);
     VERIFY(connect(this, SIGNAL(topLevelChanged(bool)), SLOT(onTopLevelChanged(bool))));
 }
 
@@ -78,7 +77,7 @@ bool CustomDockWidget::eventFilter(QObject* obj, QEvent* event)
 
 void CustomDockWidget::setTitleBarWidget(PlayerHeader* header)
 {
-    manageButton = header->ui->label;
+    manageButton = header->label();
     manageButton->installEventFilter(this);
     QDockWidget::setTitleBarWidget(header);
 }

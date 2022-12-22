@@ -336,7 +336,7 @@ void DownloadListModel::setEntities(const QObjectList& ents)
 {
     QList<DownloadEntity*> deList;
     std::transform(ents.begin(), ents.end(), std::back_inserter(deList),
-                   [](QObject* const o) -> DownloadEntity* { return qobject_cast<DownloadEntity*>(o); });
+                   [](QObject* const o) { return qobject_cast<DownloadEntity*>(o); });
     deList.removeAll(nullptr);
     onAppendEntities(deList);
 }

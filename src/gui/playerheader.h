@@ -3,6 +3,7 @@
 #include <QWidget>
 
 class CustomDockWidget;
+class PreviewPanelButton;
 
 namespace Ui
 {
@@ -20,6 +21,7 @@ public:
 
     void setVideoTitle(const QString& title);
     QString videoTitle() const;
+    PreviewPanelButton* label() const;
 
 private:
     Ui::PlayerHeader* ui;

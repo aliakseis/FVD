@@ -27,24 +27,6 @@
 #include "globals.h"
 #include "utilities/translation.h"
 
-class NetworkAccessManagerFactory : public QObject, public QNetworkAccessManagerFactory
-{
-public:
-    NetworkAccessManagerFactory(QObject* parent = nullptr) : QObject(parent) {}
-    QNetworkAccessManager* create(QObject* parent) override
-    {
-        auto* result = new QNetworkAccessManager(parent);
-
-        auto* diskCache = new QNetworkDiskCache(result);
-        QString cacheFolder = utilities::PrepareCacheFolder(QString("webcache%1").arg(QT_VERSION >> 16));
-        qDebug() << "cacheFolder: " << cacheFolder << "maximumCacheSize: " << diskCache->maximumCacheSize();
-        diskCache->setCacheDirectory(cacheFolder);
-
-        result->setCache(diskCache);
-
-        return result;
-    }
-};
 
 LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryForm)
 {

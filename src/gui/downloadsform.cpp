@@ -406,12 +406,12 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
         // determine entities to be removed
         QList<DownloadEntity*> itemsToDelete;
         std::transform(indexList.constBegin(), indexList.constEnd(), std::back_inserter(itemsToDelete),
-                       [this](const QModelIndex& index) -> DownloadEntity*
+                       [this](const QModelIndex& index)
                        { return m_model->item(m_proxyModel->mapToSource(index).row()); });
         // find currently played entity in candidates to delete
         auto played = std::find_if(itemsToDelete.constBegin(), itemsToDelete.constEnd(),
-                                   [capture0 = VideoPlayerWidgetInstance()](auto&& PH1)
-                                   { return fileIsInUse(capture0, std::forward<decltype(PH1)>(PH1)); });
+                                   [capture0 = VideoPlayerWidgetInstance()](auto PH1)
+                                   { return fileIsInUse(capture0, PH1); });
         // if currently played entity to be deleted, stop playing
         if (played != itemsToDelete.constEnd() && (deleteCompletely || (*played)->state() != Downloadable::kFinished))
         {
@@ -428,7 +428,7 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
             // remove entities from downloads list, completed files will continue exist
             std::set<int> rows;
             std::transform(indexList.constBegin(), indexList.constEnd(), std::inserter(rows, rows.begin()),
-                           [this](const QModelIndex& index) -> int { return m_proxyModel->mapToSource(index).row(); });
+                           [this](const QModelIndex& index) { return m_proxyModel->mapToSource(index).row(); });
             m_model->removeRowsSet(rows);
         }
 

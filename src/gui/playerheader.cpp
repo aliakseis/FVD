@@ -13,3 +13,5 @@ PlayerHeader::~PlayerHeader() { delete ui; }
 void PlayerHeader::setVideoTitle(const QString& title) { ui->labelTitle->setText(title); }
 
 QString PlayerHeader::videoTitle() const { return ui->labelTitle->text(); }
+
+PreviewPanelButton* PlayerHeader::label() const { return ui->label; }
