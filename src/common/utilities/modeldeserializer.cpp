@@ -132,8 +132,8 @@ inline QVariant parsePrimitiveType<bool>(const QStringRef& s, bool& ok)
         return false;
     }
     const auto *str = utf16(s);
-    return !((1 == s.length() && '0' == str[0])
-             || (5 == s.length() && 'f' == str[0] && 'a' == str[1] && 'l' == str[2] && 's' == str[3] && 'e' == str[4]));
+    return (1 != s.length() || '0' != str[0])
+             && (5 != s.length() || 'f' != str[0] || 'a' != str[1] || 'l' != str[2] || 's' != str[3] || 'e' != str[4]);
 }
 
 template<>
@@ -324,8 +324,8 @@ bool ModelDeserializer::deserializeObjectInternal(QObject* object)
             continue;
         }
         //if (propName != item->get_key())
-        if (!(std::equal(utfPropName, utfPropName + propName.length(), item->get_key())
-                && item->get_key()[propName.length()] == 0))
+        if (!std::equal(utfPropName, utfPropName + propName.length(), item->get_key())
+                || item->get_key()[propName.length()] != 0)
         {
             continue;
         }

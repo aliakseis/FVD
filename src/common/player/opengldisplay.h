@@ -19,7 +19,7 @@ public:
     void showPicture(const QImage& img) override;
     void showPicture(const QPixmap& picture) override;
 
-    void renderFrame(const FPicture& frame, unsigned int videoGeneration) override;
+    void renderFrame(const FPicture& data, unsigned int videoGeneration) override;
     void displayFrame(unsigned int videoGeneration) override;
 
     AVPixelFormat preferablePixelFormat() const override;

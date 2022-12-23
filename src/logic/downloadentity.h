@@ -238,8 +238,8 @@ private:
 
 private:
     // DownloaderObserverInterface interface
-    void onProgress(qint64 bytes_downloaded) override;
-    void onSpeed(qint64 bytes_per_second) override;
+    void onProgress(qint64 bytesDownloaded) override;
+    void onSpeed(qint64 bytesPerSecond) override;
     void onFinished() override;
     void onFileCreated(const QString& filename) override;
     void onError(utilities::ErrorCode::ERROR_CODES code, const QString& err) override;

@@ -33,13 +33,13 @@ public:
 
     void stopVideo(bool showDefaultImage = false);
     bool isPaused();
-    void seekByPercent(float position, int64_t totalDuration = -1);
+    void seekByPercent(float percent, int64_t totalDuration = -1);
 
     VideoDisplay* getCurrentDisplay();
     VideoWidget* videoWidget() { return m_videoWidget; }
 
     void setProgressbar(VideoProgressBar* progressbar);
-    void setVideoHeader(PlayerHeader* headerWidget);
+    void setVideoHeader(PlayerHeader* videoHeader);
     void setControl(VideoControl* controlWidget);
 
     void startPreviewDownload();  // TODO: rename and change logic

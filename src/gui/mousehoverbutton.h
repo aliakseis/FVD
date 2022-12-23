@@ -20,7 +20,7 @@ class MouseHoverButton : public QToolButton
 {
     Q_OBJECT
 public:
-    MouseHoverButton(QWidget* widget);
+    MouseHoverButton(QWidget* parent);
     virtual ~MouseHoverButton();
 
 protected:

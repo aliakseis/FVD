@@ -57,7 +57,7 @@ private:
 
     void showEvent(QShowEvent*) override;
 
-    bool createSettingsDir(QString dirPath, const QString& strategyName);
+    bool createSettingsDir(QString pathDir, const QString& strategyName);
 
     bool apply();
 

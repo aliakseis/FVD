@@ -23,7 +23,7 @@ class DownloadsForm : public QFrame, public ManageWidget
     Q_OBJECT
 
 public:
-    explicit DownloadsForm(VideoPlayerWidget* video_player, QWidget* parent = 0);
+    explicit DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent = 0);
     ~DownloadsForm();
 
     QWidget* manageWidget() const;
@@ -56,8 +56,6 @@ private slots:
     void onSetSpeedLimit(int);
 
     void onSearch();
-
-    void onPasteURLs();
 
     void removeDownload();
     void restartDownload();

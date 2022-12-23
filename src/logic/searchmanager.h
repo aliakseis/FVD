@@ -47,7 +47,7 @@ public:
     void removeDownload(DownloadEntity* entity);
     void removeDownload(const QList<DownloadEntity*>& entities);
 
-    static void download(RemoteVideoEntity* rve, int resolutionId, VisibilityState isTemp);
+    static void download(RemoteVideoEntity* rve, int resolutionId, VisibilityState visState);
 
     template <typename T>
     void onLibraryFilesAdded(const T& list)

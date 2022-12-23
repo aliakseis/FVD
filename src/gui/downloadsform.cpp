@@ -27,10 +27,25 @@
 #endif
 #include "searchmanager.h"
 
-static void openFolder(const QString& fileName)
+namespace {
+
+void openFolder(const QString& fileName)
 {
     utilities::SelectFile(fileName, global_functions::GetVideoFolder());
 }
+
+void onPasteURLs()
+{
+    if (auto clipboard = QApplication::clipboard())
+    {
+        if (auto mimeData = clipboard->mimeData())
+        {
+            SearchManager::Instance().addLinks(*mimeData);
+        }
+    }
+}
+
+} // namespace
 
 DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
     : QFrame(parent), ui(new Ui::DownloadsForm), videoPlayer(video_widget), control(nullptr)
@@ -81,7 +96,7 @@ DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
 
     VERIFY(connect(ui->leSearch, SIGNAL(returnPressed()), SLOT(onSearch())));
     VERIFY(connect(ui->btnSearch, SIGNAL(clicked()), SLOT(onSearch())));
-    VERIFY(connect(ui->btnPasteURLs, SIGNAL(clicked()), SLOT(onPasteURLs())));
+    connect(ui->btnPasteURLs, &QPushButton::clicked, onPasteURLs);
     ui->btnPasteURLs->setShortcut(QKeySequence::Paste);
 
     VERIFY(connect(ui->downloadsTreeView, SIGNAL(customContextMenuRequested(QPoint)),
@@ -566,14 +581,3 @@ void DownloadsForm::copySelectionToClipboard()
 }
 
 void DownloadsForm::onVerticalScrollChanged(int /*unused*/) { hideFloatingControl(); }
-
-void DownloadsForm::onPasteURLs()
-{
-    if (auto clipboard = QApplication::clipboard())
-    {
-        if (auto mimeData = clipboard->mimeData())
-        {
-            SearchManager::Instance().addLinks(*mimeData);
-        }
-    }
-}
