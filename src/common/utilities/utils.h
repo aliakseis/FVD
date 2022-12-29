@@ -18,8 +18,8 @@
 class QMutexLocker;
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-	TypeName(const TypeName&); \
-	void operator=(const TypeName&)
+	TypeName(const TypeName&) = delete; \
+	TypeName& operator=(const TypeName&) = delete
 
 #define STRINGIZE(str) #str
 #define STRINGIZEGIZE(x) STRINGIZE(x)

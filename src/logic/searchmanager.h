@@ -14,7 +14,6 @@
 
 #include "downloadentity.h"
 #include "scriptstrategy.h"
-#include "stdint.h"
 #include "utilities/errorcode.h"
 #include "utilities/singleton.h"
 #include "utilities/utils.h"
