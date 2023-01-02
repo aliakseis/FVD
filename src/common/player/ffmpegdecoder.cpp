@@ -347,6 +347,7 @@ void FFmpegDecoder::openFileProcessing()
                 qCritical() << "[FFMPEG] unable to start audio stream";
             }
             m_audioSettings.frequency = Pa_GetStreamInfo(m_stream)->sampleRate;
+            TAG("ffmpeg_audio") << "Audio sample rate = " << m_audioSettings.frequency;
         }
     }
 
