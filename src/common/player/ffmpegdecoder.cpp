@@ -870,6 +870,8 @@ void FFmpegDecoder::resetLimitPlayback()
     m_bytesLimiter = -1;
     m_bytesLimiterTotal = -1;
     m_durationLimiter = -1;
+
+    emit downloadPendingFinished();
 }
 
 int64_t FFmpegDecoder::duration() const { return m_duration; }
