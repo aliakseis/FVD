@@ -622,7 +622,7 @@ void FFmpegDecoder::setVolume(double volume)
     emit volumeChanged(volume);
 }
 
-void FFmpegDecoder::setVolume(int volume, int steep) { setVolume((double)volume / steep); }
+void FFmpegDecoder::setVolume(int volume, int step) { setVolume((double)volume / step); }
 
 double FFmpegDecoder::volume() const { return m_volume; }
 
@@ -1032,6 +1032,17 @@ bool FFmpegDecoder::isRunningLimitation() const
 }
 
 bool FFmpegDecoder::isBrokenDuration() const { return m_fileProbablyNotFull; }
+
+bool FFmpegDecoder::isPacketsQueueDepleting() const
+{
+    QMutexLocker locker(&m_packetsQueueMutex);
+    return (m_videoStreamNumber < 0 ||
+        m_videoPacketsQueue.packetsSize() < MAX_QUEUE_SIZE / 2 &&
+        m_videoPacketsQueue.size() < MAX_VIDEO_FRAMES / 2) &&
+        (m_audioStreamNumber < 0 ||
+            m_audioPacketsQueue.packetsSize() < MAX_QUEUE_SIZE / 2 &&
+            m_audioPacketsQueue.size() < MAX_AUDIO_FRAMES / 2);
+}
 
 void FFmpegDecoder::setPixelFormat(AVPixelFormat format) { m_pixelFormat = format; }
 

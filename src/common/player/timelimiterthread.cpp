@@ -43,7 +43,9 @@ void TimeLimiterThread::run()
 
             if (av_read_frame(thread_data->m_formatContext, &packet) >= 0)
             {
-                m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+                if (packet.pos > 0) {
+                    m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+                }
 
                 if (packet.pos > 0 && m_parent->m_headerSize == 0)
                 {
@@ -78,7 +80,9 @@ void TimeLimiterThread::run()
 
     while (m_parent->m_fileProbablyNotFull && av_read_frame(thread_data->m_formatContext, &packet) >= 0)
     {
-        m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+        if (packet.pos > 0) {
+            m_readerBytesCurrent = thread_data->m_bytesCurrent = packet.pos;
+        }
         if (packet.stream_index == thread_data->m_videoStreamNumber)
         {
             if (packet.pts != AV_NOPTS_VALUE)

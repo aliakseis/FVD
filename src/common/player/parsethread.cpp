@@ -14,7 +14,8 @@ extern "C"
 bool ParseThread::readFrame(AVPacket* packet)
 {
     auto* parent = static_cast<FFmpegDecoder*>(this->parent());
-    if (parent->m_bytesLimiter >= 0 && parent->m_bytesLimiter - parent->m_bytesCurrent < PLAYBACK_AVPACKET_MAX)
+    if (parent->m_bytesLimiter >= 0 && parent->m_bytesLimiter - parent->m_bytesCurrent < PLAYBACK_AVPACKET_MAX
+        && parent->isPacketsQueueDepleting())
     {
         parent->m_downloading = true;
 
@@ -50,7 +51,9 @@ bool ParseThread::readFrame(AVPacket* packet)
     int ret = av_read_frame(parent->m_formatContext, packet);
     if (ret >= 0)
     {
-        parent->m_bytesCurrent = packet->pos;
+        if (packet->pos > 0) {
+            parent->m_bytesCurrent = packet->pos;
+        }
 
         static int packet_max = 0;
         if (packet->size > packet_max)

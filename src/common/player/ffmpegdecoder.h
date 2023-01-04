@@ -106,6 +106,7 @@ public:
     int64_t limiterDuration() const;
     int64_t limiterBytes() const;
     bool isBrokenDuration() const;
+    bool isPacketsQueueDepleting() const;
 
     void finishedDisplayingFrame(unsigned int frameDisplayingGeneration);
 
@@ -215,7 +216,7 @@ private:
     FQueue m_videoPacketsQueue;
     FQueue m_audioPacketsQueue;
 
-    QMutex m_packetsQueueMutex;
+    mutable QMutex m_packetsQueueMutex;
     InterruptibleWaitCondition m_packetsQueueCV;
 
     VQueue m_videoFramesQueue;
@@ -254,7 +255,7 @@ public slots:
     void play(bool isPaused = false);
     bool pauseResume();
     void setVolume(double volume);
-    void setVolume(int volume, int steep = 100);
+    void setVolume(int volume, int step = 100);
     void limitPlayback(qint64 limit, qint64 total);
     void resetLimitPlayback();
 

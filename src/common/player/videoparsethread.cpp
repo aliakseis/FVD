@@ -100,11 +100,8 @@ void VideoParseThread::run()
 
                     // qDebug() << "decoding video packet";
 
-                    if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
-                    {
-                        return;
-                    }
-                    frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+                    frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
+                        avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
                     if (frameFinished)
                     {
                         int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
@@ -167,11 +164,7 @@ void VideoParseThread::run()
                             continue;
                         }
 
-                        if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
-                        {
-                            return;
-                        }
-                        frameFinished =
+                        frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
                             avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
                         if (frameFinished)
                         {
@@ -218,11 +211,8 @@ void VideoParseThread::run()
             }
             else
             {
-                if (avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) < 0)
-                {
-                    return;
-                }
-                frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+                frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
+                    avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
             }
 
             av_packet_unref(&packet);
