@@ -316,7 +316,8 @@ void FFmpegDecoder::openFileProcessing()
     {
         PaStreamParameters params{};
         params.device = Pa_GetDefaultOutputDevice();
-        params.suggestedLatency = Pa_GetDeviceInfo(params.device)->defaultHighOutputLatency;
+        auto deviceInfo = Pa_GetDeviceInfo(params.device);
+        params.suggestedLatency = deviceInfo->defaultLowOutputLatency;
         params.channelCount = m_audioSettings.channels;
 
         switch (av_get_bytes_per_sample(m_audioSettings.format))
