@@ -162,10 +162,11 @@ void VideoPlayerWidget::downloadingToPreview(qint64 bytesReceived, qint64 bytesT
     }
 }
 
-void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity)
+void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity, int rowNumber)
 {
     m_currentEntity = entity;
     m_selectedDownload = downloadEntity;
+    m_selectedRowNumber = rowNumber;
     if (state() == InitialState)
     {
         if ((m_currentDownload != nullptr) && m_currentDownload->visibilityState() == visTemp)
@@ -177,7 +178,7 @@ void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* dow
             m_videoWidget->setPreviewPicture(entity);
             m_playerHeader->setVideoTitle(entity->m_videoInfo.videoTitle);
             m_descriptionPanel->setDescription(entity->m_videoInfo.strategyName, entity->m_videoInfo.description,
-                                               entity->prefResolution());
+                                               entity->prefResolution(), rowNumber);
         }
         else
         {
@@ -441,7 +442,8 @@ void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/
     {
         m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
                                            m_currentEntity->m_videoInfo.description,
-                                           m_currentDownload->currentResolution());
+                                           m_currentDownload->currentResolution(),
+                                           m_selectedRowNumber);
         m_progressBar->resetProgress();
         m_playerHeader->setVideoTitle(m_currentEntity->m_videoInfo.videoTitle);
     }

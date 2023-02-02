@@ -49,7 +49,7 @@ public:
 
     void updateLayout(bool fromPendingHeaderPaused = false);
 
-    void setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity);
+    void setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity, int rowNumber);
     DownloadEntity* currentDownload() const { return m_currentDownload; }
     RemoteVideoEntity* entity() const { return m_currentEntity;  }
 
@@ -112,6 +112,7 @@ private:
     VideoWidget* m_videoWidget;
     PlayerHeader* m_playerHeader{};
     RemoteVideoEntity* m_currentEntity{};
+    int m_selectedRowNumber = 0;
 };
 
 VideoPlayerWidget* VideoPlayerWidgetInstance();

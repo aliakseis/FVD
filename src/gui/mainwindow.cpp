@@ -69,7 +69,7 @@ HICON LoadIcon(const wchar_t* idr)
 
 void resetDockWidgetPlayer()
 {
-    VideoPlayerWidgetInstance()->setEntity(nullptr, nullptr);
+    VideoPlayerWidgetInstance()->setEntity(nullptr, nullptr, 0);
     VideoPlayerWidgetInstance()->setDefaultPreviewPicture();
 }
 
@@ -125,8 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
     VERIFY(connect(m_mainToolbar, SIGNAL(help()), SLOT(about())));
     VERIFY(connect(m_searchResultFrom, SIGNAL(entityActivated(RemoteVideoEntity*)),
                    SLOT(onSearchItemActivated(RemoteVideoEntity*))));
-    VERIFY(connect(m_downloadsForm, SIGNAL(entityActivated(const DownloadEntity*)),
-                   SLOT(onDownloadItemActivated(const DownloadEntity*))));
+    VERIFY(connect(m_downloadsForm, SIGNAL(entityActivated(const DownloadEntity*, int)),
+                   SLOT(onDownloadItemActivated(const DownloadEntity*, int))));
     VERIFY(connect(qApp, SIGNAL(aboutToQuit()), SLOT(prepareToExit())));
 
     VERIFY(connect(ui->actionAbout, SIGNAL(triggered()), SLOT(about())));
@@ -331,10 +331,10 @@ void MainWindow::openPreferences()
     pPrefs->show();
 }
 
-void MainWindow::onSearchItemActivated(RemoteVideoEntity* entity, const DownloadEntity* dEntity)
+void MainWindow::onSearchItemActivated(RemoteVideoEntity* entity, const DownloadEntity* dEntity, int rowNumber)
 {
     const auto player = ui->dockFrame;
-    player->setEntity(entity, const_cast<DownloadEntity*>(dEntity));
+    player->setEntity(entity, const_cast<DownloadEntity*>(dEntity), rowNumber);
     // TODO: move this logic to setEntity(...)
     if (player->state() == VideoPlayerWidget::InitialState || sender() == player)
     {
@@ -345,16 +345,16 @@ void MainWindow::onSearchItemActivated(RemoteVideoEntity* entity, const Download
         else if (dEntity != nullptr)
         {
             ui->descriptionWidget->setDescription(entity->m_videoInfo.strategyName, entity->m_videoInfo.description,
-                                                    dEntity->currentResolution());
+                                                    dEntity->currentResolution(), rowNumber);
         }
     }
 }
 
-void MainWindow::onDownloadItemActivated(const DownloadEntity* entity)
+void MainWindow::onDownloadItemActivated(const DownloadEntity* entity, int rowNumber)
 {
     if (entity != nullptr)
     {
-        onSearchItemActivated(entity->getParent(), entity);
+        onSearchItemActivated(entity->getParent(), entity, rowNumber);
     }
     else if (ui->dockFrame->state() == VideoPlayerWidget::InitialState)
     {

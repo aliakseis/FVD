@@ -17,7 +17,8 @@ public:
     DescriptionPanel(VideoPlayerWidget* parent);
     virtual ~DescriptionPanel();
 
-    void setDescription(const QString& site, const QString& description, const QString& resolution = "");
+    void setDescription(const QString& site, const QString& description,
+        const QString& resolution = {}, int rowNumber = 0);
     void resetDescription();
 
 protected:

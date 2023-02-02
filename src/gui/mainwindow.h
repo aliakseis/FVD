@@ -59,7 +59,8 @@ public:
     static MainWindow* Instance();
 
 public Q_SLOTS:
-    void onSearchItemActivated(RemoteVideoEntity* entity, const DownloadEntity* dEntity = nullptr);
+    void onSearchItemActivated(RemoteVideoEntity* entity,
+        const DownloadEntity* dEntity = nullptr, int rowNumber = 0);
     void askForSavingModel();
 
 private Q_SLOTS:
@@ -69,7 +70,7 @@ private Q_SLOTS:
     void activateLibraryForm(const DownloadEntity* selEntity);
     void about();
     void openPreferences();
-    void onDownloadItemActivated(const DownloadEntity* entity);
+    void onDownloadItemActivated(const DownloadEntity* entity, int rowNumber);
     void prepareToExit();
     void resetFileSystemWatcher();
     void onDownloadProgressChanged(int progress);

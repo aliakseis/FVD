@@ -7,7 +7,8 @@
 #include "ui_descriptionpanel.h"
 #include "videoplayerwidget.h"
 
-DescriptionPanel::DescriptionPanel(VideoPlayerWidget* parent) : QWidget(parent), ui(new Ui::DescriptionPanel)
+DescriptionPanel::DescriptionPanel(VideoPlayerWidget* parent)
+    : QWidget(parent), ui(new Ui::DescriptionPanel)
 {
     ui->setupUi(this);
     parent->m_descriptionPanel = this;
@@ -15,7 +16,8 @@ DescriptionPanel::DescriptionPanel(VideoPlayerWidget* parent) : QWidget(parent),
 
 DescriptionPanel::~DescriptionPanel() { delete ui; }
 
-void DescriptionPanel::setDescription(const QString& site, const QString& description, const QString& resolution)
+void DescriptionPanel::setDescription(const QString& site, const QString& description,
+    const QString& resolution, int rowNumber)
 {
     if (resolution.isEmpty())
     {
@@ -23,7 +25,12 @@ void DescriptionPanel::setDescription(const QString& site, const QString& descri
     }
     else
     {
-        ui->descriptionSiteLabel->setText(site + " | " + resolution);
+        QString text = site + QStringLiteral(" | ") + resolution;
+        if (rowNumber > 0)
+        {
+            text += QStringLiteral(" | #%1").arg(rowNumber);
+        }
+        ui->descriptionSiteLabel->setText(text);
     }
     ui->textEdit->setText(description);
 }

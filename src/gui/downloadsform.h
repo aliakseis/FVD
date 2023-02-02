@@ -34,7 +34,7 @@ public:
     bool exists(const DownloadEntity* entity);
 
 signals:
-    void entityActivated(const DownloadEntity* entity);
+    void entityActivated(const DownloadEntity* entity, int rowNumber);
 
 public slots:
     void onActivated(const DownloadEntity* selEntity);

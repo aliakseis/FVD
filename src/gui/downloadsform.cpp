@@ -256,7 +256,8 @@ void DownloadsForm::onSelectionChanged(const QItemSelection& selected, const QIt
     if (!selected.empty())
     {
         const QItemSelectionRange& range = selected.at(0);
-        emit entityActivated(m_model->item(m_proxyModel->mappedRow(range.topLeft())));
+        const int row = m_proxyModel->mappedRow(range.topLeft());
+        emit entityActivated(m_model->item(row), row + 1);
     }
 }
 
@@ -297,7 +298,7 @@ void DownloadsForm::removeDownload()
     int mappedRow = m_proxyModel->mappedRow(control->affectedRow());
     if (ui->downloadsTreeView->selectionModel()->isSelected(m_proxyModel->index(control->affectedRow(), 0)))
     {
-        emit entityActivated(nullptr);
+        emit entityActivated(nullptr, 0);
     }
     m_model->removeRow(mappedRow);
 }
@@ -376,7 +377,7 @@ void DownloadsForm::onActivated(const DownloadEntity* selEntity)
 
     if (selEntity != nullptr)
     {
-        int row = m_model->entityRow(selEntity);
+        const int row = m_model->entityRow(selEntity);
 
         QItemSelection selection;
         int proxyIndex = m_proxyModel->mapFromSource(m_model->index(row, 0)).row();
@@ -385,18 +386,19 @@ void DownloadsForm::onActivated(const DownloadEntity* selEntity)
 
         ui->downloadsTreeView->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
 
-        emit entityActivated(selEntity);
+        emit entityActivated(selEntity, row + 1);
     }
     else
     {
         if (ui->downloadsTreeView->selectionModel()->selection().count() > 0)
         {
             QItemSelectionRange range = ui->downloadsTreeView->selectionModel()->selection().at(0);
-            emit entityActivated(m_model->item(range.topLeft().row()));
+            const int row = range.topLeft().row();
+            emit entityActivated(m_model->item(row), row + 1);
         }
         else
         {
-            emit entityActivated(nullptr);
+            emit entityActivated(nullptr, 0);
         }
     }
 }
@@ -448,7 +450,7 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
         }
 
         // deselect items
-        emit entityActivated(nullptr);
+        emit entityActivated(nullptr, 0);
     }
 }
 
@@ -526,7 +528,7 @@ void DownloadsForm::clearDownloadsList(bool silent /* =false*/)
                                          QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
     {
         m_model->clear();
-        emit entityActivated(nullptr);
+        emit entityActivated(nullptr, 0);
     }
 }
 
