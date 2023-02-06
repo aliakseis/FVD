@@ -497,24 +497,24 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
 
     const int minPlayerHeight = currHeight - controlsHeight - minDescHeight;
     int playerWidth = currWidth;
+    int playerHeight = 0;
     int yPos = 1;
     FFmpegDecoder* dec = getDecoder();
     Q_ASSERT(dec != nullptr);
     if (state() == InitialState || state() == PendingHeader || state() == PendingHeaderPaused)
     {
         double aspectRatio = (double)m_videoWidget->getPictureSize().height() / m_videoWidget->getPictureSize().width();
-        int height = aspectRatio * currWidth;
+        playerHeight = aspectRatio * playerWidth;
         // Display too big: do recalculation
-        if (height > minPlayerHeight)  // TODO: code refactoring
+        if (playerHeight > minPlayerHeight)  // TODO: code refactoring
         {
-            height = minPlayerHeight;
+            playerHeight = minPlayerHeight;
             playerWidth = (int)((double)minPlayerHeight / aspectRatio);
         }
 
-        m_videoWidget->setGeometry(0, yPos, playerWidth, height - PROGRESSBAR_VISIBLE_HEIGHT);
-        yPos += height;
+        m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
 
-        QImage previewPic = m_videoWidget->startImageButton().scaled(playerWidth, yPos - PROGRESSBAR_VISIBLE_HEIGHT,
+        QImage previewPic = m_videoWidget->startImageButton().scaled(playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT,
                                                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (m_videoWidget->startImageButton() == m_videoWidget->noPreviewImage())
         {
@@ -535,7 +535,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         QSize pictureSize = dec->getPreferredSize(playerWidth, playerWidth).size();
         double aspectRatio = (double)pictureSize.height() / pictureSize.width();
 #endif
-        int playerHeight = pictureSize.width() * aspectRatio;
+        playerHeight = pictureSize.width() * aspectRatio;
         // Display too big: do recalculation
         if (playerHeight > minPlayerHeight)
         {
@@ -571,9 +571,9 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
                 playerWidth, playerHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         }
 #endif
-
-        yPos += playerHeight;
     }
+
+    yPos += playerHeight;
 
     m_spinner->move(0, 0);
     m_spinner->resize(playerWidth, yPos);
