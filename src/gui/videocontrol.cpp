@@ -107,7 +107,7 @@ void VideoControl::wheelEvent(QWheelEvent* event)
         {
             const int numDegrees = event->delta() / 8;
             const int numSteps = numDegrees / 15;
-            const double newVolume = std::clamp(decoder->volume() + ((double)numSteps / 20), 0., 1.);
+            const double newVolume = std::clamp(decoder->volume() + numSteps / 20., 0., 1.);
             decoder->setVolume(newVolume);
         }
     }

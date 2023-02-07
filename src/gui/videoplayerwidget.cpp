@@ -509,7 +509,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         if (playerHeight > minPlayerHeight)  // TODO: code refactoring
         {
             playerHeight = minPlayerHeight;
-            playerWidth = (int)((double)minPlayerHeight / aspectRatio);
+            playerWidth = (int)(minPlayerHeight / aspectRatio);
         }
 
         m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
@@ -540,7 +540,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         if (playerHeight > minPlayerHeight)
         {
             playerHeight = minPlayerHeight;
-            playerWidth = (int)((double)minPlayerHeight / aspectRatio);
+            playerWidth = (int)(minPlayerHeight / aspectRatio);
         }
 
         if (m_videoWidget->isFullScreen())

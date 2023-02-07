@@ -212,6 +212,6 @@ void VideoProgressBar::seekingEnable(bool enable /* = true*/) { m_seekDisabled =
 int VideoProgressBar::getClickerOffset()
 {
     static const double scale = 1.;
-    return (m_playedRatio / (scale - (double)m_clicker.width() * scale / (width()))) * width() - 1 -
-        (double)m_clicker.width() * m_playedRatio / scale * 1.8;
+    return (m_playedRatio / (scale - m_clicker.width() * scale / width())) * width() - 1 -
+        m_clicker.width() * m_playedRatio / scale * 1.8;
 }

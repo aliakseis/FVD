@@ -109,7 +109,7 @@ void VideoParseThread::run()
                         {
                             pts = 0;
                         }
-                        const double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * (double)pts;
+                        const double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
                         const double curTime = getCurrentTime();
                         m_ffmpeg->m_videoStartClock = curTime - stamp;
 
@@ -173,7 +173,7 @@ void VideoParseThread::run()
                             {
                                 pts = 0;
                             }
-                            double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * (double)pts;
+                            double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
 
                             // Before sync we must sure that audio thread also begining sync
                             const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
