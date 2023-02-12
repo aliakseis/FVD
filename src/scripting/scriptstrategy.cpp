@@ -1,5 +1,7 @@
 #include "scriptstrategy.h"
 
+#include "searchmanager.h"
+
 #include <QDebug>
 #include <QtConcurrent>
 
@@ -78,6 +80,8 @@ void ScriptStrategy::searchAsync(const QString& query, int order, int searchLimi
     m_scriptProvider.invokeFunction(
         m_strategyName + QStringLiteral("_search"),
         QVariantList() << query << order << searchLimit << page << QVariant::fromValue<QObject*>(this));
+
+    SearchManager::Instance().onSearchFinished();
 }
 
 void ScriptStrategy::extractDirectLinksAsync(const QString& videoUrl, QObject* resultReceiver)

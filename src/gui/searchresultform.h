@@ -47,7 +47,7 @@ public slots:
 
 private slots:
     void doSearch();
-    void stopSearch();
+    //void stopSearch();
     void onSearchFinished();
     static void onSearchFailed(const QString& error);
     void onDownload(int row);

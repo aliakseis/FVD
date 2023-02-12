@@ -91,7 +91,7 @@ SearchResultForm::SearchResultForm(QWidget* parent) : QFrame(parent), ui(new Ui:
         connect(ui->searchResultView, SIGNAL(customContextMenuRequested(QPoint)), SLOT(onSearchContextMenu(QPoint))));
     VERIFY(connect(ui->leSearch, SIGNAL(returnPressed()), SLOT(doSearch())));
     VERIFY(connect(ui->btnSearch, SIGNAL(clicked()), SLOT(doSearch())));
-    VERIFY(connect(ui->btnStopSearch, SIGNAL(clicked()), SLOT(stopSearch())));
+    //VERIFY(connect(ui->btnStopSearch, SIGNAL(clicked()), SLOT(stopSearch())));
     VERIFY(connect(delegate, SIGNAL(downloadClicked(int)), SLOT(onDownload(int))));
     VERIFY(connect(delegate, SIGNAL(downloadMenuClicked(int, QPoint)), SLOT(onDownloadContextMenu(int, QPoint))));
     VERIFY(connect(&SearchManager::Instance(), SIGNAL(searchFinished()), SLOT(onSearchFinished())));
@@ -203,14 +203,14 @@ void SearchResultForm::createActions()
 
 void SearchResultForm::showSearchButton()
 {
-    ui->btnSearch->show();
-    ui->btnStopSearch->hide();
+    ui->btnSearch->setEnabled(true);
+    //ui->btnStopSearch->hide();
 }
 
 void SearchResultForm::showStopButton()
 {
-    ui->btnSearch->hide();
-    ui->btnStopSearch->show();
+    ui->btnSearch->setEnabled(false);
+    //ui->btnStopSearch->show();
 }
 
 void SearchResultForm::doSearch(QString query, int page)
@@ -245,12 +245,12 @@ void SearchResultForm::saveSitesList()
 
 void SearchResultForm::doSearch() { doSearch(ui->leSearch->text()); }
 
-void SearchResultForm::stopSearch()
-{
-    SearchManager::Instance().cancelSearch();
-    showSearchButton();
-    updatePrevNextState();
-}
+//void SearchResultForm::stopSearch()
+//{
+//    SearchManager::Instance().cancelSearch();
+//    showSearchButton();
+//    updatePrevNextState();
+//}
 
 void SearchResultForm::onSearchFinished()
 {

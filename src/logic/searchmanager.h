@@ -9,6 +9,7 @@
 #include <QMimeData>
 
 #include <array>
+#include <atomic>
 #include <iterator>
 #include <unordered_set>
 
@@ -16,9 +17,9 @@
 #include "scriptstrategy.h"
 #include "utilities/errorcode.h"
 #include "utilities/singleton.h"
-#include "utilities/utils.h"
 
 class ViewModelFacade;
+
 class SearchManager : public QObject, public Singleton<SearchManager>
 {
     Q_OBJECT
@@ -27,7 +28,6 @@ class SearchManager : public QObject, public Singleton<SearchManager>
 
 public:
     void search(const QString& query, const QStringList& sites, int page = 1);
-    void cancelSearch();
     void clearSearchResults();
     void reInitializeStrategies()
     {
@@ -74,6 +74,8 @@ public:
     bool addLinks(const QMimeData& urls);
     void addLinks(QStringList urls);
 
+    void onSearchFinished();
+
 private:
     SearchManager();
 
@@ -101,7 +103,7 @@ private:
     typedef std::unordered_set<EntitiesSetItem_t, rveHasher, rveComparer> EntitiesSet;
     EntitiesSet m_allEntities;
     QList<QSharedPointer<ScriptStrategy> > m_scriptStrategies;
-    int m_searchSitesAmount;  // temporary value to handle search strategies status
+    std::atomic_int m_searchSitesAmount;  // temporary value to handle search strategies status
 
     DISALLOW_COPY_AND_ASSIGN(SearchManager);
 Q_SIGNALS:

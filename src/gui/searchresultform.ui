@@ -160,21 +160,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="btnStopSearch">
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string>Stop search</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="btnPrevious">
         <property name="maximumSize">
          <size>

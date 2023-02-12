@@ -78,14 +78,14 @@ void SearchManager::search(const QString& query, const QStringList& searchSites,
             settings.value(resultsOnPage, resultsOnPage_Default).toInt(), page);
     }
 
-    if (m_searchSitesAmount <= 0)
+    if (searchSites.empty())
     {
         emit searchFinished();
     }
     emit signalSearchStarted(query);
 }
 
-void SearchManager::cancelSearch() { m_searchSitesAmount = 0; }
+//void SearchManager::cancelSearch() { m_searchSitesAmount = 0; }
 
 std::array<QStringList, 2> SearchManager::allStrategiesNames() const
 {
@@ -107,10 +107,10 @@ ScriptStrategy* SearchManager::scriptStrategy(const QString& name) const
 
 void SearchManager::onSearchResultsFound(const QList<SearchResult>& searchResults)
 {
-    if (m_searchSitesAmount > 0)
-    {
-        --m_searchSitesAmount;
-    }
+    //if (m_searchSitesAmount > 0)
+    //{
+    //    --m_searchSitesAmount;
+    //}
 
     QList<RemoteVideoEntity*> entitiesList;
     Q_FOREACH (SearchResult result, searchResults)
@@ -131,10 +131,10 @@ void SearchManager::onSearchResultsFound(const QList<SearchResult>& searchResult
         }
     }
     emit searchResultFound(entitiesList);
-    if (m_searchSitesAmount == 0)
-    {
-        emit searchFinished();
-    }
+    //if (m_searchSitesAmount == 0)
+    //{
+    //    emit searchFinished();
+    //}
 }
 
 QObjectList SearchManager::getEntities() const
@@ -453,3 +453,10 @@ void SearchManager::addLink(const QString& url)
     }
 }
 
+void SearchManager::onSearchFinished()
+{
+    if (--m_searchSitesAmount == 0)
+    {
+        emit searchFinished();
+    }
+}
