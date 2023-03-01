@@ -5,7 +5,7 @@
 #include "ui_maintoolbar.h"
 #include "utilities/translation.h"
 
-#define PROP_ACTIVE "active"
+const char PROP_ACTIVE[] = "active";
 
 MainToolBar::MainToolBar(QWidget* parent) : QWidget(parent), m_activeTabIndex(SEARCH_TAB), ui(new Ui::MainToolBar)
 {

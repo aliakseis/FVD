@@ -1,5 +1,3 @@
-#define INSTANTIATE_SETTINGS
-
 #include <QFile>
 #include <QDebug>
 #include <QProcess>
