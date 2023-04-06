@@ -33,7 +33,8 @@ def Vimeo_search(query, order, searchLimit, page, strategy) :
 
     headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}
 
-    while True:
+    stop = False
+    while not stop:
         try:
             response = request(url, timeout=10, headers=headers).text
             index1 = response.index("vimeo.config = ")
@@ -74,6 +75,7 @@ def Vimeo_search(query, order, searchLimit, page, strategy) :
 
             ii += 1
             if ii == searchLimit:
+                stop = True
                 break
 
         if ii == prev_ii:
