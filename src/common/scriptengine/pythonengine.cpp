@@ -23,6 +23,8 @@ auto pythonQtInstance() {
     return PythonQt::self();
 };
 
+std::mutex pythonMonitor;
+
 }
 
 namespace ScriptEngine {
@@ -36,6 +38,7 @@ PythonEngine::~PythonEngine()
 
 bool PythonEngine::loadFile(const QString& filename)
 {
+    std::lock_guard<std::mutex> guard(pythonMonitor);
     pythonQtInstance()->getMainModule().evalFile(filename);
     return true;
 }
@@ -43,12 +46,14 @@ bool PythonEngine::loadFile(const QString& filename)
 QVariant PythonEngine::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments /*= QVariantList()*/)
 {
     QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
+    std::lock_guard<std::mutex> guard(pythonMonitor);
     return pythonQtInstance()->getMainModule().call(callable, arguments);
 }
 
 void PythonEngine::exportVariable(const QString& name, const QVariant& value)
 {
     auto* qobject = qvariant_cast<QObject*>(value);
+    std::lock_guard<std::mutex> guard(pythonMonitor);
     if (qobject != nullptr)
     {
         pythonQtInstance()->registerClass(qobject->metaObject());

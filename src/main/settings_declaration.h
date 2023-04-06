@@ -53,6 +53,6 @@ const char ProxyPort[] = "ProxyPort";
 
 const char UseProxyAuthorization[] = "UseProxyAuthorization";
 
-const char SiteScripts[] = "YouTube.py;Dailymotion.js;Metacafe.js;Vimeo.js";
+const char SiteScripts[] = "YouTube.py;Dailymotion.js;Metacafe.js;Vimeo.py";
 
 }  // namespace app_settings
