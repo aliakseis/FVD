@@ -15,6 +15,8 @@ install_and_import("pytube", "https://github.com/pytube/pytube/archive/refs/head
 
 from pytube import Search, YouTube
 
+import logging
+
 def YouTube_search(query, order, searchLimit, page, strategy) :
     socket.setdefaulttimeout(30)
 
@@ -36,20 +38,25 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
 
         entity = {}
 
-        entity["title"] = yt_object.title
-        entity["url"] = url
-        entity["published"] = str(yt_object.publish_date)
-        entity["duration"] = yt_object.length
-        entity["description"] = yt_object.description
-        entity["id"] = yt_object.video_id
-        entity["viewCount"] = yt_object.views
-        entity["thumbnailUrl"] = yt_object.thumbnail_url
+        try:
+            entity["title"] = yt_object.title
+            entity["url"] = url
+            entity["published"] = str(yt_object.publish_date)
+            entity["duration"] = yt_object.length
+            entity["description"] = yt_object.description
+            entity["id"] = yt_object.video_id
+            entity["viewCount"] = yt_object.views
+            entity["thumbnailUrl"] = yt_object.thumbnail_url
 
-        entities.append(entity)
+            entities.append(entity)
 
-        ii += 1
-        if ii == searchLimit:
-            break
+            ii += 1
+            if ii == searchLimit:
+                break
+
+        except:
+            logging.warning('Item adding skipped.')
+
         i += 1
         if i == num:
             i=0
