@@ -6,12 +6,12 @@ def install_and_import(package, url):
         importlib.import_module(package)
     except ImportError:
         import subprocess
-        subprocess.call(["pip3", "install", url])
+        subprocess.run(["pip3", "install", url])
     finally:
         globals()[package] = importlib.import_module(package)
 
 
-install_and_import("vimeo_downloader", "https://github.com/yashrathi-git/vimeo_downloader/archive/refs/heads/master.zip") # whichever good
+install_and_import("vimeo_downloader", "git+https://github.com/yashrathi-git/vimeo_downloader") # whichever good
 
 from vimeo_downloader import Vimeo
 

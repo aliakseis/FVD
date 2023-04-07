@@ -6,7 +6,7 @@ def install_and_import(package, url):
         importlib.import_module(package)
     except ImportError:
         import subprocess
-        subprocess.call(["pip3", "install", url])
+        subprocess.run(["pip3", "install", url])
     finally:
         globals()[package] = importlib.import_module(package)
 
