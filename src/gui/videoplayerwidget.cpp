@@ -164,6 +164,9 @@ void VideoPlayerWidget::downloadingToPreview(qint64 bytesReceived, qint64 bytesT
 
 void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* downloadEntity, int rowNumber)
 {
+    if (m_currentEntity == entity && downloadEntity == nullptr)
+        return;
+
     m_currentEntity = entity;
     m_selectedDownload = downloadEntity;
     m_selectedRowNumber = rowNumber;
@@ -172,6 +175,8 @@ void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* dow
         if ((m_currentDownload != nullptr) && m_currentDownload->visibilityState() == visTemp)
         {
             m_currentDownload->getParent()->deleteTempDE(m_currentDownload);  // delete m_currentDownload;
+            hideSpinner();
+            emit showPlaybutton(true);
         }
         if (entity != nullptr)
         {
