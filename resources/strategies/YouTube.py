@@ -16,6 +16,7 @@ install_and_import("pytube", "https://github.com/pytube/pytube/archive/refs/head
 from pytube import Search, YouTube
 
 import logging
+import traceback
 
 def YouTube_search(query, order, searchLimit, page, strategy) :
     socket.setdefaulttimeout(30)
@@ -55,7 +56,7 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
                 break
 
         except:
-            logging.warning('Item adding skipped.')
+            logging.warning('Item adding skipped.\n' + traceback.format_exc())
 
         i += 1
         if i == num:
