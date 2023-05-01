@@ -19,6 +19,9 @@ from requests import get as request
 from urllib.parse import quote_plus
 from json import loads
 
+import logging
+import traceback
+
 def Vimeo_search(query, order, searchLimit, page, strategy) :
     socket.setdefaulttimeout(30)
 
@@ -42,6 +45,7 @@ def Vimeo_search(query, order, searchLimit, page, strategy) :
             index2 = response.index("}}}]", index1) + 4
             text = response[index1:index2]
         except: 
+            logging.warning('Failed to get Vimeo info.\n' + traceback.format_exc())
             break
 
         if not text:
@@ -50,6 +54,7 @@ def Vimeo_search(query, order, searchLimit, page, strategy) :
         try:
             dicti = loads(text)
         except: 
+            logging.warning('Failed to parse JSON.\n' + traceback.format_exc())
             break
 
         if not dicti:
