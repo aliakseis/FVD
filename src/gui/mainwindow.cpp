@@ -417,8 +417,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     else
     {
         // Player fullscreen in
-        if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
-            ((event->modifiers() & Qt::AltModifier) != 0))
+        if (VideoWidget::isFullScreenKeyboardShortcut(event))
         {
             ui->dockWidget->setVisibilityState(CustomDockWidget::FullScreen);
         }

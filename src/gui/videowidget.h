@@ -12,6 +12,8 @@
 #include "imagecache.h"
 #include "remotevideoentity.h"
 
+class QKeyEvent;
+
 class VideoPlayerWidget;
 
 #ifdef DEVELOPER_OPENGL
@@ -40,6 +42,8 @@ public:
     void hidePlayButton();
 
     void updatePlayButton();
+
+    static bool isFullScreenKeyboardShortcut(QKeyEvent* event);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;

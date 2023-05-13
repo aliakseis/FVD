@@ -145,12 +145,16 @@ void VideoWidget::hideElements()
     MainWindow::Instance()->videoControlWidget()->hide();
 }
 
+bool VideoWidget::isFullScreenKeyboardShortcut(QKeyEvent* event)
+{
+    return (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && (event->modifiers() & Qt::AltModifier);
+}
+
 void VideoWidget::keyPressEvent(QKeyEvent* event)
 {
     showElements();
     // Full screen exiting
-    if (((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && (event->modifiers() & Qt::AltModifier)) ||
-        event->key() == Qt::Key_Escape)
+    if (isFullScreenKeyboardShortcut(event) || event->key() == Qt::Key_Escape)
     {
         if (isFullScreen())
         {
