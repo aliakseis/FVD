@@ -44,7 +44,7 @@ QStringList getFilenames()
     // replace files names with full path
     for (auto& str : fileNames) {
         str = dir.absoluteFilePath(str);
-}
+    }
 
     return fileNames;
 }
@@ -58,7 +58,7 @@ QString languageString(const utilities::Tr::Translation& translation, const QStr
         auto langName = QLocale::languageToString(loc.language());
         if (loc.language() == QLocale::Chinese) {
             langName = langName + " " + QLocale::scriptToString(loc.script());
-}
+        }
         langStr = QString("%1 (%2)").arg(loc.nativeLanguageName(), langName);
     }
 
