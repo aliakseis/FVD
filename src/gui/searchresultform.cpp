@@ -40,8 +40,10 @@ const utilities::Tr::Translation OPEN_IN_BROWSER = {"SearchResultsForm", "Open i
 SearchResultForm::SearchResultForm(QWidget* parent) : QFrame(parent), ui(new Ui::SearchResultForm), m_searchPage(1)
 {
     ui->setupUi(this);
-    ui->manageLabel->setVisible(false);
+    ui->manageLabel->hide();
     ui->manageLabel->setImages(PreviewPanelButton::LeftArrow);
+
+    ui->searchProgress->hide();
 
     ui->cbSites->setItemDelegate(new SitesCheckboxDelegate(ui->cbSites));
 
@@ -205,12 +207,16 @@ void SearchResultForm::showSearchButton()
 {
     ui->btnSearch->setEnabled(true);
     //ui->btnStopSearch->hide();
+    ui->searchProgress->stopAnimation();
+    ui->searchProgress->hide();
 }
 
 void SearchResultForm::showStopButton()
 {
     ui->btnSearch->setEnabled(false);
     //ui->btnStopSearch->show();
+    ui->searchProgress->show();
+    ui->searchProgress->startAnimation();
 }
 
 void SearchResultForm::doSearch(QString query, int page)

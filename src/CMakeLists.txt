@@ -119,7 +119,8 @@ source_group(main FILES
 ##############
 
 set(HEADERS_TOMOC_GUI
-	gui/clickablelabel.h
+        gui/barberpoleprogress.h
+        gui/clickablelabel.h
 	gui/ellipsislabel.h
 	gui/customdockwidget.h
 	gui/descriptionpanel.h
@@ -153,6 +154,7 @@ set(HEADERS_GUI
 )
 
 set(SOURCES_GUI
+        gui/barberpoleprogress.cpp
 	gui/clickablelabel.cpp
 	gui/ellipsislabel.cpp
 	gui/customdockwidget.cpp
