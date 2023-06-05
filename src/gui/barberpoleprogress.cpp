@@ -6,6 +6,7 @@
 
 BarberPoleProgress::BarberPoleProgress(QWidget *parent) : QWidget(parent)
 {
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
     connect(&m_periodicUpdateTimer, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
