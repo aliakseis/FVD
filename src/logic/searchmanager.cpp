@@ -225,11 +225,12 @@ void SearchManager::onDownloadError(utilities::ErrorCode::ERROR_CODES code, cons
 
     if (code != utilities::ErrorCode::eDOWLDUNKWNFILERR)  // possibly we would need to add some other statuses as well
     {
-        const int resolutionId = de->currentResolutionId();
-
-        RemoteVideoEntity* rve = de->getParent();
-        rve->m_resolutionLinks.clear();
-        rve->download(resolutionId, visNorm);
+        if (RemoteVideoEntity* rve = de->getParent())
+        {
+            const int resolutionId = de->currentResolutionId();
+            rve->m_resolutionLinks.clear();
+            rve->download(resolutionId, visNorm);
+        }
     }
     onDownloadChanged();
 }

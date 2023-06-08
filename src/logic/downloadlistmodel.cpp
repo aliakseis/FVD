@@ -128,7 +128,11 @@ QVariant DownloadListModel::data(const QModelIndex& index, int role) const
         switch (index.column())
         {
         case DL_Index:
-            return downloadEntity->getParent()->originalUrl();
+            if (auto parent = downloadEntity->getParent())
+            {
+                return parent->originalUrl();
+            }
+            return {};
         default:
             return {};
         }

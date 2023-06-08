@@ -151,10 +151,10 @@ public:
         }
     }
 
-    const QString& videoTitle() const { return m_parentVideoEntity->m_videoInfo.videoTitle; }
-    int videoDuration() const { return m_parentVideoEntity->m_videoInfo.duration; }
+    QString videoTitle() const { return m_parentVideoEntity ? m_parentVideoEntity->m_videoInfo.videoTitle : QString(); }
+    int videoDuration() const { return m_parentVideoEntity ? m_parentVideoEntity->m_videoInfo.duration : 0; }
 
-    QString strategyName() const { return m_parentVideoEntity->m_videoInfo.strategyName; }
+    QString strategyName() const { return m_parentVideoEntity ? m_parentVideoEntity->m_videoInfo.strategyName : QString(); }
     QString description() const
     {
         Q_ASSERT(m_parentVideoEntity);
