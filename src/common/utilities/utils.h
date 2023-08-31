@@ -78,7 +78,7 @@ QString SizeToString(quint64 size, int precision = -1, int fieldWidth = 0);
 bool IsAsyncUrl(const QString& path);
 QString secondsToString(long seconds);
 QString ProgressString(double progress);
-
+QString replaceBoldItalicSymbols(const QString& input);
 
 // returns true only if (min <= val < max)
 template <class Ty>

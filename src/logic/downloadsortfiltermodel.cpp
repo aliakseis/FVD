@@ -6,6 +6,8 @@
 #include <QItemSelectionModel>
 #include <QMimeData>
 
+#include "utilities/utils.h"
+
 #include "downloadentity.h"
 #include "downloadlistmodel.h"
 
@@ -41,7 +43,8 @@ bool DownloadSortFilterModel::filterAcceptsRow(int source_row, const QModelIndex
     auto* model = qobject_cast<DownloadListModel*>(sourceModel());
     DownloadEntity* downloadEntity = model->item(source_row);
 
-    return downloadEntity != nullptr && regExp.isValid() && (regExp.indexIn(downloadEntity->videoTitle()) >= 0);
+    return downloadEntity != nullptr && regExp.isValid() 
+        && (regExp.indexIn(utilities::replaceBoldItalicSymbols(downloadEntity->videoTitle())) >= 0);
 }
 
 void DownloadSortFilterModel::sort(int column, Qt::SortOrder order)

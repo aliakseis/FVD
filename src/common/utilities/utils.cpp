@@ -224,6 +224,26 @@ QString ProgressString(double progress)
         (progress <= 0) ? "0%" : ((progress >= 100) ? "100%" : QString("%1%").arg(progress, 0, 'f', 1));
 }
 
+QString replaceBoldItalicSymbols(const QString& input)
+{
+    std::u32string output;
+
+    for (auto ch : input.toStdU32String())
+    {
+        // Check if the current character is a bold+italic Unicode symbol
+        if (ch >= 0x1d400 && ch < 0x1d6a4)
+        {
+            const int offset = (ch - 0x1d400) % 52;
+            // Replace the bold+italic Unicode symbol with its regular value by decrementing the Unicode codepoint
+            ch = offset + ((offset < 26) ? 0x41 : 0x61);
+        }
+ 
+        output.push_back(ch);
+    }
+
+    return QString::fromStdU32String(output);
+}
+
 // shamelessly stolen from qstring.cpp
 QString multiArg(const QString& str, int numArgs, const QString* args)
 {
