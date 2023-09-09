@@ -7,6 +7,12 @@
 
 #include "utilities/utils.h"
 
+static QString toIdentifier(QString str)
+{ 
+    str.replace('-', '_'); 
+    return str; 
+}
+
 ScriptStrategy::ScriptStrategy(const QString& name, bool isSafe, QObject* parent)
     : QObject(parent), m_scriptProvider(name), m_strategyName(name.left(name.lastIndexOf('.'))), m_isSafe(isSafe)
 {
@@ -78,7 +84,7 @@ void ScriptStrategy::onSearchFinished(const QVariantList& list)
 void ScriptStrategy::searchAsync(const QString& query, int order, int searchLimit, int page)
 {
     m_scriptProvider.invokeFunction(
-        m_strategyName + QStringLiteral("_search"),
+        toIdentifier(m_strategyName) + QStringLiteral("_search"),
         QVariantList() << query << order << searchLimit << page << QVariant::fromValue<QObject*>(this));
 
     SearchManager::Instance().onSearchFinished();
@@ -86,6 +92,6 @@ void ScriptStrategy::searchAsync(const QString& query, int order, int searchLimi
 
 void ScriptStrategy::extractDirectLinksAsync(const QString& videoUrl, QObject* resultReceiver)
 {
-    m_scriptProvider.invokeFunction(m_strategyName + QStringLiteral("_extractDirectLinks"),
+    m_scriptProvider.invokeFunction(toIdentifier(m_strategyName) + QStringLiteral("_extractDirectLinks"),
                                     QVariantList() << videoUrl << QVariant::fromValue<QObject*>(resultReceiver));
 }
