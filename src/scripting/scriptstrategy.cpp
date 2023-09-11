@@ -2,16 +2,31 @@
 
 #include "searchmanager.h"
 
-#include <QDebug>
-#include <QtConcurrent>
-
 #include "utilities/utils.h"
 
-static QString toIdentifier(QString str)
+#include <QDebug>
+#include <QtConcurrent>
+#include <algorithm>
+
+namespace {
+
+QString toIdentifier(QString str)
 { 
     str.replace('-', '_'); 
     return str; 
 }
+
+QString removeNonDigits(QString str)
+{
+    const auto start = str.begin();
+
+    // Remove all non-digit characters from the input string
+    str.truncate(std::remove_if(start, str.end(), [](QChar ch) { return !ch.isDigit(); }) - start);
+
+    return str;
+}
+
+} // namespace
 
 ScriptStrategy::ScriptStrategy(const QString& name, bool isSafe, QObject* parent)
     : QObject(parent), m_scriptProvider(name), m_strategyName(name.left(name.lastIndexOf('.'))), m_isSafe(isSafe)
@@ -68,7 +83,8 @@ void ScriptStrategy::onSearchFinished(const QVariantList& list)
         result.published =
             published.type() == QVariant::DateTime
                 ? published.toDateTime()
-                : QDateTime::fromString(published.toString().trimmed().left(10), QStringLiteral("yyyy-MM-dd"));
+                : QDateTime::fromString(removeNonDigits(published.toString().trimmed().left(10)),
+                                        QStringLiteral("yyyyMMdd"));
         result.videoTitle = map["title"].toString();
         result.duration = map["duration"].toInt();
         result.description = map["description"].toString();
