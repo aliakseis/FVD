@@ -117,17 +117,14 @@ bool SearchResultForm::populateSitesComboHelper(const QStringList& strategiesNam
                                                 const QString& sectionName)
 {
     QSettings settings;
-    QSet<QString> checkedSitesSet = settings.value(app_settings::CheckedSites, app_settings::CheckedSites_Default)
+    const auto checkedSitesSet = settings.value(app_settings::CheckedSites, app_settings::CheckedSites_Default)
                                         .toString()
                                         .split(';', QString::SkipEmptyParts)
                                         .toSet();
-    QSet<QString> settingSitesSet = settings.value(app_settings::Sites, app_settings::Sites_Default)
+    const auto settingSitesSet = settings.value(app_settings::Sites, app_settings::Sites_Default)
                                         .toString()
                                         .split(';', QString::SkipEmptyParts)
                                         .toSet();
-    // fix empty strings from split
-    checkedSitesSet.remove("");
-    settingSitesSet.remove("");
 
     const int initialSitesCount = ui->cbSites->count();
 
