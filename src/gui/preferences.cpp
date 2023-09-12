@@ -444,7 +444,7 @@ void Preferences::onCurrItemLangChanged(QListWidgetItem* item)
 
 void Preferences::onCurrTabChanged(int index)
 {
-    QSize size(430, 470);
+    QSize size(430, 488);
     if (1 == index)
     {
         size.setHeight(360);

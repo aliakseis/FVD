@@ -434,8 +434,19 @@ void SearchManager::addLinks(QStringList urls)
 
 void SearchManager::addLink(const QString& url)
 {
+    const auto settingSitesSet = QSettings()
+                                .value(app_settings::Sites, app_settings::Sites_Default)
+                                .toString()
+                                .split(';', QString::SkipEmptyParts)
+                                .toSet();
+
     for (const auto& strat : qAsConst(m_scriptStrategies))
     {
+        if (!settingSitesSet.contains(strat->name()))
+        {
+            continue;
+        }
+
         EntitiesSetItem_t rve(new RemoteVideoEntity());
 
         rve->m_videoInfo.id = url;
