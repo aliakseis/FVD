@@ -39,6 +39,12 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
 
         entity = {}
 
+        # https://github.com/pytube/pytube/issues/1674#issuecomment-1706105785
+        try:
+            yt_object.bypass_age_gate()
+        except:
+            pass
+
         try:
             entity["title"] = yt_object.title
             entity["url"] = url
