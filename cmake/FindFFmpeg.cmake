@@ -112,12 +112,12 @@ endif(FFMPEG_INCLUDE_DIR AND AVCODEC_LIBRARY)
 macro(INSTALL_FFMPEG_DLLS)
 	if(WIN32)
 
-		set(FFMPEG_DLLS_BASIC
-			${FFMPEG_BINARY_DIR}/avcodec-58.dll
-			${FFMPEG_BINARY_DIR}/avformat-58.dll
-			${FFMPEG_BINARY_DIR}/avutil-56.dll
-			${FFMPEG_BINARY_DIR}/swscale-5.dll
-			${FFMPEG_BINARY_DIR}/swresample-3.dll
+		FILE(GLOB FFMPEG_DLLS_BASIC
+			${FFMPEG_BINARY_DIR}/avcodec-*.dll
+			${FFMPEG_BINARY_DIR}/avformat-*.dll
+			${FFMPEG_BINARY_DIR}/avutil-*.dll
+			${FFMPEG_BINARY_DIR}/swscale-*.dll
+			${FFMPEG_BINARY_DIR}/swresample-*.dll
 		)
 
 		install(FILES

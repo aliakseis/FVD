@@ -477,7 +477,7 @@ add_library(${FUNCTIONAL_MODULE} STATIC
 	${HEADERS}
 	${SOURCES}
 
-	# Genered resources
+	# Generated resources
 	${UI_FILES} 
 	${MOC_FILES} 
 	${QRC_RESOURCES}
@@ -521,7 +521,7 @@ add_executable(${PROJECT_NAME}
 	${DESKTOP_TARGET}
 	main/main.cpp
 
-	# Genered resources
+	# Generated resources
 	${QRC_RESOURCES}
 	${RESOURCE_OS}
 	${ICON_FILE}
@@ -529,7 +529,7 @@ add_executable(${PROJECT_NAME}
 
 	set(QTX_QTMAIN_LIBRARY ${Qt5Core_QTMAIN_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PRIVATE
 	${QTX_QTMAIN_LIBRARY}
 	${FUNCTIONAL_MODULE}
 )
