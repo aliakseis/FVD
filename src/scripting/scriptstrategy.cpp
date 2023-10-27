@@ -83,7 +83,7 @@ void ScriptStrategy::onSearchFinished(const QVariantList& list)
         result.published =
             published.type() == QVariant::DateTime
                 ? published.toDateTime()
-                : QDateTime::fromString(removeNonDigits(published.toString().trimmed().left(10)),
+                : QDateTime::fromString(removeNonDigits(published.toString()).left(8),
                                         QStringLiteral("yyyyMMdd"));
         result.videoTitle = map["title"].toString();
         result.duration = map["duration"].toInt();
