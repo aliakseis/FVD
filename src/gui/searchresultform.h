@@ -3,8 +3,6 @@
 #include <QFrame>
 #include <QModelIndex>
 
-#include "customdockwidget.h"
-
 namespace Ui
 {
 class SearchResultForm;
@@ -15,7 +13,7 @@ class QItemSelection;
 class RemoteVideoEntity;
 class QSortFilterProxyModel;
 
-class SearchResultForm : public QFrame, public ManageWidget
+class SearchResultForm : public QFrame
 {
     Q_OBJECT
 

@@ -2,7 +2,6 @@
 
 #include <QWidget>
 
-#include "customdockwidget.h"
 #include "downloadentity.h"
 
 namespace Ui
@@ -15,7 +14,7 @@ class LibraryModel;
 class QDeclarativeView;
 class QQuickView;
 
-class LibraryForm : public QWidget, public ManageWidget
+class LibraryForm : public QWidget
 {
     Q_OBJECT
 

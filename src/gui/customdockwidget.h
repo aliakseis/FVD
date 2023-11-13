@@ -9,13 +9,6 @@ class PreviewPanelButton;
 class PlayerHeader;
 class MainWindow;
 
-// Base interface for widgets which have manage button
-class ManageWidget
-{
-public:
-    // return child widget which allow manage the widget (hide and show)
-    virtual QWidget* manageWidget() const = 0;
-};
 
 class CustomDockWidget : public QDockWidget
 {

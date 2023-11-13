@@ -3,8 +3,6 @@
 #include <QAbstractItemModel>
 #include <QFrame>
 
-#include "customdockwidget.h"
-
 namespace Ui
 {
 class DownloadsForm;
@@ -18,7 +16,7 @@ class DownloadsControl;
 class VideoPlayerWidget;
 class DownloadSortFilterModel;
 
-class DownloadsForm : public QFrame, public ManageWidget
+class DownloadsForm : public QFrame
 {
     Q_OBJECT
 
