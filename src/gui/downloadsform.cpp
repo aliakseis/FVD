@@ -3,6 +3,7 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QScrollBar>
@@ -16,9 +17,8 @@
 #include "global_functions.h"
 #include "libraryform.h"
 #include "mainwindow.h"
-#include "playerheader.h"
 #include "ui_downloadsform.h"
-#include "ui_mainwindow.h"
+#include "videoplayerwidget.h"
 #include "videowidget.h"
 #include "videoqualitydialog.h"
 
@@ -220,7 +220,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
 
         if (act == ui->actionOpenFile)
         {
-            VideoPlayerWidgetInstance()->playPauseButtonAction();
+            videoPlayer->playPauseButtonAction();
         }
         else if (act == ui->actionOpenFolder)
         {
@@ -427,12 +427,12 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
                        { return m_model->item(m_proxyModel->mapToSource(index).row()); });
         // find currently played entity in candidates to delete
         auto played = std::find_if(itemsToDelete.constBegin(), itemsToDelete.constEnd(),
-                                   [capture0 = VideoPlayerWidgetInstance()](auto PH1)
+                                   [capture0 = videoPlayer](auto PH1)
                                    { return fileIsInUse(capture0, PH1); });
         // if currently played entity to be deleted, stop playing
         if (played != itemsToDelete.constEnd() && (deleteCompletely || (*played)->state() != Downloadable::kFinished))
         {
-            VideoPlayerWidgetInstance()->stopVideo(true);
+            videoPlayer->stopVideo(true);
         }
 
         if (deleteCompletely)
@@ -499,7 +499,7 @@ bool DownloadsForm::eventFilter(QObject* obj, QEvent* event)
         }
         else if (keyEvent->key() == Qt::Key_Space)
         {
-            VideoPlayerWidgetInstance()->playPauseButtonAction();
+            videoPlayer->playPauseButtonAction();
         }
         else if (keyEvent->key() == Qt::Key_Up && keyEvent->modifiers() == Qt::ControlModifier)
         {
