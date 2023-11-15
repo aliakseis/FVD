@@ -22,7 +22,6 @@ class QStackedWidget;
 class DownloadsForm;
 class SearchResultForm;
 class MainToolBar;
-class PlayerHeader;
 class LibraryForm;
 class DownloadEntity;
 class VideoPlayerWidget;
@@ -104,7 +103,6 @@ private:
     DownloadsForm* m_downloadsForm;
 
     QStackedWidget* m_centralWidget;
-    PlayerHeader* m_playerHeader;
     MainToolBar* m_mainToolbar;
     SearchResultForm* m_searchResultFrom;
     LibraryForm* m_libraryForm;

@@ -85,7 +85,6 @@ MainWindow::MainWindow(QWidget* parent)
     : ui_utils::MainWindowWithTray(parent, QIcon(":/images/fvdownloader.png"), PROJECT_FULLNAME_TRANSLATION),
       ui(new Ui::MainWindow),
       m_centralWidget(new QStackedWidget(this)),
-      m_playerHeader(new PlayerHeader(this)),
       m_mainToolbar(new MainToolBar(this)),
       m_searchResultFrom(new SearchResultForm(this)),
       m_libraryForm(new LibraryForm(this)),
@@ -98,11 +97,12 @@ MainWindow::MainWindow(QWidget* parent)
     const auto player = ui->dockFrame;
 
     player->setProgressbar(ui->videoProgress);
-    player->setVideoHeader(m_playerHeader);
+    auto playerHeader = new PlayerHeader(this);
+    player->setVideoHeader(playerHeader);
     m_downloadsForm = new DownloadsForm(player, this);
 
     ui->dockWidget->installEventFilter(player);
-    ui->dockWidget->setTitleBarWidget(m_playerHeader);
+    ui->dockWidget->setTitleBarWidget(playerHeader);
     ui->dockWidget->setDisplayForFullscreen(player->getCurrentDisplay());
 
     ui->mainToolBar->addWidget(m_mainToolbar);
