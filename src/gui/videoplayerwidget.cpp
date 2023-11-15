@@ -391,8 +391,12 @@ void VideoPlayerWidget::seekByPercent(float percent, int64_t totalDuration)
 
 void VideoPlayerWidget::playPauseButtonAction()
 {
-    if (state() == Paused || (state() == InitialState && m_currentEntity != nullptr))
+    switch (state())
     {
+    case InitialState:
+        if (m_currentEntity == nullptr)
+            return;
+    case Paused:  // fall through
         emit showPlaybutton(false);
         if (isPaused())
         {
@@ -402,21 +406,19 @@ void VideoPlayerWidget::playPauseButtonAction()
         {
             startPreviewDownload();
         }
-    }
-    else if (state() == PendingHeaderPaused)
-    {
+        break;
+    case PendingHeaderPaused:
         emit showPlaybutton(false);
         setState(PendingHeader);
-    }
-    else if (state() == Playing)
-    {
+        break;
+    case Playing:
         emit showPlaybutton(true);
         pauseVideo();
-    }
-    else if (state() == PendingHeader)
-    {
+        break;
+    case PendingHeader:
         emit showPlaybutton(true);
         setState(PendingHeaderPaused);
+        break;
     }
 }
 
