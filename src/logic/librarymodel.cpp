@@ -18,6 +18,25 @@
 #include "utilities/utils.h"
 #include "videoplayerwidget.h"
 
+namespace {
+
+int countFiles(const QString& dirPath)
+{
+    QDir dir(dirPath);
+    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+    int fileCount = dir.count();
+
+    QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo& subDir : subDirs)
+    {
+        fileCount += countFiles(subDir.filePath());
+    }
+
+    return fileCount;
+}
+
+}
+
 const int LibraryUpdateTimerDelay = 5000;
 
 LibraryModel::LibraryModel(QObject* parent)
@@ -68,7 +87,10 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
     case RoleDate:
         return entity->published().date().toString(Qt::SystemLocaleShortDate);
     case RoleSize:
-        return utilities::SizeToString(entity->downloadedSize(), 1, 1);
+        if (auto size = entity->downloadedSize())
+            return utilities::SizeToString(size, 1, 1);
+        else
+            return tr("%1 files").arg(countFiles(entity->filename()));
     case RoleEntity:
         return qVariantFromValue(entity);
     case RoleTimeDownload:
