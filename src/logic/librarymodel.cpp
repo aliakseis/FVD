@@ -90,7 +90,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
         if (auto size = entity->downloadedSize())
             return utilities::SizeToString(size, 1, 1);
         else
-            return tr("%1 files").arg(countFiles(entity->filename()));
+            return tr("%1 file(s)").arg(countFiles(entity->filename()));
     case RoleEntity:
         return qVariantFromValue(entity);
     case RoleTimeDownload:
