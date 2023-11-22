@@ -57,20 +57,18 @@ void CustomDockWidget::keyPressEvent(QKeyEvent* event)
 bool CustomDockWidget::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonRelease)
-    {
-        if (m_state == ShownDocked)
+        switch (m_state)
         {
+        case ShownDocked:
             setVisibilityState(HiddenDocked);
-        }
-        else if (m_state == HiddenDocked)
-        {
+            break;
+        case HiddenDocked:
             setVisibilityState(ShownDocked);
-        }
-        else if (m_state == Floating)
-        {
+            break;
+        case Floating:
             setVisibilityState(FullScreen);
+            break;
         }
-    }
     return QWidget::eventFilter(obj, event);
 }
 
@@ -90,13 +88,9 @@ void CustomDockWidget::onTopLevelChanged(bool topLevel)
     {
         m_state = Floating;
     }
-    else if (isVisible())
-    {
-        setVisibilityState(ShownDocked);
-    }
     else
     {
-        setVisibilityState(HiddenDocked);
+        setVisibilityState(isVisible() ? ShownDocked : HiddenDocked);
     }
 }
 
@@ -117,30 +111,22 @@ void CustomDockWidget::setVisibilityState(VisibilityState state)
     switch (state)
     {
     case ShownDocked:
-    {
-        this->setVisible(true);
+        setVisible(true);
         setTabsManageWidgetsVisible(false);
-    }
-    break;
+        break;
     case HiddenDocked:
-    {
-        this->setVisible(false);
+        setVisible(false);
         setTabsManageWidgetsVisible(true);
-    }
-    break;
+        break;
     case Floating:
-    {
         setFloating(true);
-        this->setVisible(true);
+        setVisible(true);
         setTabsManageWidgetsVisible(false);
-    }
-    break;
+        break;
     case FullyHidden:
-    {
-        this->setVisible(false);
+        setVisible(false);
         setTabsManageWidgetsVisible(false);
-    }
-    break;
+        break;
     case FullScreen:
     {
         bool prevIsFullScreen = m_display->isFullScreen();
@@ -163,17 +149,21 @@ void CustomDockWidget::initState()
     {
         m_state = Floating;
     }
-    else if (m_parent->searchForm()->manageWidget()->isVisible() && !this->isVisible())
+    else
     {
-        m_state = HiddenDocked;
-    }
-    else if (!m_parent->searchForm()->manageWidget()->isVisible() && !this->isVisible())
-    {
-        m_state = FullyHidden;
-    }
-    else if (!isFloating() && manageButton->isVisible() && !m_parent->searchForm()->manageWidget()->isVisible())
-    {
-        m_state = ShownDocked;
+        const bool searchFormManageVisible = m_parent->searchForm()->manageWidget()->isVisible();
+        if (searchFormManageVisible && !this->isVisible())
+        {
+            m_state = HiddenDocked;
+        }
+        else if (!searchFormManageVisible && !isVisible())
+        {
+            m_state = FullyHidden;
+        }
+        else if (manageButton->isVisible() && !searchFormManageVisible)
+        {
+            m_state = ShownDocked;
+        }
     }
 }
 
