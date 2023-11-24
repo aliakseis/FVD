@@ -143,30 +143,6 @@ void CustomDockWidget::setVisibilityState(VisibilityState state)
     m_state = state;
 }
 
-void CustomDockWidget::initState()
-{
-    if (isFloating())
-    {
-        m_state = Floating;
-    }
-    else
-    {
-        const bool searchFormManageVisible = m_parent->searchForm()->manageWidget()->isVisible();
-        if (searchFormManageVisible && !this->isVisible())
-        {
-            m_state = HiddenDocked;
-        }
-        else if (!searchFormManageVisible && !isVisible())
-        {
-            m_state = FullyHidden;
-        }
-        else if (manageButton->isVisible() && !searchFormManageVisible)
-        {
-            m_state = ShownDocked;
-        }
-    }
-}
-
 void CustomDockWidget::onLeaveFullScreen()
 {
     if (m_display->isFullScreen())

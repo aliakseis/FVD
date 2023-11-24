@@ -163,8 +163,6 @@ MainWindow::MainWindow(QWidget* parent)
         resize(screenSize);
     }
 
-    ui->dockWidget->initState();
-
     ui_utils::ensureWidgetIsOnScreen(this);
 
     // add tray menu actions

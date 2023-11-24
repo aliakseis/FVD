@@ -30,7 +30,6 @@ public:
     void setVisibilityState(VisibilityState state);
     VisibilityState currentState() const { return m_state; }
     VisibilityState previousState() const { return m_prevState; }
-    void initState();
 
 private:
     void setTabsManageWidgetsVisible(bool visible = true);
