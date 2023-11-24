@@ -82,8 +82,9 @@ void VideoPlayerWidget::processPreviewEntity()
     setState(PendingHeader);
     m_progressBar->seekingEnable(true);
 
-    if (m_currentDownload->state() == DownloadEntity::kQueued)
+    switch (m_currentDownload->state())
     {
+    case DownloadEntity::kQueued:
         VERIFY(connect(m_currentDownload, SIGNAL(fileCreated(QString)), SLOT(setVideoFilename(QString))));
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)),
                        SLOT(downloadingToPreview(qint64, qint64))));
@@ -92,26 +93,24 @@ void VideoPlayerWidget::processPreviewEntity()
         VERIFY(connect(m_currentDownload, SIGNAL(finished()), getDecoder(), SLOT(resetLimitPlayback())));
         VERIFY(connect(m_currentDownload, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)),
                        SLOT(onDownloadStateChanged(Downloadable::State, Downloadable::State))));
-    }
-    else if (m_currentDownload->state() == DownloadEntity::kFinished)
-    {
+        break;
+    case DownloadEntity::kFinished:
         m_progressBar->displayDownloadProgress(m_currentDownload->totalFileSize(), m_currentDownload->totalFileSize());
         playFile(m_currentDownload->filename());
-    }
-    else if (m_currentDownload->state() == DownloadEntity::kDownloading ||
-             m_currentDownload->state() == DownloadEntity::kPaused)
-    {
+        break;
+    case DownloadEntity::kDownloading:
+    case DownloadEntity::kPaused:
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)),
                        SLOT(downloadingToPreview(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)), getDecoder(),
                        SLOT(limitPlayback(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(finished()), getDecoder(), SLOT(resetLimitPlayback())));
-    }
-    else if (m_currentDownload->state() == DownloadEntity::kFailed)
-    {
+        break;
+    case DownloadEntity::kFailed:
         setState(InitialState);
         hideSpinner();
         emit showPlaybutton(true);
+        break;
     }
 }
 
