@@ -401,9 +401,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         EventTimer timer;
         for (int i = 0; i < 100; ++i)
         {
-            m_player->startPreviewDownload();
+            getPlayer()->startPreviewDownload();
             timer.exec(200);
-            m_player->stopVideo(true);
+            getPlayer()->stopVideo(true);
             timer.exec(200);
         }
     }

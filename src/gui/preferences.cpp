@@ -60,6 +60,9 @@ QString getCheckedSites(QListWidget* lWidg)
     return sites.join(";");
 }
 
+#ifdef DEVELOPER_FEATURES
+const char DebugFilterList[] = "DebugFilterList";
+#endif
 
 } // namespace
 
@@ -117,7 +120,7 @@ Preferences::Preferences(QWidget* parent)
     VERIFY(connect(this, SIGNAL(appendDeveloperMessage(QtMsgType, QString)),
                    SLOT(onAppendDeveloperMessage(QtMsgType, QString))));
 
-    setFilter(GET_SETTING(DebugFilterList));
+    setFilter(settings.value(DebugFilterList).toString());
 #endif
 
 #ifdef ALLOW_TRAFFIC_CONTROL
@@ -350,7 +353,7 @@ void Preferences::initPreferences()
     }
 
 #ifdef DEVELOPER_FEATURES
-    debugListVar->setText(GET_SETTING(DebugFilterList));
+    debugListVar->setText(settings.value(DebugFilterList).toString());
 #endif
 
     fillLanguageComboBox();
@@ -389,15 +392,13 @@ bool Preferences::apply()
 
     settings.setValue(Sites, strSites);
 
-    QListWidgetItem* item = ui->listLang->currentItem();
-    if (item != nullptr)
+    if (auto* item = ui->listLang->currentItem())
     {
         QString itemUserData = item->data(Qt::UserRole).toString();
         if (itemUserData != settings.value(ln, ln_Default))
         {
             settings.setValue(ln, itemUserData);
-            auto* retranslator = dynamic_cast<Translatable*>(qApp);
-            if (retranslator != nullptr)
+            if (auto* retranslator = dynamic_cast<Translatable*>(qApp))
             {
                 retranslator->retranslateApp(itemUserData);
             }
@@ -484,28 +485,11 @@ void Preferences::onAppendDeveloperLog()
     m_messageMapLock.unlock();
 }
 
-void Preferences::onAppendDeveloperMessage(QtMsgType type, QString message)
+void Preferences::onAppendDeveloperMessage(QtMsgType, QString message)
 {
-    Q_UNUSED(type)
     if (debugOutput && message.length() > 0)
     {
-        QString s =
-            QDateTime::currentDateTimeUtc().toString("<font color=\"green\">[dd.MM.yy <b>hh:mm:ss</b>:zzz]</font>");
-        QString filter;
-        const int index = type - QtLoggerTagMsg;
-        m_logFilterLock.lockForRead();
-        if (index >= 0 && index < m_logFilter.size())
-        {
-            filter = m_logFilter[index];
-        }
-        m_logFilterLock.unlock();
-
-        if (!filter.isEmpty())
-        {
-            s += "<font color=\"blue\">[<b>" + filter + "</b>]</font>";
-        }
-
-        s += message;
+        QString s = message;
 
         // https://bugreports.qt-project.org/browse/QTBUG-29720
         // side effect here - stack overflow
@@ -515,12 +499,11 @@ void Preferences::onAppendDeveloperMessage(QtMsgType type, QString message)
     }
 }
 
-QtMsgType Preferences::getTagId(const QString& tag)
+bool Preferences::hasTagId(const QString& tag)
 {
     m_logFilterLock.lockForRead();
     auto it = std::lower_bound(m_logFilter.begin(), m_logFilter.end(), tag);
-    QtMsgType result = (it != m_logFilter.end() && *it == tag) ? QtMsgType(it - m_logFilter.begin() + QtLoggerTagMsg)
-                                                               : QtRejectedLoggerTagMsg;
+    const bool result = it != m_logFilter.end() && *it == tag;
     m_logFilterLock.unlock();
     m_messageMapLock.lockForWrite();
     ++m_messageMap[tag];
@@ -535,18 +518,14 @@ QtMsgType Preferences::getTagId(const QString& tag)
 
 bool Preferences::log(QtMsgType type, const QString& text)
 {
-    if (type != QtRejectedLoggerTagMsg)
-    {
-        emit appendDeveloperMessage(type, text);
-        return true;
-    }
-    return false;
+    emit appendDeveloperMessage(type, text);
+    return true;
 }
 
 void Preferences::updateDebugFilter()
 {
     setFilter(debugListVar->text());
-    SET_SETTING(DebugFilterList, debugListVar->text());
+    QSettings().setValue(DebugFilterList, debugListVar->text());
 }
 
 void Preferences::setFilter(const QString& filterTag)

@@ -54,7 +54,12 @@ static void ApplicationDependentInitialization()
 }
 
     utilities::setWriteToLogFile(
-        QSettings().value(app_settings::LoggingEnabled, false).toBool());
+#if defined(DEVELOPER_FEATURES) && defined(_DEBUG)
+		true
+#else
+		QSettings().value(app_settings::LoggingEnabled, false).toBool()
+#endif
+	);
 }
 
 Q_COREAPP_STARTUP_FUNCTION(ApplicationDependentInitialization)
@@ -73,10 +78,6 @@ int main(int argc, char* argv[])
 		return getRandomFrame();
 	}
 
-
-#if defined(DEVELOPER_FEATURES) && defined(_DEBUG)
-	SET_SETTING(LoggingEnabled, true);
-#endif
 
 	QNetworkProxyFactory::setApplicationProxyFactory(new ConfigurableProxyFactory());
 

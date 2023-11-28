@@ -62,7 +62,7 @@ private:
     bool apply();
 
 #ifdef DEVELOPER_FEATURES
-    QtMsgType getTagId(const QString& tag) override;
+    bool hasTagId(const QString& tag) override;
     bool log(QtMsgType type, const QString& text) override;
 
     void setFilter(const QString& filterTag);
