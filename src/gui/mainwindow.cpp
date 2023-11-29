@@ -36,6 +36,7 @@
 #include "utilities/modeldeserializer.h"
 #include "utilities/modelserializer.h"
 #include "utilities/translation.h"
+#include "version.h"
 #include "version.hxx"
 #include "videoplayerwidget.h"
 #include "videowidget.h"
@@ -308,7 +309,8 @@ void MainWindow::about()
 
     QMessageBox::about(this, QString(::Tr::Tr(ABOUT_TITLE)).arg(PROJECT_NAME),
                        '\n' + ::Tr::Tr(PROJECT_FULLNAME_TRANSLATION) +
-                           " " PROJECT_VERSION "\n" PROJECT_DOMAIN "/" PROJECT_COMPANYNAME "/" PROJECT_NAME);
+                           " " PROJECT_VERSION " " STRINGIZE(GIT_COMMIT) "\n" 
+                            PROJECT_DOMAIN "/" PROJECT_COMPANYNAME "/" PROJECT_NAME);
 }
 
 void MainWindow::openPreferences()

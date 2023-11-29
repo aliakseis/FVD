@@ -70,13 +70,18 @@ if(DEVELOPER_TRAFFIC_CONTROL)
 endif(DEVELOPER_TRAFFIC_CONTROL)
 
 
+# Add a custom target to run the shell script before building the project
+add_custom_target(update_version_file
+    COMMAND ${CMAKE_SOURCE_DIR}/src/main/update_version.sh
+)
+
 ###################################################
 ###  END OF SECTION Modules 
 ###################################################
 
 
 ####################################################
-###  SECTION Functional module sestting
+###  SECTION Functional module setting
 ###################################################
 
 set(FUNCTIONAL_MODULE
@@ -84,7 +89,7 @@ set(FUNCTIONAL_MODULE
 )
 
 ###################################################
-###  END OF SECTION Functional module sestting
+###  END OF SECTION Functional module setting
 ###################################################
 
 
@@ -490,6 +495,9 @@ add_library(${FUNCTIONAL_MODULE} STATIC
 	${JS_FILES}
 	${CSS_FILES}
 )
+
+# Add dependencies for the custom target so that the script runs before building
+add_dependencies(${FUNCTIONAL_MODULE} update_version_file)
 
 	set(QTX_LIBRARIES 
 		${Qt5Core_LIBRARIES}

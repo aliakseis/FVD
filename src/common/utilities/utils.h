@@ -21,8 +21,8 @@ class QMutexLocker;
 	TypeName(const TypeName&) = delete; \
 	TypeName& operator=(const TypeName&) = delete
 
-#define STRINGIZE(str) #str
-#define STRINGIZEGIZE(x) STRINGIZE(x)
+#define STRINGIZE_(str) #str
+#define STRINGIZE(x) STRINGIZE_(x)
 
 #ifdef QT_NO_DEBUG
 #define VERIFY(x) (x)
