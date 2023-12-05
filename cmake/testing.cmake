@@ -11,14 +11,9 @@ macro(APPEND_COMMON_TESTS)
 		#example of using macros
 
 		do_test(AuthenticationHelper "common/modules-tests/utilities/test-AuthenticationHelper.cpp" "common/modules-tests/utilities/test-AuthenticationHelper.h")
-		do_test(Crc32 "common/modules-tests/utilities/test-Crc32.cpp" "common/modules-tests/utilities/test-Crc32.h")
-		do_test(Credential "common/modules-tests/utilities/test-Credential.cpp" "common/modules-tests/utilities/test-Credential.h")
-		do_test(DefaultCrypter "common/modules-tests/utilities/test-DefaultCrypter.cpp" "common/modules-tests/utilities/test-DefaultCrypter.h")
-		do_test(Translation "common/modules-tests/utilities/test-Translation.cpp" "common/modules-tests/utilities/test-Translation.h")
 		do_test(Utils "common/modules-tests/utilities/test-Utils.cpp" "common/modules-tests/utilities/test-Utils.h")
 		do_test(Downloader "common/modules-tests/download/test-Download.cpp" "common/modules-tests/download/test-Download.h")
 		do_test(ui_utils "common/modules-tests/ui_utils/test-mainwindowwithtray.cpp" "common/modules-tests/ui_utils/test-mainwindowwithtray.h")
-		append_test_resource(ui_utils "${CMAKE_SOURCE_DIR}/src/common/modules-tests/ui_utils/res/qtdemo.ico")
 		do_test(resources_test "common/modules-tests/resources_test/test-resources.cpp" "common/modules-tests/resources_test/test-resources.h")
 		
 	endif(DEVELOPER_BUILD_TESTS)

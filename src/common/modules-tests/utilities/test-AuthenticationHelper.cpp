@@ -93,7 +93,7 @@ void Test_AuthenticationHelper::cleanupTestCase()
 
 void Test_AuthenticationHelper::authNeedLogin(utilities::ICredentialsRetriever* icr)
 {
-	utilities::Credential cred("test-host", "test-user", "test-password");
+	utilities::Credential cred{"test-user", "test-password"};
 	icr->SetCredentials(cred);
 }
 

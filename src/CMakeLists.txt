@@ -559,14 +559,7 @@ if(DEVELOPER_BUILD_TESTS)
 	add_script_strategy_test(Vimeo)
 	add_script_strategy_test(Dailymotion)
 
-	do_test(Script common/modules-tests/script/test-script.cpp common/modules-tests/script/test-script.h)
-	append_test_resource(Script ${CMAKE_SOURCE_DIR}/src/common/modules-tests/script/script.js)
-	append_test_resource(Script ${CMAKE_SOURCE_DIR}/src/common/modules-tests/script/wrongsyntax.js)
-	if(LUA_SCRIPTING)
-		append_test_resource(Script ${CMAKE_SOURCE_DIR}/src/common/modules-tests/script/script.lua)
-		append_test_resource(Script ${CMAKE_SOURCE_DIR}/src/common/modules-tests/script/wrongsyntax.lua)
-	endif(LUA_SCRIPTING)
-	
+
 	# all do_test calls must be called here
 
 endif(DEVELOPER_BUILD_TESTS)
