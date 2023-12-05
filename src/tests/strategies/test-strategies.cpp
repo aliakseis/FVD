@@ -9,7 +9,6 @@ using namespace strategies;
 #include "strategies/youtubestrategy.h"
 #include "strategies/vimeostrategy.h"
 #include "strategies/dailymotionstrategy.h"
-#include "strategies/metacafestrategy.h"
 
 #include <algorithm>
 #include <iterator>

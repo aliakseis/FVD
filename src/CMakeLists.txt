@@ -558,7 +558,6 @@ if(DEVELOPER_BUILD_TESTS)
 	add_script_strategy_test(YouTube)
 	add_script_strategy_test(Vimeo)
 	add_script_strategy_test(Dailymotion)
-	add_script_strategy_test(Metacafe)
 
 	do_test(Script common/modules-tests/script/test-script.cpp common/modules-tests/script/test-script.h)
 	append_test_resource(Script ${CMAKE_SOURCE_DIR}/src/common/modules-tests/script/script.js)

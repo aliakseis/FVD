@@ -324,7 +324,6 @@ endif()
 set(JS_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/YouTube.js
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/Vimeo.js 
-	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/Metacafe.js 
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/Dailymotion.js 
 )
 
