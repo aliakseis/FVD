@@ -13,7 +13,6 @@ def install_and_import(package, url):
 
 install_and_import("yt_dlp", "yt-dlp") # whichever good
 
-from pytube import Search, YouTube
 
 import logging
 import traceback
