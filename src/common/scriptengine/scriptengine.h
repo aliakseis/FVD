@@ -1,5 +1,4 @@
-#ifndef SCRIPTENGINE_H
-#define SCRIPTENGINE_H
+#pragma once
 
 #include <QString>
 #include <QVariant>
@@ -10,7 +9,6 @@ namespace ScriptEngine
 class ScriptEngine
 {
 public:
-	ScriptEngine() {};
 	virtual ~ScriptEngine() {};
 
 	virtual QVariant invokeFunction(const QString& object, const QString& method, const QVariantList& arguments = QVariantList()) = 0;
@@ -19,5 +17,3 @@ public:
 };
 
 }
-
-#endif // SCRIPTENGINE_H
