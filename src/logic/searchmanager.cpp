@@ -425,8 +425,7 @@ void SearchManager::addLinks(QStringList urls)
             timer->deleteLater();
             return;
         }
-        const auto url = urls.front();
-        urls.pop_front();
+        const auto url = urls.takeFirst();
         addLink(url);
     });
     timer->start();
@@ -434,28 +433,34 @@ void SearchManager::addLinks(QStringList urls)
 
 void SearchManager::addLink(const QString& url)
 {
-    const auto settingSitesSet = QSettings()
-                                .value(app_settings::Sites, app_settings::Sites_Default)
-                                .toString()
-                                .split(';', QString::SkipEmptyParts)
-                                .toSet();
+    const auto settingSitesSet =
+        std::make_shared<QStringList>(QSettings()
+                                          .value(app_settings::Sites, app_settings::Sites_Default)
+                                          .toString()
+                                          .split(';', QString::SkipEmptyParts));
+ 
 
-    for (const auto& strat : qAsConst(m_scriptStrategies))
-    {
-        if (!settingSitesSet.contains(strat->name()))
+    auto lam = [this, url, settingSitesSet](auto& bda) -> void
+    { 
+        while (!settingSitesSet->empty())
         {
-            continue;
+            QString name = settingSitesSet->takeFirst();
+            EntitiesSetItem_t rve(new RemoteVideoEntity());
+
+            rve->setCreatedByUrl(url, name);
+
+            if (m_allEntities.insert(rve).second)
+            {
+                connect(rve.data(), &RemoteVideoEntity::startByUrlFailed, [bda]() -> void { bda(bda); });
+
+                rve->requestStartDownload();
+
+                return;
+            }
         }
+    };
 
-        EntitiesSetItem_t rve(new RemoteVideoEntity());
-
-        rve->setCreatedByUrl(url, strat->name());
-
-        if (m_allEntities.insert(rve).second)
-        {
-            rve->requestStartDownload();
-        }
-    }
+    lam(lam);
 }
 
 void SearchManager::onSearchFinished()

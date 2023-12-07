@@ -75,7 +75,10 @@ void RemoteVideoEntity::extractLinks()
     qDebug() << __FUNCTION__;
     ScriptStrategy* strategy = SearchManager::Instance().scriptStrategy(m_videoInfo.strategyName);
     Q_ASSERT(strategy);
-    strategy->extractDirectLinks(m_videoInfo.originalUrl, this);
+    if (strategy)
+        strategy->extractDirectLinks(m_videoInfo.originalUrl, this);
+    else
+        emit startByUrlFailed();
 }
 
 DownloadEntity* RemoteVideoEntity::requestStartDownload(VisibilityState visState /* = visNorm*/)
@@ -377,6 +380,14 @@ void RemoteVideoEntity::onlinksExtracted(QVariantMap links, int preferredResolut
         linksMap[it.key().toInt()] = linkInfo;
     }
     emit handleExtractedLinks(linksMap, preferredResolutionId);
+}
+
+void RemoteVideoEntity::onlinksExtractionFinished() 
+{ 
+    if (m_resolutionLinks.isEmpty())
+    {
+        emit startByUrlFailed();
+    }
 }
 
 void RemoteVideoEntity::extractFailed()

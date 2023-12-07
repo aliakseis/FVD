@@ -80,6 +80,8 @@ def YT_DLP_extractDirectLinks(link, receiver) :
                 continue
             if x['audio_channels'] is None:
                 continue
+            if x['vcodec'].startswith('av01'):
+                continue
 
             entity["url"] = x["url"]
             entity["resolution"] = x["resolution"]

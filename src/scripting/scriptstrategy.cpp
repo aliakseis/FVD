@@ -110,4 +110,6 @@ void ScriptStrategy::extractDirectLinksAsync(const QString& videoUrl, QObject* r
 {
     m_scriptProvider.invokeFunction(toIdentifier(m_strategyName) + QStringLiteral("_extractDirectLinks"),
                                     QVariantList() << videoUrl << QVariant::fromValue<QObject*>(resultReceiver));
+    // Signal that the extraction is finished
+    VERIFY(QMetaObject::invokeMethod(resultReceiver, "onlinksExtractionFinished", Qt::QueuedConnection));
 }

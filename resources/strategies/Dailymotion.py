@@ -80,8 +80,10 @@ def Dailymotion_extractDirectLinks(link, receiver) :
         try:
             if x['protocol'] == 'm3u8_native':
                 continue
-            #if x['audio_channels'] is None:
-            #    continue
+            if 'audio_channels' in x and x['audio_channels'] is None:
+                continue
+            if x['vcodec'].startswith('av01'):
+                continue
 
             entity["url"] = x["url"]
             entity["resolution"] = x["resolution"]

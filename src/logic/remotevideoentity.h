@@ -147,8 +147,11 @@ signals:
 
     void handleExtractedLinks(const QMap<int, LinkInfo>& links, int preferredResolutionId);
 
+    void startByUrlFailed();
+
 public Q_SLOTS:
     void onlinksExtracted(QVariantMap links, int preferredResolutionId);
+    void onlinksExtractionFinished();
 
 private Q_SLOTS:
     void onHandleExtractedLinks(const QMap<int, LinkInfo>& links, int preferredResolutionId);
