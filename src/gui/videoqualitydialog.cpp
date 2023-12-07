@@ -16,7 +16,7 @@ VideoQualityDialog::VideoQualityDialog(RemoteVideoEntity* entity, QWidget* paren
     setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
     Q_ASSERT(entity);
 
-    if (entity->m_resolutionLinks.count() > 0)
+    if (!entity->m_resolutionLinks.empty())
     {
         onLinksExtracted();
     }
@@ -69,7 +69,7 @@ void VideoQualityDialog::onLinksExtracted()
             dialogWidth = fontMetrics.width(displayData) + 10;
         }
     }
-    if (m_entity->m_resolutionLinks.count() > 0)
+    if (!m_entity->m_resolutionLinks.empty())
     {
         int shforRow = ui->listWidget->sizeHintForRow(0);
         int countItem = ui->listWidget->count();
