@@ -449,14 +449,7 @@ void SearchManager::addLink(const QString& url)
 
         EntitiesSetItem_t rve(new RemoteVideoEntity());
 
-        rve->m_videoInfo.id = url;
-        rve->m_videoInfo.videoTitle = url;
-        rve->m_videoInfo.description = url;
-        // Don't set rve->m_videoInfo.thumbnailUrl
-        rve->m_videoInfo.originalUrl = url;
-        rve->m_videoInfo.strategyName = strat->name();
-
-        rve->setCreatedByUrl();
+        rve->setCreatedByUrl(url, strat->name());
 
         if (m_allEntities.insert(rve).second)
         {

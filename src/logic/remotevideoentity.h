@@ -94,7 +94,7 @@ public:
     static void pauseTempDE(DownloadEntity* de);
     static void startTempDownloading(DownloadEntity* de);
 
-    void setCreatedByUrl() { m_createdByUrl = true; }
+    void setCreatedByUrl(const QString& url, const QString& strategyName);
 
 #ifndef Q_MOC_RUN
 
