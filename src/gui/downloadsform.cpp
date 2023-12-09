@@ -390,9 +390,10 @@ void DownloadsForm::onActivated(const DownloadEntity* selEntity)
     }
     else
     {
-        if (ui->downloadsTreeView->selectionModel()->selection().count() > 0)
+        const auto selection = ui->downloadsTreeView->selectionModel()->selection();
+        if (!selection.empty())
         {
-            QItemSelectionRange range = ui->downloadsTreeView->selectionModel()->selection().at(0);
+            QItemSelectionRange range = selection.at(0);
             const int row = range.topLeft().row();
             emit entityActivated(m_model->item(row), row + 1);
         }
