@@ -442,20 +442,16 @@ void SearchManager::addLink(const QString& url)
 
     auto lam = [this, url, settingSitesSet](auto& bda) -> void
     { 
-        while (!settingSitesSet->empty())
+        if (!settingSitesSet->empty())
         {
             QString name = settingSitesSet->takeFirst();
             EntitiesSetItem_t rve(new RemoteVideoEntity());
-
             rve->setCreatedByUrl(url, name);
 
             if (m_allEntities.insert(rve).second)
             {
                 connect(rve.data(), &RemoteVideoEntity::startByUrlFailed, [bda]() -> void { bda(bda); });
-
                 rve->requestStartDownload();
-
-                return;
             }
         }
     };
