@@ -365,7 +365,16 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
                     }
                 }
 
-                Pa_WriteStream(m_ffmpeg->m_stream, write_data, framesToWrite);
+                auto err = Pa_WriteStream(m_ffmpeg->m_stream, write_data, framesToWrite);
+                if (err == paUnanticipatedHostError)
+                {
+                    Pa_CloseStream(m_ffmpeg->m_stream);
+                    m_ffmpeg->openAudioProcessing();
+                }
+                else if (err != paNoError)
+                {
+                    qCritical() << "[FFMPEG] unable to write to audio stream error = " << err;
+                }
             }
             InterlockedAdd(m_ffmpeg->m_audioPTS, frame_clock);
         }

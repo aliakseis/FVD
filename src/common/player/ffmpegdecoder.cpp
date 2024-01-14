@@ -312,6 +312,22 @@ void FFmpegDecoder::openFileProcessing()
     // TODO: make it header size from AVFormatContext
     m_bytesCurrent = 0;
 
+    openAudioProcessing();
+
+    if (m_videoStreamNumber >= 0)
+    {
+        if (m_targetWidth == 0 || m_targetHeight == 0)
+        {
+            setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
+        }
+    }
+
+    m_isReadReady = true;
+    emit fileLoaded();
+}
+
+void FFmpegDecoder::openAudioProcessing()
+{
     if (m_audioStreamNumber >= 0)
     {
         PaStreamParameters params{};
@@ -351,17 +367,6 @@ void FFmpegDecoder::openFileProcessing()
             TAG("ffmpeg_audio") << "Audio sample rate = " << m_audioSettings.frequency;
         }
     }
-
-    if (m_videoStreamNumber >= 0)
-    {
-        if (m_targetWidth == 0 || m_targetHeight == 0)
-        {
-            setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
-        }
-    }
-
-    m_isReadReady = true;
-    emit fileLoaded();
 }
 
 bool FFmpegDecoder::openFileDecoder(const QString& file)
