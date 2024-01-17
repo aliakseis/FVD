@@ -82,8 +82,7 @@ void LibraryQmlListener::onPlayClicked(int index) const
             const bool isOk = QDesktopServices::openUrl(QUrl::fromUserInput(filename));
             if (!isOk)
             {
-                qDebug() << "Failed to play '" << QFileInfo(entity->filename()).canonicalFilePath()
-                         << "' with default player";
+                qDebug() << "Failed to play '" << filename << "' with default player";
 
                 if (QFile::exists(entity->filename()))
                 {
