@@ -49,8 +49,8 @@ Item {
              if(!tooltip.pressDismiss)
                 button.showTooltip = true;
             timer.running = false;
-            tooltip.x = ma.mouseX+4;
-            tooltip.y = ma.mouseY;
+            tooltip.x = ma.mouseX-64;
+            tooltip.y = ma.mouseY+24;
         }
     }
 

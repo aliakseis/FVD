@@ -181,7 +181,7 @@ Item {
             Button {
                 id: playButtonImpl
                 imageSource: 'qrc:/control/icoplay'
-                tooltipText: qsTr("Play")
+                tooltipText: qsTr("Hold Shift for embedded player")
                 icoLeftOffset: 1            // temporary workaround for screwed up icons
                 onClicked: {
                     frameHoverTimer.stop();

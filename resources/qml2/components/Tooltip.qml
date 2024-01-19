@@ -5,7 +5,7 @@ Item {
     id: tooltip;
     property string text;
     property bool shown: false;
-    property int maxWidth: 170;
+    property int maxWidth: 200;
 
     width: displayText.width + 22;
     height: displayText.height + 16;
