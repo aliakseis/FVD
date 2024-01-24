@@ -21,7 +21,14 @@ void DescriptionPanel::setDescription(const QString& site, const QString& descri
 {
     if (resolution.isEmpty())
     {
-        ui->descriptionSiteLabel->setText(site);
+        if (site.isEmpty() && rowNumber > 0)
+        {
+            ui->descriptionSiteLabel->setText(QStringLiteral("#%1").arg(rowNumber));
+        }
+        else
+        {
+            ui->descriptionSiteLabel->setText(site);
+        }
     }
     else
     {

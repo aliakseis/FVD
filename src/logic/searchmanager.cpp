@@ -7,6 +7,7 @@
 #include <QTimer>
 
 #include "branding.hxx"
+#include "global_functions.h"
 #include "globals.h"
 #include "gui/videoplayerwidget.h"
 #include "preferences.h"
@@ -451,6 +452,16 @@ void SearchManager::addLink(const QString& url)
             if (m_allEntities.insert(rve).second)
             {
                 connect(rve.data(), &RemoteVideoEntity::startByUrlFailed, [bda]() -> void { bda(bda); });
+                rve->requestStartDownload();
+            }
+        }
+        else if (global_functions::isVideoFile(url))
+        {
+            EntitiesSetItem_t rve(new RemoteVideoEntity());
+            rve->setDirectByUrl(url);
+
+            if (m_allEntities.insert(rve).second)
+            {
                 rve->requestStartDownload();
             }
         }

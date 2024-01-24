@@ -515,6 +515,18 @@ void RemoteVideoEntity::setCreatedByUrl(const QString& url, const QString& strat
     m_videoInfo.strategyName = strategyName;
 }
 
+void RemoteVideoEntity::setDirectByUrl(const QString& url) 
+{
+    m_videoInfo.id = url;
+    m_videoInfo.videoTitle = url;
+    m_videoInfo.description = url;
+    // Don't set m_videoInfo.thumbnailUrl
+    m_videoInfo.originalUrl = url;
+
+    m_resolutionLinks[0].extension = QFileInfo(url).suffix();
+    m_resolutionLinks[0].directLink = url;
+}
+
 void RemoteVideoEntity::deleteTempDE(DownloadEntity* de)
 {
     if ((de != nullptr) && de->visibilityState() == visTemp)

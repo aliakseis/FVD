@@ -7,6 +7,8 @@ namespace global_functions
 
 QStringList GetVideoFileExts();
 
+bool isVideoFile(const QString& name);
+
 QString getSaveFolder(QString folderName, const QString& strategyName);
 
 QString GetVideoFolder();
