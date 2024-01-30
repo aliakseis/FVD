@@ -917,7 +917,9 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
             }
             if (av_seek_frame(m_formatContext, m_videoStreamNumber, frame, 0) >= 0)
             {
-                for (;;)
+                QByteArray localResult;
+                bool stop = false;
+                while (!stop)
                 {
                     AVPacket packet;
 
@@ -948,12 +950,11 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                         break;
                     }
 
-                    if (avcodec_receive_frame(m_videoCodecContext, m_videoFrame) == 0
+                    while (avcodec_receive_frame(m_videoCodecContext, m_videoFrame) == 0
                         && frameToImage(pic))
                     {
                         Q_ASSERT(pic.format() == AV_PIX_FMT_RGB24);
-                        auto image = QImage(pic.width(), pic.height(), QImage::Format_RGB888);
-                        memcpy(image.bits(), pic.data()[0], pic.width() * pic.height() * 3);
+                        QImage image(pic.data()[0], pic.width(), pic.height(), pic.width() * 3, QImage::Format_RGB888);
                         Q_ASSERT(!image.isNull());
 
                         QByteArray ba;
@@ -962,13 +963,21 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                             buffer.open(QIODevice::WriteOnly);
                             image.save(&buffer, "jpg");
                         }
-                        if (ba.size() > result.size())
+                        if (ba.size() > localResult.size())
                         {
-                            result = std::move(ba);
+                            localResult = std::move(ba);
                         }
-
-                        break;
+                        else
+                        {
+                            stop = true;
+                            break;
+                        }
                     }
+                }
+
+                if (localResult.size() > result.size())
+                {
+                    result = std::move(localResult);
                 }
             }
         }
