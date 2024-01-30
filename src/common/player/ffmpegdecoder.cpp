@@ -28,6 +28,60 @@ extern "C"
 }
 
 
+static double calculateQImageDispersion(const QImage& image)
+{
+    const auto imageSize = image.width() * image.height();
+ 
+    if (imageSize == 0 
+        || image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_ARGB32 &&
+        image.format() != QImage::Format_RGB888)
+    {
+        // Handle unsupported image format
+        return 0;
+    }
+
+    double redMean = 0.0;
+    double greenMean = 0.0;
+    double blueMean = 0.0;
+
+    double redSumOfSquares = 0.0;
+    double greenSumOfSquares = 0.0;
+    double blueSumOfSquares = 0.0;
+
+    // Calculate the mean of red, green, and blue channels and the sum of squares for each channel
+    for (int y = 0; y < image.height(); ++y)
+    {
+        for (int x = 0; x < image.width(); ++x)
+        {
+            QRgb pixel = image.pixel(x, y);
+
+            // Approximate color coefficients
+            const auto red = qRed(pixel) * 2;
+            const auto green = qGreen(pixel) * 4;
+            const auto blue = qBlue(pixel);
+
+            redMean += red;
+            greenMean += green;
+            blueMean += blue;
+
+            redSumOfSquares += red * red;
+            greenSumOfSquares += green * green;
+            blueSumOfSquares += blue * blue;
+        }
+    }
+
+    redMean /= imageSize;
+    greenMean /= imageSize;
+    blueMean /= imageSize;
+
+    // Calculate the dispersion of red, green, and blue channels
+    double dispersion = (redSumOfSquares / imageSize) - redMean * redMean +
+                 (greenSumOfSquares / imageSize) - greenMean * greenMean +
+                 (blueSumOfSquares / imageSize) - blueMean * blueMean;
+
+    return sqrt(dispersion);
+}
+
 void preciseSleep(double sec) { QThread::usleep(sec * 1000000UL); }
 
 double getCurrentTime()
@@ -885,6 +939,7 @@ int64_t FFmpegDecoder::duration() const { return m_duration; }
 QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercent, double endPercent)
 {
     QByteArray result;
+    double weight = 0;
     Q_ASSERT(startPercent <= endPercent);
 
     std::default_random_engine re(qHash(file));
@@ -918,6 +973,7 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
             if (av_seek_frame(m_formatContext, m_videoStreamNumber, frame, 0) >= 0)
             {
                 QByteArray localResult;
+                double localWeight = 0;
                 bool stop = false;
                 while (!stop)
                 {
@@ -963,9 +1019,11 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                             buffer.open(QIODevice::WriteOnly);
                             image.save(&buffer, "jpg");
                         }
-                        if (ba.size() > localResult.size())
+                        const double currentWeight = calculateQImageDispersion(image) * ba.size();
+                        if (currentWeight > localWeight)
                         {
                             localResult = std::move(ba);
+                            localWeight = currentWeight;
                         }
                         else
                         {
@@ -975,9 +1033,10 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                     }
                 }
 
-                if (localResult.size() > result.size())
+                if (localWeight > weight)
                 {
                     result = std::move(localResult);
+                    weight = localWeight;
                 }
             }
         }
