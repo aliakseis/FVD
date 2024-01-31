@@ -75,11 +75,18 @@ static double calculateQImageDispersion(const QImage& image)
     blueMean /= imageSize;
 
     // Calculate the dispersion of red, green, and blue channels
-    double dispersion = (redSumOfSquares / imageSize) - redMean * redMean +
+    double dispersion = sqrt((redSumOfSquares / imageSize) - redMean * redMean +
                  (greenSumOfSquares / imageSize) - greenMean * greenMean +
-                 (blueSumOfSquares / imageSize) - blueMean * blueMean;
+                 (blueSumOfSquares / imageSize) - blueMean * blueMean);
 
-    return sqrt(dispersion);
+    const double mean = sqrt(redMean * redMean + greenMean * greenMean + blueMean * blueMean);
+    const auto maxPossible = sqrt(255 * 255 * 21);
+
+    const double coeff = std::max(((mean - dispersion) * (maxPossible - dispersion - mean) / (255 * 255 * 21. / 4)), 0.01); 
+
+    dispersion *= coeff;
+
+    return dispersion;
 }
 
 void preciseSleep(double sec) { QThread::usleep(sec * 1000000UL); }
@@ -1019,7 +1026,10 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
                             buffer.open(QIODevice::WriteOnly);
                             image.save(&buffer, "jpg");
                         }
-                        const double currentWeight = calculateQImageDispersion(image) * ba.size();
+                        // The absolute minimum size for a JPEG image, regardless of the content, is 417 bytes.
+                        // This size accounts for the minimal header
+                        // and the smallest possible quantization and huffman tables required for a valid JPEG file. 
+                        const double currentWeight = calculateQImageDispersion(image) * (ba.size() - 417);
                         if (currentWeight > localWeight)
                         {
                             localResult = std::move(ba);
