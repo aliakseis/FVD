@@ -19,10 +19,10 @@
 #include <cctype>
 #include <algorithm>
 
-static double getVideoDuration(const QString& file)
+static auto getVideoDurationAndResolution(const QString& file)
 {
     FFmpegDecoder decoder;
-    return decoder.getDuration(file);
+    return decoder.getDurationAndResolution(file);
 }
 
 const QDateTime nullDateTime;
@@ -79,7 +79,12 @@ void DownloadEntity::onFinished()
 {
     if (getParent()->m_videoInfo.duration == 0)
     {
-        getParent()->m_videoInfo.duration = std::lround(getVideoDuration(filename()));
+        auto durationAndResolution = getVideoDurationAndResolution(filename());
+        getParent()->m_videoInfo.duration = std::lround(durationAndResolution.first);
+        if (currentResolution().isEmpty())
+        {
+            setCurrentResolution(durationAndResolution.second);
+        }
     }
 
     setState(kFinished);

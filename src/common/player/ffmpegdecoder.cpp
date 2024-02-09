@@ -1056,12 +1056,16 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
 }
 
 
-double FFmpegDecoder::getDuration(const QString& file)
+std::pair<double, QString> FFmpegDecoder::getDurationAndResolution(const QString& file)
 {
-    double result = 0;
+    std::pair<double, QString> result{};
     if (openFileDecoder(file))
     {
-        result = getDurationSecs(m_duration);
+        if (m_videoCodecContext)
+        {
+            result.second = QStringLiteral("%1x%2").arg(m_videoCodecContext->width).arg(m_videoCodecContext->height);
+        }
+        result.first = getDurationSecs(m_duration);
     }
     close();
     return result;
