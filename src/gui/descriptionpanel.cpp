@@ -19,26 +19,17 @@ DescriptionPanel::~DescriptionPanel() { delete ui; }
 void DescriptionPanel::setDescription(const QString& site, const QString& description,
     const QString& resolution, int rowNumber)
 {
-    if (resolution.isEmpty())
+    QString text = site.isEmpty() ? tr("Direct") : site;
+    if (!resolution.isEmpty())
     {
-        if (site.isEmpty() && rowNumber > 0)
-        {
-            ui->descriptionSiteLabel->setText(QStringLiteral("#%1").arg(rowNumber));
-        }
-        else
-        {
-            ui->descriptionSiteLabel->setText(site);
-        }
+        text += QStringLiteral(" | ") + resolution; 
     }
-    else
+    if (rowNumber > 0)
     {
-        QString text = site + QStringLiteral(" | ") + resolution;
-        if (rowNumber > 0)
-        {
-            text += QStringLiteral(" | #%1").arg(rowNumber);
-        }
-        ui->descriptionSiteLabel->setText(text);
+        text += QStringLiteral(" | #%1").arg(rowNumber);
     }
+
+    ui->descriptionSiteLabel->setText(text);
     ui->textEdit->setText(description);
 }
 
