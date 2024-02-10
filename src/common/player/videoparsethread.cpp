@@ -38,14 +38,8 @@ void VideoParseThread::run()
     m_ffmpeg->m_mainDisplayThread->start();
 
     bool frameFinished = false;
-    while (true)
+    while (!isAbort())
     {
-        if (isAbort())
-        {
-            TAG("ffmpeg_threads") << "Video thread broken";
-            return;
-        }
-
         if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
         {
             preciseSleep(0.1);
@@ -59,7 +53,6 @@ void VideoParseThread::run()
             if (isAbort())
             {
                 av_packet_unref(&packet);
-                TAG("ffmpeg_threads") << "Video thread broken";
                 return;
             }
 
@@ -78,12 +71,7 @@ void VideoParseThread::run()
 
                 while (true)
                 {
-                    if (isAbort())
-                    {
-                        return;
-                    }
-
-                    if (!getVideoPacket(&packet))
+                    if (isAbort() || !getVideoPacket(&packet))
                     {
                         return;
                     }
@@ -136,7 +124,6 @@ void VideoParseThread::run()
                 {
                     if (isAbort())
                     {
-                        TAG("ffmpeg_threads") << "Video thread broken";
                         return;
                     }
 
@@ -285,7 +272,6 @@ void VideoParseThread::run()
 
                 if (isAbort())
                 {
-                    TAG("ffmpeg_threads") << "Video thread broken";
                     return;
                 }
 

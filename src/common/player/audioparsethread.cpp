@@ -37,7 +37,7 @@ void AudioParseThread::run()
 
     bool handlePacketPostponed = false;
 
-    while (true)
+    while (!isAbort())
     {
         if (m_ffmpeg->m_isPaused && !m_isSeekingWhilePaused)
         {
@@ -52,7 +52,6 @@ void AudioParseThread::run()
                 {
                     av_packet_unref(&packet);
                 }
-                TAG("ffmpeg_threads") << "Video thread broken";
                 return;
             }
 
@@ -78,7 +77,6 @@ void AudioParseThread::run()
             if (isAbort())
             {
                 av_packet_unref(&packet);
-                TAG("ffmpeg_threads") << "Audio thread broken";
                 return;
             }
 
@@ -96,13 +94,7 @@ void AudioParseThread::run()
 
                 while (true)
                 {
-                    if (isAbort())
-                    {
-                        // TAG("ffmpeg_threads") << "Audio thread broken";
-                        return;
-                    }
-
-                    if (!getAudioPacket(&packet))
+                    if (isAbort() || !getAudioPacket(&packet))
                     {
                         return;
                     }
@@ -145,7 +137,6 @@ void AudioParseThread::run()
                 {
                     if (isAbort())
                     {
-                        TAG("ffmpeg_threads") << "Audio thread broken";
                         return;
                     }
 
@@ -227,13 +218,6 @@ void AudioParseThread::run()
             {
                 break;
             }
-        }
-
-        // Break thread
-        if (isAbort())
-        {
-            TAG("ffmpeg_threads") << "Audio thread broken";
-            return;
         }
     }
 }

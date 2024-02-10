@@ -14,15 +14,8 @@ void DisplayThread::run()
     TAG("ffmpeg_threads") << "Displaying thread started";
     FFmpegDecoder* ff = m_parent->m_ffmpeg;
 
-    while (true)
+    while (!isAbort())
     {
-        // Break thread
-        if (isAbort())
-        {
-            TAG("ffmpeg_threads") << "Displaying thread broken";
-            return;
-        }
-
         {
             QMutexLocker locker(&ff->m_videoFramesMutex);
             ff->m_videoFramesCV.wait([ff]() { 
@@ -32,7 +25,6 @@ void DisplayThread::run()
         // Break thread
         if (isAbort())
         {
-            TAG("ffmpeg_threads") << "Displaying thread broken";
             return;
         }
 
@@ -78,7 +70,6 @@ void DisplayThread::run()
         // Break thread
         if (isAbort())
         {
-            TAG("ffmpeg_threads") << "Displaying thread broken";
             return;
         }
 

@@ -100,15 +100,8 @@ void ParseThread::run()
         parent->m_mainVideoThread->start();
     }
 
-    while (true)
+    while (!isAbort())
     {
-        if (isAbort())
-        {
-            parent->m_downloadLockerWait.wakeAll();
-            TAG("ffmpeg_threads") << "Parse thread broken";
-            return;
-        }
-
         // seeking
         sendSeekPacket();
 
@@ -172,6 +165,8 @@ void ParseThread::run()
         // Continue packet reading
     }
 
+    parent->m_downloadLockerWait.wakeAll();
+ 
     TAG("ffmpeg_threads") << "Decoding ended";
 }
 
@@ -254,7 +249,6 @@ void ParseThread::fixDuration()
 
             if (isAbort())
             {
-                TAG("ffmpeg_threads") << "Parse thread broken";
                 return;
             }
         }
