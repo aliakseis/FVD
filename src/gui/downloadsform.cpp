@@ -209,7 +209,10 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
 
         menu.addAction(ui->actionOpenFile);
         menu.addAction(ui->actionOpenFolder);
-        menu.addAction(ui->actionSelectResolution);
+        if (!entity->strategyName().isEmpty())
+        {
+            menu.addAction(ui->actionSelectResolution);
+        }
         if (MainWindow::Instance()->libraryForm()->exists(entity))
         {
             menu.addAction(ui->actionShowInLibrary);
