@@ -325,7 +325,7 @@ QScrollBar::handle:horizontal
 
 #descriptionSiteLabel {
 	color: rgb(155, 155, 155);
-	font: 75 11pt "MS Shell Dlg 2";
+	font: 75 14px "MS Shell Dlg 2";
 	margin-left: 7px;
 	margin-top: 3px;
 	margin-bottom: 3px;

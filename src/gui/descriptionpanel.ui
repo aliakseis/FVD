@@ -49,13 +49,6 @@
       </property>
       <item>
        <widget class="QLabel" name="descriptionSiteLabel">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(155, 155, 155);
-font: 75 10pt &quot;MS Shell Dlg 2&quot;;
-margin-left: 7px;
-margin-top: 3px;
-margin-bottom: 3px;</string>
-        </property>
         <property name="text">
          <string/>
         </property>
