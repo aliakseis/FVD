@@ -172,8 +172,8 @@ public:
     }
     qint64 totalFileSize() const
     {
-        return (kFinished == state()) ? m_downloadedSize
-                                      : (m_downloader.isNull() ? m_totalFileSize : m_downloader->totalFileSize());
+        return qMax(m_downloadedSize, 
+            m_downloader.isNull() ? m_totalFileSize : m_downloader->totalFileSize());
     }
     void setTotalFileSize(qint64 value)
     {

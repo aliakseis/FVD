@@ -34,6 +34,7 @@ public slots:
 
 private slots:
     void onSearch();
+    void onShowModeChanged(int index);
 
 private:
     Ui::LibraryForm* ui;

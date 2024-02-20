@@ -477,7 +477,8 @@ DownloadEntity* RemoteVideoEntity::createDownloadEntityByFilename(const QString&
     DownloadEntity* entity = DownloadEntity::create(this, visLibOnly, true);
     entity->setState(Downloadable::kFinished);
     entity->setFilename(fileName);
-    entity->setDownloadedSize(QFileInfo(fileName).size());
+    QFileInfo fileInfo(fileName);
+    entity->setDownloadedSize(fileInfo.isDir() ? 0 : fileInfo.size());
     m_downloads.append(entity);
     return entity;
 }

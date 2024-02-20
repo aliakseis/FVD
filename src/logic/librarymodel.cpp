@@ -87,7 +87,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
     case RoleDate:
         return entity->published().date().toString(Qt::SystemLocaleShortDate);
     case RoleSize:
-        if (auto size = entity->downloadedSize())
+        if (auto size = entity->totalFileSize())
             return utilities::SizeToString(size, 1, 1);
         else
             return tr("%1 file(s)").arg(countFiles(entity->filename()));
@@ -97,6 +97,10 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const
         return entity->fileCreated();
     case RoleFileName:
         return entity->filename();
+    case RoleFilter:
+        if (m_showMode == (entity->totalFileSize()? ShowOnlyFolders : ShowOnlyFiles))
+            return {};
+        return utilities::replaceBoldItalicSymbols(entity->videoTitle());
     }
     return {};
 }

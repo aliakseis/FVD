@@ -34,6 +34,7 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
     m_proxyModel = new QSortFilterProxyModel(this);
     m_proxyModel->setSourceModel(m_model);
     m_proxyModel->setSortRole(LibraryModel::RoleTimeDownload);
+    m_proxyModel->setFilterRole(LibraryModel::RoleFilter);
     m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     auto* qmlListener = new LibraryQmlListener(this, m_model, m_proxyModel);
@@ -46,6 +47,8 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
 
     VERIFY(connect(ui->btnSearch, SIGNAL(clicked()), SLOT(onSearch())));
     VERIFY(connect(ui->cbSearch, SIGNAL(returnPressed()), SLOT(onSearch())));
+    connect(ui->cbShowMode, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            &LibraryForm::onShowModeChanged);
 
     ui->cbSearch->installEventFilter(qApp);
 
@@ -78,7 +81,21 @@ void LibraryForm::onActivated(const DownloadEntity* selEntity)
     m_model->synchronize(true);
 }
 
-void LibraryForm::onSearch() { m_proxyModel->setFilterRegExp(QRegExp(ui->cbSearch->text(), Qt::CaseInsensitive)); }
+void LibraryForm::onSearch() 
+{ 
+    auto text = ui->cbSearch->text();
+    if (text.isEmpty())
+    {
+        text = ".+";
+    }
+    m_proxyModel->setFilterRegExp(QRegExp(text, Qt::CaseInsensitive));
+}
+
+void LibraryForm::onShowModeChanged(int index)
+{
+    m_model->setShowMode(static_cast<LibraryModel::EShowMode>(index));
+    onSearch();
+}
 
 void LibraryForm::sortModel(Qt::SortOrder order)
 {

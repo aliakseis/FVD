@@ -26,6 +26,14 @@ public:
         RoleEntity,
         RoleTimeDownload,
         RoleFileName,
+        RoleFilter,
+    };
+
+    enum EShowMode
+    {
+        ShowAll,
+        ShowOnlyFiles,
+        ShowOnlyFolders,
     };
 
     void update();
@@ -75,12 +83,16 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    void setShowMode(EShowMode showMode) { m_showMode = showMode; }
+
 private:
     bool m_reportSM;
 
     bool m_isLibraryAddWorkerRunning;
     bool m_isLibraryRemoveWorkerRunning;
     bool m_videoDirectoryChanged;
+
+    EShowMode m_showMode{};
 
     EntityFileNames m_allEntitiesFiles;
     QList<QPointer<DownloadEntity> > m_missingFiles;
