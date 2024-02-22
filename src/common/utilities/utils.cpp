@@ -235,7 +235,12 @@ QString replaceBoldItalicSymbols(const QString& input)
         {
             const int offset = (ch - 0x1d400) % 52;
             // Replace the bold+italic Unicode symbol with its regular value by decrementing the Unicode codepoint
-            ch = offset + ((offset < 26) ? 0x41 : 0x61);
+            ch = offset + ((offset < 26) ? 'A' : ('a' - 26));
+        }
+        else if (ch >= 0x1d7ce && ch < 0x1d800)
+        {
+            const int offset = (ch - 0x1d7ce) % 10;
+            ch = offset + '0';
         }
  
         output.push_back(ch);
