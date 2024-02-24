@@ -2,6 +2,7 @@
 
 #include "PythonQt.h"
 
+#include <QFileInfo>
 #include <QStandardPaths>
 
 #include <mutex>
@@ -15,6 +16,21 @@ auto pythonQtInstance() {
     std::call_once(flag,  []{
         PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
         atexit(PythonQt::cleanup);
+
+        auto sys = PythonQt::self()->importModule("sys");
+        auto paths = PythonQt::self()->getVariable(sys, "path");
+
+        qDebug() << "Python sys.path:" << paths;
+
+        for (auto path : paths.value<QVariantList>())
+        {
+            auto sitePackages = path.toString() + QStringLiteral("/site-packages");
+
+            if (QFileInfo::exists(sitePackages))
+            {
+                PythonQt::self()->addSysPath(sitePackages);
+            }
+        }
 
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut, [](const QString& str) { qInfo() << str; });
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr, [](const QString& str) { qCritical() << str; });
