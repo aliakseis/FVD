@@ -62,7 +62,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     VERIFY(connect(getDecoder(), SIGNAL(downloadPendingStarted()), SLOT(showSpinner())));
     VERIFY(connect(getDecoder(), SIGNAL(downloadPendingFinished()), SLOT(hideSpinner())));
 
-    getDecoder()->setDownloadBufferingAwait(5);
+    getDecoder()->setDownloadBufferingAwait(1);
 
     setDisplay(m_videoWidget);
     m_spinner = new Spinner(m_videoWidget);

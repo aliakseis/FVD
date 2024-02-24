@@ -154,6 +154,7 @@ void ParseThread::run()
                     videoPacketsQueueIsEmpty && ((parent->m_seekFlags & 0x9) == 0x9) ||
                     audioPacketsQueueIsEmpty && ((parent->m_seekFlags & 0x6) == 0x6))
                 {
+                    TAG("ffmpeg_threads") << "Parse thread closes playing";
                     parent->close();
                 }
 
