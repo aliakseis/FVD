@@ -150,7 +150,8 @@ void ParseThread::run()
             {
                 const bool videoPacketsQueueIsEmpty = parent->m_videoPacketsQueue.empty();
                 const bool audioPacketsQueueIsEmpty = parent->m_audioPacketsQueue.empty();
-                if (videoPacketsQueueIsEmpty && audioPacketsQueueIsEmpty && parent->m_videoFramesQueue.m_busy == 0 ||
+                if (parent->m_bytesLimiter == -1 && videoPacketsQueueIsEmpty && audioPacketsQueueIsEmpty &&
+                        parent->m_videoFramesQueue.m_busy == 0 ||
                     videoPacketsQueueIsEmpty && ((parent->m_seekFlags & 0x9) == 0x9) ||
                     audioPacketsQueueIsEmpty && ((parent->m_seekFlags & 0x6) == 0x6))
                 {
