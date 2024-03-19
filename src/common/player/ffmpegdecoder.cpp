@@ -525,6 +525,9 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
         {
             return false;
         }
+
+        m_videoCodecContext->thread_count = 2;
+        m_videoCodecContext->flags2 |= AV_CODEC_FLAG2_FAST;
     }
     if (m_audioStreamNumber >= 0)
     {
@@ -539,9 +542,6 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
             return false;
         }
     }
-
-    m_videoCodecContext->thread_count = 2;
-    m_videoCodecContext->flags2 |= AV_CODEC_FLAG2_FAST;
 
     // Find the decoder for the video stream
     if (m_videoStreamNumber >= 0)
