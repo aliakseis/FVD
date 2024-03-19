@@ -22,7 +22,30 @@ from json import loads
 import logging
 import traceback
 
-def Vimeo_search(query, order, searchLimit, page, strategy) :
+def Vimeo_search(query, order, searchLimit, page, strategy):
+    """
+    Search for videos on Vimeo and return a list of entities representing the search results.
+
+    Args:
+    query (str): The search query string.
+    order (str): The order in which to return results.
+    searchLimit (int): The maximum number of results to return.
+    page (int): The page number of the search results to return.
+    strategy (object): An object that has an `onSearchFinished` method.
+
+    Returns:
+    None: This function does not return a value. Instead, it calls `strategy.onSearchFinished(entities)`.
+
+    Raises:
+    Warning: If the request to Vimeo fails or the JSON response cannot be parsed.
+
+    This function searches Vimeo for videos matching the specified query. It constructs a search URL, 
+    makes a request to Vimeo, and parses the JSON response to build a list of entities representing the search results. 
+    Each entity contains details about a video, such as its title, URL, publish date, duration, description, view count, 
+    and thumbnail URL. The search stops when the specified search limit is reached or when there are no more results. 
+    The `strategy.onSearchFinished` method is called with the list of entities once the search is complete.
+    """
+
     socket.setdefaulttimeout(30)
 
     encoded_search = quote_plus(query)

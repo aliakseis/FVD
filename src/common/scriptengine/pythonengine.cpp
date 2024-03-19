@@ -63,6 +63,19 @@ QVariant PythonEngine::invokeFunction(const QString& object, const QString& meth
 {
     QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
     std::lock_guard<std::mutex> guard(pythonMonitor);
+    //QStringList l = PythonQt::self()->introspection(PythonQt::self()->getMainModule(), callable, PythonQt::CallOverloads);
+    //qDebug() << l;
+    //auto obj = pythonQtInstance()->lookupObject(pythonQtInstance()->getMainModule(), callable);
+    //PyObject* pDocString = PyObject_GetAttrString(obj, "__doc__");
+    //if (pDocString)
+    //{
+    //    const char* docString = PyUnicode_AsUTF8(pDocString);
+    //    if (docString)
+    //    {
+    //        std::string result(docString);
+    //    }
+    //    Py_DECREF(pDocString);
+    //}
     return pythonQtInstance()->getMainModule().call(callable, arguments);
 }
 

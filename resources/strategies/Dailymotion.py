@@ -34,6 +34,26 @@ def order_to_string(order):
     return order_map.get(order, "relevance")  # default to "relevance" if order is not found
 
 def Dailymotion_search(query, order, search_limit, page, strategy):
+    """
+    Search for videos on Dailymotion and return a list of entities representing the search results.
+
+    Args:
+    query (str): The search query string.
+    order (str): The order in which to return results.
+    searchLimit (int): The maximum number of results to return.
+    page (int): The page number of the search results to return.
+    strategy (object): An object that has an `onSearchFinished` method.
+
+    Returns:
+    None: This function does not return a value. Instead, it calls `strategy.onSearchFinished(entities)`.
+
+    This function searches Dailymotion for videos matching the specified query. It constructs a search URL, 
+    makes a request to Dailymotion, and parses the JSON response to build a list of entities representing the search results. 
+    Each entity contains details about a video, such as its title, URL, publish date, duration, description, view count, 
+    and thumbnail URL. The search stops when the specified search limit is reached or when there are no more results. 
+    The `strategy.onSearchFinished` method is called with the list of entities once the search is complete.
+    """
+
     entities = []
 
     try:
