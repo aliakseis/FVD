@@ -28,7 +28,16 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -67,7 +76,16 @@
       <property name="spacing">
        <number>9</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -104,6 +122,9 @@
         </property>
         <property name="placeholderText">
          <string>Search videos…</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -222,9 +243,8 @@
      </layout>
     </widget>
    </item>
-
    <item>
-    <widget class="BarberPoleProgress" name="searchProgress">
+    <widget class="BarberPoleProgress" name="searchProgress" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -243,9 +263,8 @@
        <height>4</height>
       </size>
      </property>
-</widget>
-</item>
-
+    </widget>
+   </item>
    <item>
     <widget class="QTreeView" name="searchResultView">
      <property name="contextMenuPolicy">
@@ -314,6 +333,11 @@
    <class>PreviewPanelButton</class>
    <extends>QLabel</extends>
    <header>previewpanelbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>BarberPoleProgress</class>
+   <extends>QWidget</extends>
+   <header>barberpoleprogress.h</header>
   </customwidget>
  </customwidgets>
  <resources>

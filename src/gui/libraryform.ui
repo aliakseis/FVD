@@ -29,7 +29,16 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -95,6 +104,9 @@
         <property name="placeholderText">
          <string>Search videos…</string>
         </property>
+        <property name="clearButtonEnabled">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
@@ -112,32 +124,32 @@
         </property>
        </widget>
       </item>
-                  <item>
-                   <widget class="QLabel" name="label_3">
-                    <property name="text">
-                     <string>Show</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QComboBox" name="cbShowMode">
-                    <item>
-                     <property name="text">
-                      <string>Files and Folders</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Files only</string>
-                     </property>
-                    </item>
-                    <item>
-                     <property name="text">
-                      <string>Folders only</string>
-                     </property>
-                    </item>
-                   </widget>
-                  </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Show</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cbShowMode">
+        <item>
+         <property name="text">
+          <string>Files and Folders</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Files only</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Folders only</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item>
        <widget class="PreviewPanelButton" name="manageLabel">
         <property name="enabled">
