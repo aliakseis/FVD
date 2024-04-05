@@ -69,13 +69,15 @@ SearchResultForm::SearchResultForm(QWidget* parent) : QFrame(parent), ui(new Ui:
     ui->searchResultView->header()->setSectionResizeMode(SR_Title, QHeaderView::Stretch);
     ui->searchResultView->header()->setSectionResizeMode(SR_Description, QHeaderView::Fixed);
     ui->searchResultView->header()->setSectionResizeMode(SR_Length, QHeaderView::Fixed);
+    ui->searchResultView->header()->setSectionResizeMode(SR_Published, QHeaderView::Fixed);
     ui->searchResultView->header()->setSectionResizeMode(SR_Status, QHeaderView::Fixed);
 
     ui->searchResultView->setColumnWidth(SR_Index, 28);
     ui->searchResultView->setColumnWidth(SR_Icon, 32);
     ui->searchResultView->setColumnWidth(SR_Title, 200);
     ui->searchResultView->setColumnWidth(SR_Description, 150);
-    ui->searchResultView->setColumnWidth(SR_Length, 50);
+    ui->searchResultView->setColumnWidth(SR_Length, 65);
+    ui->searchResultView->setColumnWidth(SR_Published, 80);
     ui->searchResultView->setColumnWidth(SR_Status, 135);
 
     auto* delegate = new ItemsDelegate(ui->searchResultView);

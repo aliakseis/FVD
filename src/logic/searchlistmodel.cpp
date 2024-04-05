@@ -63,6 +63,8 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
             }
             case SR_Length:
                 return utilities::secondsToString(entity->m_videoInfo.duration);
+            case SR_Published:
+                return QLocale::system().toString(entity->m_videoInfo.published.date(), QLocale::ShortFormat);
             default:
                 return {};
             }
@@ -92,6 +94,8 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
                 return entity->progress();
             case SR_Length:
                 return {(int)entity->m_videoInfo.duration};
+            case SR_Published:
+                return entity->m_videoInfo.published;
             default:
                 return {};
             }
@@ -106,9 +110,7 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
             {
             case SR_Index:
             case SR_Icon:
-            {
                 return entity->strategyName();
-            }
             case SR_Title:
             case SR_Description:
             {
@@ -127,16 +129,14 @@ QVariant SearchListModel::data(const QModelIndex& index, int role) const
                 return text;
             }
             case SR_Length:
-            {
                 return utilities::secondsToString(entity->m_videoInfo.duration);
-            }
+            case SR_Published:
+                return QLocale::system().toString(entity->m_videoInfo.published.date(), QLocale::ShortFormat);
             case SR_Status:
-            {
                 if (entity->lastError() != Errors::NoError)
                 {
                     return Errors::description(entity->lastError());
                 }
-            }
             default:
                 return {};
             }
@@ -174,6 +174,8 @@ QVariant SearchListModel::headerData(int section, Qt::Orientation orientation, i
             return utilities::Tr::Tr(TREEVIEW_DESCRIPTION_HEADER);
         case SR_Status:
             return utilities::Tr::Tr(SEARCH_TREEVIEW_STATUS_HEADER);
+        case SR_Published:
+            return utilities::Tr::Tr(SEARCH_TREEVIEW_PUBLISHED_HEADER);
         case SR_Length:
             return utilities::Tr::Tr(TREEVIEW_LENGTH_HEADER);
         }

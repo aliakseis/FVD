@@ -18,6 +18,7 @@ Tr::Translation TREEVIEW_DESCRIPTION_HEADER = Tr::translate("SearchResultForm", 
 Tr::Translation TREEVIEW_PROGRESS_HEADER = Tr::translate("SearchResultForm", "Progress");
 Tr::Translation TREEVIEW_SPEED_HEADER = Tr::translate("SearchResultForm", "Speed");
 Tr::Translation SEARCH_TREEVIEW_STATUS_HEADER = Tr::translate("SearchResultForm", "Action/Status");
+Tr::Translation SEARCH_TREEVIEW_PUBLISHED_HEADER = Tr::translate("SearchResultForm", "Published");
 Tr::Translation DOWNLOAD_TREEVIEW_STATUS_HEADER = Tr::translate("SearchResultForm", "Status");
 Tr::Translation TREEVIEW_SIZE_HEADER = Tr::translate("SearchResultForm", "Size");
 Tr::Translation TREEVIEW_LENGTH_HEADER = Tr::translate("SearchResultForm", "Length");

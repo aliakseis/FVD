@@ -14,6 +14,7 @@ enum SearchResultHeaders
     SR_Title,
     SR_Description,
     SR_Length,
+    SR_Published,
     SR_Status,
     SR_LastColumn
 };
