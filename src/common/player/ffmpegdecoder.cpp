@@ -304,7 +304,7 @@ void FFmpegDecoder::closeProcessing()
 
     if (m_imageCovertContext != nullptr)
     {
-        av_free(m_imageCovertContext);
+        sws_freeContext(m_imageCovertContext);
     }
 
     if (m_audioFrame != nullptr)

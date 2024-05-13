@@ -177,14 +177,14 @@ void IOContext::initAVFormatContext(AVFormatContext* pCtx)
 
 QImage getImage(QByteArray& imageArray)
 {
-    IOContext ioCtx(std::make_unique<ByteStreamBuffer>(imageArray.data(), imageArray.size())); 
+    IOContext ioCtx(std::make_unique<ByteStreamBuffer>(imageArray.data(), imageArray.size()));
 
     // Open the image file.
     AVFormatContext* pFormatCtx = avformat_alloc_context();
 
     ioCtx.initAVFormatContext(pFormatCtx);
 
-    if (avformat_open_input(&pFormatCtx, NULL, NULL, NULL) != 0 
+    if (avformat_open_input(&pFormatCtx, NULL, NULL, NULL) != 0
         || avformat_find_stream_info(pFormatCtx, NULL) < 0)
     {
         avformat_close_input(&pFormatCtx);
@@ -227,6 +227,8 @@ QImage getImage(QByteArray& imageArray)
     // Read the image.
     QImage result;
 
+    SwsContext* img_convert_ctx = nullptr;
+
     bool stop = false;
     while (!stop)
     {
@@ -266,14 +268,13 @@ QImage getImage(QByteArray& imageArray)
             const auto data = result.bits();
             const int stride = result.bytesPerLine();
 
-            auto img_convert_ctx = sws_getCachedContext(
-                NULL, pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width,
-                                     pCodecCtx->height,
-                                     AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+            img_convert_ctx = sws_getCachedContext(img_convert_ctx, pCodecCtx->width, pCodecCtx->height,
+                pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
+                AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
             sws_scale(img_convert_ctx, pFrame->data, pFrame->linesize, 0,
-                      pCodecCtx->height,
-                      &data,
-                      &stride);
+                pCodecCtx->height,
+                &data,
+                &stride);
 
             stop = true;
             break;
@@ -281,6 +282,9 @@ QImage getImage(QByteArray& imageArray)
     }
 
     // Clean up.
+    if (img_convert_ctx != nullptr) {
+        sws_freeContext(img_convert_ctx);
+    }
     av_free(pFrame);
     avcodec_close(pCodecCtx);
     avformat_close_input(&pFormatCtx);
