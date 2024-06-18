@@ -34,7 +34,7 @@ static double calculateQImageDispersion(const QImage& image)
  
     if (imageSize == 0 
         || image.format() != QImage::Format_RGB32 && image.format() != QImage::Format_ARGB32 &&
-        image.format() != QImage::Format_RGB888)
+        image.format() != QImage::Format_ARGB32_Premultiplied && image.format() != QImage::Format_RGB888)
     {
         // Handle unsupported image format
         return 0;

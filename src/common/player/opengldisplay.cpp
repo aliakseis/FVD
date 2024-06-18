@@ -308,7 +308,7 @@ void OpenGLDisplay::showPicture(const QImage& img)
     }
 
     if (img.format() != QImage::Format_RGB32 && img.format() != QImage::Format_ARGB32 &&
-        img.format() != QImage::Format_RGB888)
+        img.format() != QImage::Format_ARGB32_Premultiplied && img.format() != QImage::Format_RGB888)
     {
         Q_ASSERT(false && "Wrong image format\n");
         return;
