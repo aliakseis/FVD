@@ -2,6 +2,8 @@
 Either drag-and-drop an URL from a web browser or use the built-in search:
 ![demo](demo.png)
 
+![demo2](demo2.jpg)
+
 This is (not) the greatest stuff in the world. [This is just a tribute.](resources/strategies/YouTube.py)
 
 Sometimes it is needed to visit pytube issues list and apply fixes, for example 
