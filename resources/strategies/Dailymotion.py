@@ -102,7 +102,7 @@ def Dailymotion_extractDirectLinks(link, receiver) :
                 continue
             if 'audio_channels' in x and x['audio_channels'] is None:
                 continue
-            if x['vcodec'].startswith('av01'):
+            if 'vcodec' in x and x['vcodec'].startswith('av01'):
                 continue
 
             entity["url"] = x["url"]

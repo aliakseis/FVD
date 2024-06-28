@@ -12,6 +12,7 @@
 #include "utilities/notify_helper.h"
 
 #include <QRegularExpression>
+#include <QTextCodec>
 
 static QString UnescapeForHTML(QString text) 
 {
@@ -214,6 +215,8 @@ Downloadable::State RemoteVideoEntity::state() const
     return (lastVisible != nullptr) ? lastVisible->state() : Downloadable::kFailed;
 }
 
+const char USER_AGENT[] = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
 void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links, int preferredResolutionId)
 {
     if (!links.isEmpty())
@@ -236,6 +239,7 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
             if (m_createdByUrl)
             {
                 QNetworkRequest request(m_videoInfo.originalUrl);
+                request.setRawHeader("User-Agent", USER_AGENT);
                 QNetworkReply* reply = TheQNetworkAccessManager::Instance().get(request);
                 reply->ignoreSslErrors();
                 connect(reply, &QNetworkReply::finished, this, &RemoteVideoEntity::onInfoRequestFinished);
@@ -277,17 +281,27 @@ void RemoteVideoEntity::onInfoRequestFinished()
             QUrl redirect = possibleRedirectUrl.toUrl();
             QUrl url = myReply->url();
             myReply->deleteLater();
-            myReply = TheQNetworkAccessManager::Instance().get(QNetworkRequest(
-                redirect.isRelative() ? url.scheme() + "://" + url.host() + redirect.toString() : redirect));
+            QNetworkRequest request(
+                redirect.isRelative() ? url.scheme() + "://" + url.host() + redirect.toString() : redirect);
+            request.setRawHeader("User-Agent", USER_AGENT);
+            myReply = TheQNetworkAccessManager::Instance().get(request);
 
             connect(myReply, &QNetworkReply::finished, this, &RemoteVideoEntity::onInfoRequestFinished);
             return;
         }
 
         QByteArray ba = myReply->readAll();
-        const auto result = QString::fromUtf8(ba);
         myReply->deleteLater();
         myReply = nullptr;
+
+        // First, find the charset from the HTML
+        QRegularExpression regex(R"(<meta[^>]*charset=['"]?([^'">]+)['"]?)", QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatch match = regex.match(ba);
+        QString charset = match.hasMatch() ? match.captured(1) : "UTF-8"; // Default to UTF-8 if not found
+
+        // Now, use QTextCodec to convert the QByteArray to QString
+        QTextCodec* codec = QTextCodec::codecForName(charset.toUtf8());
+        QString result = codec != nullptr ? codec->toUnicode(ba) : QString::fromUtf8(ba);
 
         // https://stackoverflow.com/questions/12030599/regex-for-html-title
         for (auto pattern : {

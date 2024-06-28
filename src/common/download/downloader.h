@@ -77,6 +77,13 @@ struct DownloaderObserverInterface
 template <class SpeedControl = speed_readable_tag, bool delete_file_if_error = true>
 class Downloader : public detail::DownloaderBase<SpeedControl>, public Downloadable
 {
+    static QNetworkRequest getNetworkRequest(const QUrl& url)
+    {
+        QNetworkRequest request(url);
+        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        return request;
+    }
+
 public:
     typedef Downloader<SpeedControl, delete_file_if_error> class_type;
     typedef SpeedControl speed_access_category;
@@ -201,7 +208,7 @@ public:
         Q_ASSERT(network_manager);
         filename_ = filename;
         download_from_url_ = true;
-        doStart(url, QFileInfo(url.path()).fileName(), network_manager->get(QNetworkRequest(url)), network_manager);
+        doStart(url, QFileInfo(url.path()).fileName(), network_manager->get(getNetworkRequest(url)), network_manager);
     }
 
     void Cancel()
@@ -251,7 +258,7 @@ public:
         filename_ = filename;
         output_.setFileName(SaveFileName(QFileInfo(url.path()).fileName()));
         download_from_url_ = true;
-        doResume(url, QNetworkRequest(url), network_manager);
+        doResume(url, getNetworkRequest(url), network_manager);
     }
 
     void Resume(QNetworkReply* reply, QNetworkAccessManager* network_manager, const QString& filename = QString())
@@ -650,7 +657,7 @@ private:
             output_.close();
             download_from_url_ = true;
             current_url_ = url;
-            QNetworkReply* new_reply = network_manager_->get(QNetworkRequest(current_url_));
+            QNetworkReply* new_reply = network_manager_->get(getNetworkRequest(current_url_));
             ProcessNetworkReply(new_reply, network_manager_, false);
         }
         else
