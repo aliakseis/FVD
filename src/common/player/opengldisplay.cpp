@@ -13,6 +13,54 @@
 #include <atomic>
 #include <mutex>
 
+#ifdef _MSC_VER
+
+static void CopyBuffer(uint8_t* dst, const uint8_t* src, size_t numBytes)
+{
+    if ((intptr_t(dst) & 15) || (intptr_t(src) & 15))
+    {
+        memcpy(dst, src, numBytes);
+        return;
+    }
+
+    size_t i = 0;
+    for (; i + 128 <= numBytes; i += 128)
+    {
+        __m128i d0 = _mm_load_si128((__m128i*) & src[i + 0 * 16]);
+        __m128i d1 = _mm_load_si128((__m128i*) & src[i + 1 * 16]);
+        __m128i d2 = _mm_load_si128((__m128i*) & src[i + 2 * 16]);
+        __m128i d3 = _mm_load_si128((__m128i*) & src[i + 3 * 16]);
+        __m128i d4 = _mm_load_si128((__m128i*) & src[i + 4 * 16]);
+        __m128i d5 = _mm_load_si128((__m128i*) & src[i + 5 * 16]);
+        __m128i d6 = _mm_load_si128((__m128i*) & src[i + 6 * 16]);
+        __m128i d7 = _mm_load_si128((__m128i*) & src[i + 7 * 16]);
+        _mm_stream_si128((__m128i*) & dst[i + 0 * 16], d0);
+        _mm_stream_si128((__m128i*) & dst[i + 1 * 16], d1);
+        _mm_stream_si128((__m128i*) & dst[i + 2 * 16], d2);
+        _mm_stream_si128((__m128i*) & dst[i + 3 * 16], d3);
+        _mm_stream_si128((__m128i*) & dst[i + 4 * 16], d4);
+        _mm_stream_si128((__m128i*) & dst[i + 5 * 16], d5);
+        _mm_stream_si128((__m128i*) & dst[i + 6 * 16], d6);
+        _mm_stream_si128((__m128i*) & dst[i + 7 * 16], d7);
+    }
+    for (; i + 16 <= numBytes; i += 16)
+    {
+        __m128i d = _mm_load_si128((__m128i*) & src[i]);
+        _mm_stream_si128((__m128i*) & dst[i], d);
+    }
+    for (; i + 4 <= numBytes; i += 4)
+    {
+        *(uint32_t*)&dst[i] = *(const uint32_t*)&src[i];
+    }
+    for (; i < numBytes; i++)
+    {
+        dst[i] = src[i];
+    }
+    //_mm_sfence();
+}
+
+#endif
+
 enum
 {
     PROGRAM_VERTEX_ATTRIBUTE = 0,
@@ -281,7 +329,7 @@ void OpenGLDisplay::renderFrame(const FPicture& data, unsigned int videoGenerati
 
         InitDrawBuffer(data.height() * data.width() * 3 / 2);
 
-        auto dst = reinterpret_cast<unsigned char*>(impl->mBufYuv);
+        auto dst = reinterpret_cast<uint8_t*>(impl->mBufYuv);
         int width = data.width();
         int height = data.height();
         for (int i = 0; i < 3; ++i)
@@ -289,7 +337,11 @@ void OpenGLDisplay::renderFrame(const FPicture& data, unsigned int videoGenerati
             auto src = data.data()[i];
             for (int j = 0; j < height; ++j)
             {
+#ifdef _MSC_VER
+                CopyBuffer(dst, src, width);
+#else
                 memcpy(dst, src, width);
+#endif
                 dst += width;
                 src += data.linesize()[i];
             }
