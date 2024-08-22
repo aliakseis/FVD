@@ -245,7 +245,7 @@ private:
     void setResizeWithDecoder(bool policy);
     void correctDisplay(bool is_ceil = false);
     bool openFileDecoder(const QString& file);
-    void openAudioProcessing();
+    bool openAudioProcessing();
     void allocateFrames();
     void startLimiterThread();
 

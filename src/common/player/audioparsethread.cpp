@@ -253,10 +253,10 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
         int64_t out_channel_layout = av_get_default_channel_layout(m_ffmpeg->m_audioSettings.channels);
 
         // Check is the new swr context require
-        if ((AVSampleFormat)m_ffmpeg->m_audioFrame->format != m_audioCurrentPref.format ||
+        if (m_ffmpeg->m_audioSwrContext == nullptr ||
+            (AVSampleFormat)m_ffmpeg->m_audioFrame->format != m_audioCurrentPref.format ||
             dec_channel_layout != m_audioCurrentPref.channel_layout ||
-            m_ffmpeg->m_audioFrame->sample_rate != m_audioCurrentPref.frequency ||
-            (m_ffmpeg->m_audioFrame->nb_samples != wanted_nb_samples && (m_ffmpeg->m_audioSwrContext == nullptr)))
+            m_ffmpeg->m_audioFrame->sample_rate != m_audioCurrentPref.frequency)
         {
             swr_free(&m_ffmpeg->m_audioSwrContext);
             m_ffmpeg->m_audioSwrContext = swr_alloc_set_opts(
@@ -353,7 +353,8 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
                 if (err == paUnanticipatedHostError)
                 {
                     Pa_CloseStream(m_ffmpeg->m_stream);
-                    m_ffmpeg->openAudioProcessing();
+                    if (m_ffmpeg->openAudioProcessing())
+                        swr_free(&m_ffmpeg->m_audioSwrContext);
                 }
                 else if (err != paNoError)
                 {

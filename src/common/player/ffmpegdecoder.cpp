@@ -387,7 +387,7 @@ void FFmpegDecoder::openFileProcessing()
     emit fileLoaded();
 }
 
-void FFmpegDecoder::openAudioProcessing()
+bool FFmpegDecoder::openAudioProcessing()
 {
     if (m_audioStreamNumber >= 0)
     {
@@ -426,8 +426,11 @@ void FFmpegDecoder::openAudioProcessing()
             }
             m_audioSettings.frequency = Pa_GetStreamInfo(m_stream)->sampleRate;
             TAG("ffmpeg_audio") << "Audio sample rate = " << m_audioSettings.frequency;
+            return true;
         }
     }
+
+    return false;
 }
 
 bool FFmpegDecoder::openFileDecoder(const QString& file)
