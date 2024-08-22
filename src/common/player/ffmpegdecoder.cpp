@@ -273,11 +273,18 @@ void FFmpegDecoder::close(bool isBlocking)
         }
     }
 
-    closeProcessing();
+    const bool isFileReallyClosed = m_formatContext != nullptr;
+    cleanup();
+    if (isFileReallyClosed)
+    {
+        TAG("ffmpeg_closing") << "File was opened. Emit file closing signal";
+        emit fileReleased(m_setDefaultImageOnClose);
+    }
+    emit decoderClosed();
     emit playingFinished();
 }
 
-void FFmpegDecoder::closeProcessing()
+void FFmpegDecoder::cleanup()
 {
     m_audioPacketsQueue.clear();
     m_videoPacketsQueue.clear();
@@ -329,27 +336,16 @@ void FFmpegDecoder::closeProcessing()
     // Close the audio codec
     avcodec_free_context(&m_audioCodecContext);
 
-    bool isFileReallyClosed = false;
 
     // Close video file
     if (m_formatContext != nullptr)
     {
         avformat_close_input(&m_formatContext);
-        isFileReallyClosed = true;
     }
 
     TAG("ffmpeg_closing") << "Old file closed";
 
-    const bool setDefaultImageOnClose = m_setDefaultImageOnClose;
     resetVariables();
-
-    if (isFileReallyClosed)
-    {
-        TAG("ffmpeg_closing") << "File was opened. Emit file closing signal";
-        emit fileReleased(setDefaultImageOnClose);
-    }
-
-    emit decoderClosed();
 }
 
 void FFmpegDecoder::openFile(QString filename)
@@ -436,7 +432,17 @@ bool FFmpegDecoder::openAudioProcessing()
 bool FFmpegDecoder::openFileDecoder(const QString& file)
 {
     m_openedFilePath = file;
-    // Open video file
+    if (!openInputFile(file)) return false;
+    if (!retrieveStreamInfo()) return false;
+    findStreams();
+    if (!setupCodecContexts()) return false;
+    if (!openCodecs()) return false;
+
+    return true;
+}
+
+bool FFmpegDecoder::openInputFile(const QString& file)
+{
     const int error = avformat_open_input(&m_formatContext,
 #ifdef Q_OS_WIN
         file.toUtf8().constData(),
@@ -446,13 +452,15 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
         nullptr, nullptr);
     if (error != 0)
     {
-        qWarning() << "Couldn't open '" + file + "'"
-                   << "error:" << error;
+        qWarning() << "Couldn't open '" + file + "' error:" << error;
         return false;
     }
     TAG("ffmpeg_opening") << "Opening '" + file + "' video/audio file...";
+    return true;
+}
 
-    // Retrieve stream information
+bool FFmpegDecoder::retrieveStreamInfo()
+{
     if (avformat_find_stream_info(m_formatContext, nullptr) < 0)
     {
         avformat_free_context(m_formatContext);
@@ -460,176 +468,104 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
         TAG("ffmpeg_opening") << "Couldn't find stream information";
         return false;
     }
+    return true;
+}
 
-    // Dump information about file onto standard error
-    // av_dump_format(m_formatContext, 0, m_openedFilePath.toStdString().c_str(), false);
-
-    // Find the first video stream
+void FFmpegDecoder::findStreams()
+{
     m_videoStreamNumber = -1;
     m_audioStreamNumber = -1;
     for (int i = m_formatContext->nb_streams; --i >= 0;)
     {
-        if (m_formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+        switch (m_formatContext->streams[i]->codecpar->codec_type)
         {
+        case AVMEDIA_TYPE_VIDEO:
             m_videoStream = m_formatContext->streams[i];
             m_videoStreamNumber = i;
-        }
-        else if (m_formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-        {
+            break;
+        case AVMEDIA_TYPE_AUDIO:
             m_audioStream = m_formatContext->streams[i];
             m_audioStreamNumber = i;
+            break;
+        default:
+            break;
         }
     }
-    if (m_videoStreamNumber == -1)
-    {
-        TAG("ffmpeg_opening") << "Can't find video stream";
-    }
-    else if (m_videoStreamNumber >= 0)
+    setStreamDuration();
+}
+
+void FFmpegDecoder::setStreamDuration()
+{
+    if (auto stream = (m_videoStreamNumber >= 0) ? m_videoStream : m_audioStream)
     {
         if (m_streamDurationDetection)
         {
-            m_duration = (m_videoStream->duration > 0) ? m_videoStream->duration : -1;
+            m_duration = (stream->duration > 0) ? stream->duration : -1;
         }
         else
         {
-            m_duration = (m_videoStream->duration > 0) ? m_videoStream->duration
-                : (m_formatContext->duration / av_q2d(m_videoStream->time_base)) / 1000000LL;
+            m_duration = (stream->duration > 0) ? stream->duration
+                : (m_formatContext->duration / av_q2d(stream->time_base)) / 1000000LL;
         }
     }
+    else {
+        TAG("ffmpeg_opening") << "No video / audio stream";
+    }
+}
 
-    if (m_audioStreamNumber == -1)
-    {
-        TAG("ffmpeg_opening") << "No audio stream";
-    }
-    else if (m_audioStreamNumber >= 0 && m_videoStreamNumber == -1)
-    {
-        // Changing video -> audio duration
-        const int64_t format_duration = (m_formatContext->duration / av_q2d(m_audioStream->time_base)) / 1000000LL;
-        if (m_streamDurationDetection)
-        {
-            m_duration = (m_audioStream->duration > 0) ? m_audioStream->duration : -1;
-        }
-        else
-        {
-            m_duration = (m_audioStream->duration > 0) ? m_audioStream->duration : format_duration;
-        }
-    }
-
-    // Get a pointer to the codec context for the video stream
+bool FFmpegDecoder::setupCodecContexts()
+{
     if (m_videoStreamNumber >= 0)
     {
-        TAG("ffmpeg_opening") << "Video steam number: " << m_videoStreamNumber;
+        TAG("ffmpeg_opening") << "Video stream number: " << m_videoStreamNumber;
         m_videoCodecContext = avcodec_alloc_context3(nullptr);
-        if (m_videoCodecContext == nullptr)
+        if (!m_videoCodecContext || avcodec_parameters_to_context(m_videoCodecContext, m_videoStream->codecpar) < 0)
         {
             return false;
         }
-        if (avcodec_parameters_to_context(m_videoCodecContext, m_videoStream->codecpar) < 0)
-        {
-            return false;
-        }
-
         m_videoCodecContext->thread_count = 2;
         m_videoCodecContext->flags2 |= AV_CODEC_FLAG2_FAST;
     }
+
     if (m_audioStreamNumber >= 0)
     {
-        TAG("ffmpeg_opening") << "Audio steam number: " << m_audioStreamNumber;
+        TAG("ffmpeg_opening") << "Audio stream number: " << m_audioStreamNumber;
         m_audioCodecContext = avcodec_alloc_context3(nullptr);
-        if (m_audioCodecContext == nullptr)
-        {
-            return false;
-        }
-        if (avcodec_parameters_to_context(m_audioCodecContext, m_audioStream->codecpar) < 0)
+        if (!m_audioCodecContext || avcodec_parameters_to_context(m_audioCodecContext, m_audioStream->codecpar) < 0)
         {
             return false;
         }
     }
 
-    // Find the decoder for the video stream
+    return true;
+}
+
+bool FFmpegDecoder::openCodecs()
+{
     if (m_videoStreamNumber >= 0)
     {
         m_videoCodec = avcodec_find_decoder(m_videoCodecContext->codec_id);
-        if (m_videoCodec == nullptr)
+        if (!m_videoCodec || avcodec_open2(m_videoCodecContext, m_videoCodec, nullptr) < 0)
         {
-            avcodec_free_context(&m_videoCodecContext);
-            m_videoCodecContext = nullptr;
-            avformat_free_context(m_formatContext);
-            m_formatContext = nullptr;
-            // Q_ASSERT(false && "[FFMPEG] No such codec found");
-            return false;  // Codec not found
+            cleanup();
+            return false;
+        }
+
+        if (m_videoCodecContext->width <= 0 || m_videoCodecContext->height <= 0)
+        {
+            cleanup();
+            Q_ASSERT(false && "[FFMPEG] This file hasn't resolution");
+            return false;
         }
     }
 
-    // Find audio codec
     if (m_audioStreamNumber >= 0)
     {
         m_audioCodec = avcodec_find_decoder(m_audioCodecContext->codec_id);
-        if (m_audioCodec == nullptr)
+        if (!m_audioCodec || avcodec_open2(m_audioCodecContext, m_audioCodec, nullptr) < 0)
         {
-            avcodec_free_context(&m_audioCodecContext);
-            m_audioCodecContext = nullptr;
-            avcodec_free_context(&m_videoCodecContext);
-            m_videoCodecContext = nullptr;
-            if (m_formatContext != nullptr)
-            {
-                avformat_free_context(m_formatContext);
-            }
-            m_formatContext = nullptr;
-            Q_ASSERT(false && "[FFMPEG] No such codec found");
-            return false;  // Codec not found
-        }
-    }
-
-    // Open codec
-    if (m_videoStreamNumber >= 0)
-    {
-        if (avcodec_open2(m_videoCodecContext, m_videoCodec, nullptr) < 0)
-        {
-            avcodec_free_context(&m_videoCodecContext);
-            m_videoCodecContext = nullptr;
-            avformat_free_context(m_formatContext);
-            m_formatContext = nullptr;
-            Q_ASSERT(false && "[FFMPEG] Error on codec opening");
-            return false;  // Could not open codec
-        }
-
-        // Some broken files can pass codec check but don't have width x height
-        if (m_videoCodecContext->width <= 0 || m_videoCodecContext->height <= 0)
-        {
-            if (m_audioCodecContext != nullptr)
-            {
-                m_audioCodecContext = nullptr;
-            }
-            avcodec_free_context(&m_videoCodecContext);
-            m_videoCodecContext = nullptr;
-            avformat_close_input(&m_formatContext);
-            m_formatContext = nullptr;
-
-            Q_ASSERT(false && "[FFMPEG] This file haven't resolution");
-            return false;  // Could not open codec
-        }
-    }
-
-    // Open audio codec
-    if (m_audioStreamNumber >= 0)
-    {
-        if (avcodec_open2(m_audioCodecContext, m_audioCodec, nullptr) < 0)
-        {
-            avcodec_free_context(&m_audioCodecContext);
-            m_audioCodecContext = nullptr;
-            if (m_videoStreamNumber >= 0)
-            {
-                avcodec_free_context(&m_videoCodecContext);
-                m_videoCodecContext = nullptr;
-            }
-            if (m_formatContext != nullptr)
-            {
-                avformat_free_context(m_formatContext);
-            }
-            m_formatContext = nullptr;
-            Q_ASSERT(false && "[FFMPEG] Error on codec opening");
-            return false;  // Could not open codec
+            cleanup();
+            return false;
         }
     }
 

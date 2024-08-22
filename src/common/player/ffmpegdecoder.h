@@ -237,7 +237,7 @@ private:
     std::atomic<double> m_volume = 1.;
 
     void resetVariables();
-    void closeProcessing();
+    void cleanup();
     bool frameToImage(FPicture& videoFrameData);
 
 private:
@@ -245,6 +245,12 @@ private:
     void setResizeWithDecoder(bool policy);
     void correctDisplay(bool is_ceil = false);
     bool openFileDecoder(const QString& file);
+    bool openInputFile(const QString& file);
+    bool retrieveStreamInfo();
+    void findStreams();
+    void setStreamDuration();
+    bool setupCodecContexts();
+    bool openCodecs();
     bool openAudioProcessing();
     void allocateFrames();
     void startLimiterThread();
