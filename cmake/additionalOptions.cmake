@@ -28,4 +28,9 @@ set(ADDITIONAL_LINKER_OPTIMIZATION_OPTIONS
 	/DEBUG
 )
 
+if (MSVC)
+     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+endif (MSVC)
+
+
 endif(WIN32)
