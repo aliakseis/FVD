@@ -21,11 +21,16 @@ public:
     bool isAbort() const;
 
 private:
-    void setWaiter(InterruptibleWaitCondition* waitCondition) { m_waitCondition = waitCondition; }
+    void setWaiter(InterruptibleWaitCondition* waitCondition, QMutex* lock) 
+    { 
+        m_waitCondition = waitCondition; 
+        m_lock = lock;
+    }
 
 private:
     std::atomic_bool m_abort;
     std::atomic<InterruptibleWaitCondition*> m_waitCondition;
+    std::atomic<QMutex*> m_lock;
 };
 
 class InterruptibleWaitCondition
@@ -41,7 +46,7 @@ public:
             {
                 return true;
             }
-            control->setWaiter(this);
+            control->setWaiter(this, lock);
         }
 
         bool result(true);
@@ -57,7 +62,7 @@ public:
 
         if (control != 0)
         {
-            control->setWaiter(nullptr);
+            control->setWaiter(nullptr, nullptr);
         }
 
         return result;
