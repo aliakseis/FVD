@@ -48,11 +48,10 @@ void VideoParseThread::run()
 
         bool seekDone = false;
 
-        if (!frameFinished && getVideoPacket(&packet))
+        if (!frameFinished)
         {
-            if (isAbort())
+            if (!getVideoPacket(&packet))
             {
-                av_packet_unref(&packet);
                 return;
             }
 
@@ -71,7 +70,7 @@ void VideoParseThread::run()
 
                 while (true)
                 {
-                    if (isAbort() || !getVideoPacket(&packet))
+                    if (!getVideoPacket(&packet))
                     {
                         return;
                     }
@@ -88,8 +87,7 @@ void VideoParseThread::run()
 
                     // qDebug() << "decoding video packet";
 
-                    frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
-                        avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+                    frameFinished = handlePacket(packet);
                     if (frameFinished)
                     {
                         int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
@@ -122,87 +120,81 @@ void VideoParseThread::run()
 
                 while (true)
                 {
-                    if (isAbort())
+                    if (!getVideoPacket(&packet))
                     {
                         return;
                     }
+ 
+                    Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
 
-                    if (getVideoPacket(&packet))
+                    if (packet.data == m_ffmpeg->m_downloadingPacket.data)
                     {
-                        Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
-
-                        if (packet.data == m_ffmpeg->m_downloadingPacket.data)
+                        // qDebug() << "video downloading mode started [" << &packet << "]";
+                        if (m_ffmpeg->m_mainAudioThread != nullptr)
                         {
-                            // qDebug() << "video downloading mode started [" << &packet << "]";
-                            if (m_ffmpeg->m_mainAudioThread != nullptr)
-                            {
-                                emit m_ffmpeg->downloadPendingStarted();
-                            }
-                            {
-                                QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-                                m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
-                                                                    &m_ffmpeg->m_downloadLockerMutex);
-                            }
-                            if (m_ffmpeg->m_mainAudioThread != nullptr)
-                            {
-                                emit m_ffmpeg->downloadPendingFinished();
-                            }
-
-                            continue;
+                            emit m_ffmpeg->downloadPendingStarted();
+                        }
+                        {
+                            QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
+                            m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                                &m_ffmpeg->m_downloadLockerMutex);
+                        }
+                        if (m_ffmpeg->m_mainAudioThread != nullptr)
+                        {
+                            emit m_ffmpeg->downloadPendingFinished();
                         }
 
-                        frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
-                            avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
-                        if (frameFinished)
+                        continue;
+                    }
+
+                    frameFinished = handlePacket(packet);
+                    if (frameFinished)
+                    {
+                        int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
+                        if (pts == AV_NOPTS_VALUE)
                         {
-                            int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
-                            if (pts == AV_NOPTS_VALUE)
-                            {
-                                pts = 0;
-                            }
-                            double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
-
-                            // Before sync we must sure that audio thread also begining sync
-                            const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
-
-                            QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
-                            // qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
-                            m_ffmpeg->m_seekFlags |= (isAE) ? 0x4 : 0xC;
-                            m_ffmpeg->m_seekFlagsCV.wakeAll();
-                            if (isAE)
-                            {
-                                m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
-                                                             &m_ffmpeg->m_seekFlagsMtx);
-                            }
-
-                            m_ffmpeg->m_videoStartClock = getCurrentTime() - stamp;
-
-                            m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
-                            m_ffmpeg->m_seekFlagsCV.wakeAll();
-                            if (isAE)
-                            {
-                                m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
-                                                             &m_ffmpeg->m_seekFlagsMtx);
-                            }
-
-                            // qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
-                            m_ffmpeg->m_seekFlags |= (isAE) ? 0x10 : 0x30;
-                            m_ffmpeg->m_seekFlagsCV.wakeAll();
-
-                            seekDone = true;
-
-                            break;
+                            pts = 0;
                         }
+                        double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
+
+                        // Before sync we must sure that audio thread also begining sync
+                        const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
+
+                        QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
+                        // qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
+                        m_ffmpeg->m_seekFlags |= (isAE) ? 0x4 : 0xC;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
+                        if (isAE)
+                        {
+                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
+                                                            &m_ffmpeg->m_seekFlagsMtx);
+                        }
+
+                        m_ffmpeg->m_videoStartClock = getCurrentTime() - stamp;
+
+                        m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
+                        if (isAE)
+                        {
+                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
+                                                            &m_ffmpeg->m_seekFlagsMtx);
+                        }
+
+                        // qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
+                        m_ffmpeg->m_seekFlags |= (isAE) ? 0x10 : 0x30;
+                        m_ffmpeg->m_seekFlagsCV.wakeAll();
+
+                        seekDone = true;
+
+                        break;
                     }
                 }  // while
             }
-            else
+            else if (!frameFinished)
             {
-                frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
-                    avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+                frameFinished = handlePacket(packet);
             }
 
-            av_packet_unref(&packet);
         }  // if (getVideoPacket(&packet))
 
         // Did we get a video frame?
@@ -311,4 +303,12 @@ void VideoParseThread::run()
             frameFinished = avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
         }
     }
+}
+
+bool VideoParseThread::handlePacket(AVPacket& packet)
+{
+    bool frameFinished = avcodec_send_packet(m_ffmpeg->m_videoCodecContext, &packet) == 0 &&
+        avcodec_receive_frame(m_ffmpeg->m_videoCodecContext, m_ffmpeg->m_videoFrame) == 0;
+    av_packet_unref(&packet);
+    return frameFinished;
 }

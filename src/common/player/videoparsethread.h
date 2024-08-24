@@ -18,5 +18,7 @@ public:
         setObjectName("VideoParseThread");
     }
     void run() override;
+private:
+    bool handlePacket(AVPacket& packet);
     bool getVideoPacket(AVPacket* packet);
 };

@@ -74,12 +74,6 @@ void AudioParseThread::run()
 
         while (getAudioPacket(&packet))
         {
-            if (isAbort())
-            {
-                av_packet_unref(&packet);
-                return;
-            }
-
             bool flush_packet_found = false;
 
             // Downloading section
@@ -94,7 +88,7 @@ void AudioParseThread::run()
 
                 while (true)
                 {
-                    if (isAbort() || !getAudioPacket(&packet))
+                    if (!getAudioPacket(&packet))
                     {
                         return;
                     }
@@ -135,28 +129,14 @@ void AudioParseThread::run()
                 Pa_AbortStream(m_ffmpeg->m_stream);
                 while (true)
                 {
-                    if (isAbort())
+                    if (!getAudioPacket(&packet))
                     {
                         return;
                     }
+                    Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
 
-                    if (getAudioPacket(&packet))
+                    if (packet.data != m_ffmpeg->m_downloadingPacket.data)
                     {
-                        Q_ASSERT(packet.data != m_ffmpeg->m_seekPacket.data);
-
-                        if (packet.data == m_ffmpeg->m_downloadingPacket.data)
-                        {
-                            emit m_ffmpeg->downloadPendingStarted();
-                            {
-                                QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
-                                m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
-                                                                    &m_ffmpeg->m_downloadLockerMutex);
-                            }
-                            emit m_ffmpeg->downloadPendingFinished();
-
-                            continue;
-                        }
-
                         const bool isVE = (m_ffmpeg->m_mainVideoThread != nullptr);
 
                         QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
@@ -165,7 +145,7 @@ void AudioParseThread::run()
                         if (isVE)
                         {
                             m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x4) != 0; },
-                                                         &m_ffmpeg->m_seekFlagsMtx);
+                                &m_ffmpeg->m_seekFlagsMtx);
                         }
 
                         if (packet.pts != AV_NOPTS_VALUE)
@@ -183,7 +163,7 @@ void AudioParseThread::run()
                         if (isVE)
                         {
                             m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x1) == 0; },
-                                                         &m_ffmpeg->m_seekFlagsMtx);
+                                &m_ffmpeg->m_seekFlagsMtx);
                         }
 
                         // qDebug() << "ASOUT: " << seekflags << " = " << *seekflags;
@@ -194,6 +174,14 @@ void AudioParseThread::run()
 
                         break;
                     }
+
+                    emit m_ffmpeg->downloadPendingStarted();
+                    {
+                        QMutexLocker locker(&m_ffmpeg->m_downloadLockerMutex);
+                        m_ffmpeg->m_downloadLockerWait.wait([this]() { return !m_ffmpeg->m_downloading; },
+                                                            &m_ffmpeg->m_downloadLockerMutex);
+                    }
+                    emit m_ffmpeg->downloadPendingFinished();
                 }  // while
 
                 if (m_isSeekingWhilePaused)
