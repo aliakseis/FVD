@@ -9,9 +9,8 @@ This is (not) the greatest stuff in the world. [This is just a tribute.](resourc
 Sometimes it is needed to visit pytube issues list and apply fixes, for example 
 - https://github.com/pytube/pytube/issues/1498
 
-As of 5/25/23:
 ```
-pip3 install --force-reinstall https://github.com/garywu007/pytube/archive/refs/heads/master.zip
+pip3 install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/refs/heads/master.zip
 ```
 
 For Fedora:
