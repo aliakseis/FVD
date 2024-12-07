@@ -1,15 +1,41 @@
 import sys, socket
 
-def install_and_import(package, url):
+def install_and_import(package, url=None):
     import importlib
+    import subprocess
+    import os
+    import sys
+
+    if url is None:
+        url = package
+
+    def find_pip():
+        possible_pip_paths = [
+            os.path.join(sys.prefix, 'bin', 'pip3'),
+            os.path.join(sys.prefix, 'bin', 'pip3.exe'),
+            os.path.join(os.path.dirname(sys.executable), 'pip3'),
+            os.path.join(os.path.dirname(sys.executable), 'pip3.exe'),
+            os.path.dirname(os.path.abspath(socket.__file__)) + '/../scripts/pip3',
+            os.path.dirname(os.path.abspath(socket.__file__)) + '/../scripts/pip3.exe',
+            "pip3",
+            "pip3.exe",
+            "/usr/local/bin/pip3",
+            "/usr/local/bin/pip3.exe",
+            "/usr/bin/pip3",
+            "/usr/bin/pip3.exe"
+        ]
+        for pip_path in possible_pip_paths:
+            if os.path.exists(pip_path):
+                return pip_path
+        raise FileNotFoundError("pip3 not found in common locations")
+
     try:
         importlib.import_module(package)
     except ImportError:
-        import subprocess
-        subprocess.run(["pip3", "install", url])
+        pip_path = find_pip()
+        subprocess.run([pip_path, "install", url])
     finally:
         globals()[package] = importlib.import_module(package)
-
 
 install_and_import("vimeo_downloader", "git+https://github.com/yashrathi-git/vimeo_downloader") # whichever good
 

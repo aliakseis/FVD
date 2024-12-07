@@ -4,22 +4,47 @@ from datetime import datetime
 
 import sys, socket
 
-def install_and_import(package, url):
+def install_and_import(package, url=None):
     import importlib
+    import subprocess
+    import os
+    import sys
+
+    if url is None:
+        url = package
+
+    def find_pip():
+        possible_pip_paths = [
+            os.path.join(sys.prefix, 'bin', 'pip3'),
+            os.path.join(sys.prefix, 'bin', 'pip3.exe'),
+            os.path.join(os.path.dirname(sys.executable), 'pip3'),
+            os.path.join(os.path.dirname(sys.executable), 'pip3.exe'),
+            os.path.dirname(os.path.abspath(socket.__file__)) + '/../scripts/pip3',
+            os.path.dirname(os.path.abspath(socket.__file__)) + '/../scripts/pip3.exe',
+            "pip3",
+            "pip3.exe",
+            "/usr/local/bin/pip3",
+            "/usr/local/bin/pip3.exe",
+            "/usr/bin/pip3",
+            "/usr/bin/pip3.exe"
+        ]
+        for pip_path in possible_pip_paths:
+            if os.path.exists(pip_path):
+                return pip_path
+        raise FileNotFoundError("pip3 not found in common locations")
+
     try:
         importlib.import_module(package)
     except ImportError:
-        import subprocess
-        subprocess.run(["pip3", "install", url])
+        pip_path = find_pip()
+        subprocess.run([pip_path, "install", url])
     finally:
         globals()[package] = importlib.import_module(package)
-
 
 install_and_import("yt_dlp", "yt-dlp") # whichever good
 
 import logging
 import traceback
-
 
 # In the Python version, we're using the requests module for making HTTP requests, and we've also used Python's json module to handle JSON data. 
 # Additionally, I've used f-strings (formatted string literals) to construct the URL in a concise manner.
