@@ -41,6 +41,31 @@ install_and_import("pytubefix", "https://github.com/JuanBindez/pytubefix/archive
 
 from pytubefix import Search, YouTube
 
+try:
+    import os
+    import subprocess
+    from pytubefix.botGuard.bot_guard import NODE_PATH, VM_PATH
+
+    def generate_po_token_substitute(visitor_data: str) -> str:
+        """
+        Run nodejs to generate poToken through botGuard.
+        Requires nodejs installed.
+        """
+        startupinfo = subprocess.STARTUPINFO()
+        if os.name == 'nt':  # For Windows
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 6 # SW_MINIMIZE
+        result = subprocess.check_output(
+            [NODE_PATH, VM_PATH, visitor_data],
+            startupinfo=startupinfo
+        ).decode()
+        return result.replace("\n", "")
+
+    import pytubefix
+    pytubefix.botGuard.bot_guard.generate_po_token = generate_po_token_substitute
+except BaseException as e:
+    print(f"Failed to substitute generate_po_token: {e}")
+
 import logging
 import traceback
 
@@ -49,7 +74,7 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
 
     yt_watch = "https://www.youtube.com/watch?v="
 
-    search = Search(query)
+    search = Search(query, 'WEB')
 
     entities = []
 
@@ -104,7 +129,7 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
 def YouTube_extractDirectLinks(link, receiver) :
     socket.setdefaulttimeout(30)
 
-    s=YouTube(link).streams.filter(progressive=True).order_by('resolution').desc()
+    s=YouTube(link, 'WEB').streams.filter(progressive=True).order_by('resolution').desc()
 
     entities = {}
     i = 0
