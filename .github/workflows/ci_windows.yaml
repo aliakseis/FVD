@@ -82,7 +82,7 @@ jobs:
         with:
           version: "5.15.2"
           arch: win64_msvc2019_64
-          archives: qtbase qtquickcontrols2 qttools d3dcompiler_47 
+          archives: qtbase qtquickcontrols2 qtdeclarative qttools d3dcompiler_47 
           cache: true
 
       - name: Build FVD
