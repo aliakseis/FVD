@@ -66,6 +66,7 @@ jobs:
             "openssl:x64-windows-static-md-release",
             "python3:x64-windows-static-md-release",
             "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:x64-windows-static-md-release",
+            "portaudio:x64-windows-static-md-release",
             "zlib:x64-windows-static-md-release"
           ${{ env.vcpkg_path }}/vcpkg.exe upgrade `
             --no-dry-run `
