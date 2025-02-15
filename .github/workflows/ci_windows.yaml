@@ -96,7 +96,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="${{ env.vcpkg_path }}/scripts/buildsystems/vcpkg.cmake" `
             -DMSVC_RUNTIME_DYNAMIC=ON `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static-md-release `
-            -DVERBOSE_CONFIGURE=ON `
-          cmake.exe --build build
-          cmake.exe --install build
+            -DVERBOSE_CONFIGURE=ON
+          cmake --build build
+          cmake --install build
 
