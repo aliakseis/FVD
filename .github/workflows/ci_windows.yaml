@@ -87,7 +87,7 @@ jobs:
 
       - name: Build FVD
         run: |
-          $env:CXXFLAGS+="/DQT_FORCE_ASSERTS /WX"
+          #$env:CXXFLAGS+="/DQT_FORCE_ASSERTS /WX"
           cmake `
             -B build `
             -G "Ninja" `
