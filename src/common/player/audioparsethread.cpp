@@ -50,9 +50,10 @@ bool operator != (const AVChannelLayout& left, const AVChannelLayout& right)
 
 
 FFmpegDecoder::AudioParams::AudioParams(int freq, int chans, AVSampleFormat fmt)
-    : frequency(freq), channels(chans), format(fmt)
+    : frequency(freq), format(fmt)
 {
 #if LIBAVUTIL_VERSION_MAJOR < 57
+    channels = chans;
     channel_layout = av_get_default_channel_layout(chans);
 #else
     av_channel_layout_default(&channel_layout, chans);
@@ -328,7 +329,6 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             m_audioCurrentPref.channels = m_ffmpeg->m_audioFrame->channels;
             m_audioCurrentPref.channel_layout = dec_channel_layout;
 #else
-            m_audioCurrentPref.channels = dec_channel_layout.nb_channels;
             av_channel_layout_uninit(&m_audioCurrentPref.channel_layout);
             av_channel_layout_copy(&m_audioCurrentPref.channel_layout, &dec_channel_layout);
 #endif
@@ -344,7 +344,7 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
                 256;
 
             const int size_multiplier =
-                m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
+                m_ffmpeg->m_audioSettings.num_channels() * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
 
             const size_t buffer_size = out_count * size_multiplier;
 
@@ -393,7 +393,7 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
         if (write_size > 0)
         {
             const auto m_FrameSize =
-                m_ffmpeg->m_audioSettings.channels * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
+                m_ffmpeg->m_audioSettings.num_channels() * av_get_bytes_per_sample(m_ffmpeg->m_audioSettings.format);
             const auto framesToWrite = write_size / m_FrameSize;
 
             if (Pa_IsStreamStopped(m_ffmpeg->m_stream))

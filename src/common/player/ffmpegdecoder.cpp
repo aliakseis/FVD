@@ -386,7 +386,7 @@ bool FFmpegDecoder::openAudioProcessing()
         params.device = Pa_GetDefaultOutputDevice();
         auto deviceInfo = Pa_GetDeviceInfo(params.device);
         params.suggestedLatency = deviceInfo->defaultLowOutputLatency;
-        params.channelCount = m_audioSettings.channels;
+        params.channelCount = m_audioSettings.num_channels();
 
         switch (av_get_bytes_per_sample(m_audioSettings.format))
         {
