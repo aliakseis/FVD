@@ -179,7 +179,7 @@ target_link_libraries(Player
      	${FFMPEG_LIBRARIES_STANDART}
 	${MACOSX_FRAMEWORK_LIBS}
         Utilities
-        portaudio
+        ${PORTAUDIO_LIBRARIES}
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "common")
