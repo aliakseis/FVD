@@ -27,7 +27,7 @@ jobs:
           submodules: true  # Ensure submodules are checked out
 
       - name: git version
-        run: ./src/main/update_version.sh
+        run: bash ./src/main/update_version.sh
 
       - name: Setup devcmd
         uses: ilammy/msvc-dev-cmd@v1

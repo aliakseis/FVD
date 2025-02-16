@@ -36,7 +36,11 @@
 #include "utilities/modeldeserializer.h"
 #include "utilities/modelserializer.h"
 #include "utilities/translation.h"
-#include "version.h"
+#if __has_include("version.h")
+    #include "version.h"
+#else
+    #define GIT_COMMIT
+#endif
 #include "version.hxx"
 #include "videoplayerwidget.h"
 #include "videowidget.h"
