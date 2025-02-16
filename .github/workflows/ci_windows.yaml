@@ -55,21 +55,21 @@ jobs:
           New-Item `
             -Force `
             -ItemType File `
-            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-static-md-release.cmake"
+            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-md-release.cmake"
           # OpenSSL isn't compatible with `/guard:cf` flag so we omit it for now, see: https://github.com/openssl/openssl/issues/22554
           Add-Content `
-            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-static-md-release.cmake" `
+            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-md-release.cmake" `
             -Value @("set(VCPKG_TARGET_ARCHITECTURE x64)",
-              "set(VCPKG_LIBRARY_LINKAGE static)",
+              "set(VCPKG_LIBRARY_LINKAGE dynamic)",
               "set(VCPKG_CRT_LINKAGE dynamic)",
               "set(VCPKG_BUILD_TYPE release)")
           # clear buildtrees after each package installation to reduce disk space requirements
           $packages = `
-            "openssl:x64-windows-static-md-release",
-            "python3:x64-windows-static-md-release",
-            "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:x64-windows-static-md-release",
-            "portaudio:x64-windows-static-md-release",
-            "zlib:x64-windows-static-md-release"
+            "openssl:x64-windows-md-release",
+            "python3:x64-windows-md-release",
+            "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:x64-windows-md-release",
+            "portaudio:x64-windows-md-release",
+            "zlib:x64-windows-md-release"
           ${{ env.vcpkg_path }}/vcpkg.exe upgrade `
             --no-dry-run `
             --overlay-triplets="${{ env.vcpkg_path }}/triplets_overlay"
@@ -98,7 +98,7 @@ jobs:
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
             -DCMAKE_TOOLCHAIN_FILE="${{ env.vcpkg_path }}/scripts/buildsystems/vcpkg.cmake" `
             -DMSVC_RUNTIME_DYNAMIC=ON `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md-release `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-md-release `
             -DVERBOSE_CONFIGURE=ON
           cmake --build build
           cmake --install build
