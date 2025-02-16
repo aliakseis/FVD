@@ -13,6 +13,60 @@ extern "C"
 #include <libswresample/swresample.h>
 }
 
+
+namespace {
+
+#if LIBAVUTIL_VERSION_MAJOR < 57
+
+int64_t getChannelLayout(AVFrame* audioFrame)
+{
+	const int audioFrameChannels = audioFrame->channels;
+    return ((audioFrame->channel_layout != 0u) &&
+        audioFrameChannels == av_get_channel_layout_nb_channels(audioFrame->channel_layout))
+        ? audioFrame->channel_layout
+        : av_get_default_channel_layout(audioFrameChannels);
+}
+
+#else
+
+auto getChannelLayout(AVFrame* audioFrame)
+{
+    return audioFrame->ch_layout;
+}
+
+bool operator == (const AVChannelLayout& left, const AVChannelLayout& right)
+{
+    return av_channel_layout_compare(&left, &right) == 0;
+}
+
+bool operator != (const AVChannelLayout& left, const AVChannelLayout& right)
+{
+    return av_channel_layout_compare(&left, &right) != 0;
+}
+
+#endif
+
+} // namespace
+
+
+FFmpegDecoder::AudioParams::AudioParams(int freq, int chans, AVSampleFormat fmt)
+    : frequency(freq), channels(chans), format(fmt)
+{
+#if LIBAVUTIL_VERSION_MAJOR < 57
+    channel_layout = av_get_default_channel_layout(chans);
+#else
+    av_channel_layout_default(&channel_layout, chans);
+#endif
+}
+
+FFmpegDecoder::AudioParams::~AudioParams()
+{
+#if LIBAVUTIL_VERSION_MAJOR >= 57
+    av_channel_layout_uninit(&channel_layout);
+#endif
+}
+
+
 bool AudioParseThread::getAudioPacket(AVPacket* packet)
 {
     QMutexLocker locker(&m_ffmpeg->m_packetsQueueMutex);
@@ -221,8 +275,14 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
     while (avcodec_receive_frame(m_ffmpeg->m_audioCodecContext, m_ffmpeg->m_audioFrame) == 0)
     {
         int original_buffer_size =
-            av_samples_get_buffer_size(nullptr, m_ffmpeg->m_audioFrame->channels, m_ffmpeg->m_audioFrame->nb_samples,
-                                       (AVSampleFormat)m_ffmpeg->m_audioFrame->format, 1);
+            av_samples_get_buffer_size(nullptr, 
+#if LIBAVUTIL_VERSION_MAJOR < 57
+                m_ffmpeg->m_audioFrame->channels,
+#else
+                m_ffmpeg->m_audioFrame->ch_layout.nb_channels,
+#endif
+                m_ffmpeg->m_audioFrame->nb_samples,
+                (AVSampleFormat)m_ffmpeg->m_audioFrame->format, 1);
 
         // write buffer
         uint8_t* write_data = (m_ffmpeg->m_audioFrame->extended_data != nullptr)
@@ -230,15 +290,9 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
                                   : m_ffmpeg->m_audioFrame->data[0];
         int64_t write_size = original_buffer_size;
 
-        int64_t dec_channel_layout = ((m_ffmpeg->m_audioFrame->channel_layout != 0U) &&
-                                      m_ffmpeg->m_audioFrame->channels ==
-                                          av_get_channel_layout_nb_channels(m_ffmpeg->m_audioFrame->channel_layout))
-                                         ? m_ffmpeg->m_audioFrame->channel_layout
-                                         : av_get_default_channel_layout(m_ffmpeg->m_audioFrame->channels);
+        auto dec_channel_layout = getChannelLayout(m_ffmpeg->m_audioFrame);
 
         const int wanted_nb_samples = m_ffmpeg->m_audioFrame->nb_samples;  // No sync resampling
-
-        int64_t out_channel_layout = av_get_default_channel_layout(m_ffmpeg->m_audioSettings.channels);
 
         // Check is the new swr context require
         if (m_ffmpeg->m_audioSwrContext == nullptr ||
@@ -247,10 +301,21 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             m_ffmpeg->m_audioFrame->sample_rate != m_audioCurrentPref.frequency)
         {
             swr_free(&m_ffmpeg->m_audioSwrContext);
+
+#if LIBAVUTIL_VERSION_MAJOR < 57
+
             m_ffmpeg->m_audioSwrContext = swr_alloc_set_opts(
-                nullptr, out_channel_layout, m_ffmpeg->m_audioSettings.format, m_ffmpeg->m_audioSettings.frequency,
+                nullptr, m_ffmpeg->m_audioSettings.channel_layout, m_ffmpeg->m_audioSettings.format, m_ffmpeg->m_audioSettings.frequency,
                 dec_channel_layout, (AVSampleFormat)m_ffmpeg->m_audioFrame->format, m_ffmpeg->m_audioFrame->sample_rate,
                 0, nullptr);
+
+#else
+            swr_alloc_set_opts2(&m_ffmpeg->m_audioSwrContext, 
+                &m_ffmpeg->m_audioSettings.channel_layout, m_ffmpeg->m_audioSettings.format, m_ffmpeg->m_audioSettings.frequency,
+                &dec_channel_layout, (AVSampleFormat)m_ffmpeg->m_audioFrame->format, m_ffmpeg->m_audioFrame->sample_rate,
+                0, nullptr);
+
+#endif
 
             if ((m_ffmpeg->m_audioSwrContext == nullptr) || swr_init(m_ffmpeg->m_audioSwrContext) < 0)
             {
@@ -258,8 +323,16 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             }
 
             m_audioCurrentPref.format = (AVSampleFormat)m_ffmpeg->m_audioFrame->format;
+
+#if LIBAVUTIL_VERSION_MAJOR < 57
             m_audioCurrentPref.channels = m_ffmpeg->m_audioFrame->channels;
             m_audioCurrentPref.channel_layout = dec_channel_layout;
+#else
+            m_audioCurrentPref.channels = dec_channel_layout.nb_channels;
+            av_channel_layout_uninit(&m_audioCurrentPref.channel_layout);
+            av_channel_layout_copy(&m_audioCurrentPref.channel_layout, &dec_channel_layout);
+#endif
+
             m_audioCurrentPref.frequency = m_ffmpeg->m_audioFrame->sample_rate;
         }
 
@@ -303,9 +376,12 @@ void AudioParseThread::handlePacket(const AVPacket& packet)
             write_size = converted_size * size_multiplier;
         }
 
-        const double frame_clock =
-            (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels * m_ffmpeg->m_audioFrame->sample_rate *
-                                            av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
+        //const double frame_clock =
+        //    (double)original_buffer_size / (m_ffmpeg->m_audioFrame->channels * m_ffmpeg->m_audioFrame->sample_rate *
+        //                                    av_get_bytes_per_sample((AVSampleFormat)m_ffmpeg->m_audioFrame->format));
+
+        const double frame_clock = m_ffmpeg->m_audioFrame->sample_rate != 0 
+            ? double(m_ffmpeg->m_audioFrame->nb_samples) / m_ffmpeg->m_audioFrame->sample_rate : 0;
 
         const double delta = getCurrentTime() - m_ffmpeg->m_videoStartClock - m_ffmpeg->m_audioPTS;
         if (fabs(delta) > 0.1)

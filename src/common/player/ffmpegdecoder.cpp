@@ -98,15 +98,10 @@ double getCurrentTime()
 
 
 FFmpegDecoder::FFmpegDecoder()
+: m_audioSettings(48000, 2, AV_SAMPLE_FMT_S16)
 {
     // no detection using
     m_streamDurationDetection = false;
-
-    // default format
-    m_audioSettings.channels = 2;
-    m_audioSettings.frequency = 44100;
-    m_audioSettings.format = AV_SAMPLE_FMT_S16;
-    m_audioSettings.channel_layout = av_get_default_channel_layout(m_audioSettings.channels);
 
     // Prepare audio device params
     Pa_Initialize();

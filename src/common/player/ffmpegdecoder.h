@@ -198,9 +198,19 @@ private:
     {
         int frequency;
         int channels;
+#if LIBAVUTIL_VERSION_MAJOR < 57
         int64_t channel_layout;
+#else
+        AVChannelLayout channel_layout;
+#endif
         AVSampleFormat format;
-    } m_audioSettings;
+
+        AudioParams() = default;
+        AudioParams(int freq, int chans, AVSampleFormat fmt);
+        ~AudioParams();
+        AudioParams& operator=(const AudioParams& other);
+    };
+    AudioParams m_audioSettings;
 
     // Audio stuff
     AVFrame* m_audioFrame;
