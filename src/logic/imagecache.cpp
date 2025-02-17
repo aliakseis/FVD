@@ -292,6 +292,23 @@ QImage getImage(QByteArray& imageArray)
     return result;
 }
 
+bool HandleRandomFrame(const QString& filePath, const QString& imageFilePath)
+{
+    FFmpegDecoder decoder;
+    auto image = decoder.getRandomFrame(filePath);
+    if (!image.isEmpty())
+    {
+        QFile imageFile(imageFilePath);
+        if (imageFile.open(QIODevice::WriteOnly))
+        {
+            imageFile.write(image);
+            imageFile.close();
+            return true;
+        }
+    }
+    return false;
+}
+
 int doGetRandomFrame(const QString& filePath, const QString& imageFilePath)
 {
     if (imageFilePath.isEmpty())
@@ -306,34 +323,15 @@ int doGetRandomFrame(const QString& filePath, const QString& imageFilePath)
         while (it.hasNext())
         {
             auto p = it.next();
-            FFmpegDecoder decoder;
-            auto image = decoder.getRandomFrame(p);
-            if (!image.isEmpty())
+            if (HandleRandomFrame(p, imageFilePath))
             {
-                QFile imageFile(imageFilePath);
-                if (imageFile.open(QIODevice::WriteOnly))
-                {
-                    imageFile.write(image);
-                    imageFile.close();
-                    return 0;
-                }
-            }
-        }
-    }
-    else if (QFile::exists(filePath))
-    {
-        FFmpegDecoder decoder;
-        auto image = decoder.getRandomFrame(filePath);
-        if (!image.isEmpty())
-        {
-            QFile imageFile(imageFilePath);
-            if (imageFile.open(QIODevice::WriteOnly))
-            {
-                imageFile.write(image);
-                imageFile.close();
                 return 0;
             }
         }
+    }
+    else if (QFile::exists(filePath) && HandleRandomFrame(filePath, imageFilePath))
+    {
+        return 0;
     }
 
     return 1;
