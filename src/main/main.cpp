@@ -22,6 +22,8 @@
 
 #include "imagecache.h"
 
+#include "scriptengine/pythonengine.h"
+
 
 #ifdef Q_OS_MAC
 #include "darwin/AppHandler.h"
@@ -77,7 +79,10 @@ int main(int argc, char* argv[])
 		QApplication app(argc, argv, 0);
 		return getRandomFrame();
 	}
-
+    else if (2 == argc && 0 == strcmp(ScriptEngine::CHECK_PYTHON_OPTION, argv[1]))
+    {
+        return ScriptEngine::checkPython();
+    }
 
 	QNetworkProxyFactory::setApplicationProxyFactory(new ConfigurableProxyFactory());
 

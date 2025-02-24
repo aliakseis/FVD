@@ -17,4 +17,8 @@ public:
 	void exportVariable(const QString& name, const QVariant& value) override;
 };
 
+const char CHECK_PYTHON_OPTION[] = "-checkPython";
+
+int checkPython();
+
 }

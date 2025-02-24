@@ -2,18 +2,51 @@
 
 #include "PythonQt.h"
 
+#include "utilities/utils.h"
+
 #include <QFileInfo>
 #include <QStandardPaths>
+
+#include <QApplication>
+#include <QMessageBox>
+#include <QMainWindow>
+#include <QProcess>
 
 #include <mutex>
 
 namespace {
 
+bool isPythonInstalled()
+{
+    const int status =
+        QProcess::execute(QCoreApplication::applicationFilePath(),
+            QStringList() << ScriptEngine::CHECK_PYTHON_OPTION);
+
+    return status == 0;
+}
+
+void showPythonNotInstalledMessageBox()
+{
+    QMetaObject::invokeMethod(QApplication::instance(), [] {
+        QMessageBox::warning(
+            utilities::getMainWindow(),
+            QObject::tr("Matching Python is not installed."),
+            QObject::tr("Matching Python is not installed: ") + PY_VERSION
+        );
+        });
+}
+
 auto pythonQtInstance() {
 
-    static std::once_flag flag;
+    static bool succeeded = false;
+    static std::once_flag flag{};
 
     std::call_once(flag,  []{
+        if (!isPythonInstalled()) {
+            showPythonNotInstalledMessageBox();
+            return;
+        }
+
         PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
         atexit(PythonQt::cleanup);
 
@@ -34,9 +67,11 @@ auto pythonQtInstance() {
 
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut, [](const QString& str) { qInfo() << str; });
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr, [](const QString& str) { qCritical() << str; });
+
+        succeeded = true;
     });
 
-    return PythonQt::self();
+    return succeeded ? PythonQt::self() : nullptr;
 };
 
 std::mutex pythonMonitor;
@@ -45,6 +80,23 @@ std::mutex pythonMonitor;
 
 namespace ScriptEngine {
 
+int checkPython()
+{ 
+    PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
+    atexit(PythonQt::cleanup);
+
+    auto sys = PythonQt::self()->importModule("sys");
+    if (sys.isNull())
+        return 1;
+    auto paths = PythonQt::self()->getVariable(sys, "path");
+    if (paths.isNull())
+        return 1;
+
+    if (paths.value<QVariantList>().empty())
+        return 1;
+
+    return 0;
+}
 
 PythonEngine::PythonEngine()
 = default;
@@ -54,15 +106,17 @@ PythonEngine::~PythonEngine()
 
 bool PythonEngine::loadFile(const QString& filename)
 {
-    std::lock_guard<std::mutex> guard(pythonMonitor);
-    pythonQtInstance()->getMainModule().evalFile(filename);
-    return true;
+    if (auto inst = pythonQtInstance())
+    {
+        std::lock_guard<std::mutex> guard(pythonMonitor);
+        inst->getMainModule().evalFile(filename);
+        return true;
+    }
+    return false;
 }
 
 QVariant PythonEngine::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments /*= QVariantList()*/)
 {
-    QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
-    std::lock_guard<std::mutex> guard(pythonMonitor);
     //QStringList l = PythonQt::self()->introspection(PythonQt::self()->getMainModule(), callable, PythonQt::CallOverloads);
     //qDebug() << l;
     //auto obj = pythonQtInstance()->lookupObject(pythonQtInstance()->getMainModule(), callable);
@@ -76,21 +130,30 @@ QVariant PythonEngine::invokeFunction(const QString& object, const QString& meth
     //    }
     //    Py_DECREF(pDocString);
     //}
-    return pythonQtInstance()->getMainModule().call(callable, arguments);
+    if (auto inst = pythonQtInstance())
+    {
+        QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
+        std::lock_guard<std::mutex> guard(pythonMonitor);
+        return inst->getMainModule().call(callable, arguments);
+    }
+    return false;
 }
 
 void PythonEngine::exportVariable(const QString& name, const QVariant& value)
 {
-    auto* qobject = qvariant_cast<QObject*>(value);
-    std::lock_guard<std::mutex> guard(pythonMonitor);
-    if (qobject != nullptr)
+    if (auto inst = pythonQtInstance())
     {
-        pythonQtInstance()->registerClass(qobject->metaObject());
-        pythonQtInstance()->getMainModule().addObject(name, qobject);
-    }
-    else
-    {
-        pythonQtInstance()->getMainModule().addVariable(name, value);
+        auto* qobject = qvariant_cast<QObject*>(value);
+        std::lock_guard<std::mutex> guard(pythonMonitor);
+        if (qobject != nullptr)
+        {
+            inst->registerClass(qobject->metaObject());
+            inst->getMainModule().addObject(name, qobject);
+        }
+        else
+        {
+            inst->getMainModule().addVariable(name, value);
+        }
     }
 }
 
