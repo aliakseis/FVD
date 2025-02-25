@@ -42,10 +42,6 @@ class QMutexLocker;
 #define	PROJECT_DOMAIN "abstract-project.com"
 #endif//PROJECT_DOMAIN
 
-#ifndef BRAND_VERSION
-#define BRAND_VERSION "1.0"
-#endif//BRAND_VERSION
-
 class QString;
 class QFont;
 class QUrl;
@@ -69,7 +65,7 @@ typedef QMap<QString, QObject*> QObjectMap;
 namespace utilities
 {
 
-void InitializeProjectDescription();
+void InitializeProjectDescription(const char* projectVersion);
 QFont GetAdaptedFont(int size, int additional_amount = 2);
 bool DeserializeObject(QXmlStreamReader* stream, QObject* object, const QString& name = QString());
 void SerializeObject(QXmlStreamWriter* stream, QObject* object, const QString& name);

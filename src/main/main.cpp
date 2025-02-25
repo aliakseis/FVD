@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	signal(SIGINT, sigHandler);
 #endif // DEVELOPER_FEATURES
 
-    utilities::InitializeProjectDescription();
+    utilities::InitializeProjectDescription(PROJECT_VERSION);
 
 	if (4 == argc && 0 == strcmp(GET_RANDOM_FRAME_OPTION, argv[1]))
 	{
