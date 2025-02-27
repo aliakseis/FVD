@@ -118,6 +118,7 @@ macro(INSTALL_FFMPEG_DLLS)
 			${FFMPEG_BINARY_DIR}/avutil-*.dll
 			${FFMPEG_BINARY_DIR}/swscale-*.dll
 			${FFMPEG_BINARY_DIR}/swresample-*.dll
+			${FFMPEG_BINARY_DIR}/libx264-*.dll
 		)
 
 		install(FILES
