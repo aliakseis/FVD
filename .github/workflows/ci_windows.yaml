@@ -10,11 +10,23 @@ concurrency:
   cancel-in-progress: ${{ github.head_ref != '' }}
 
 jobs:
-  ci:
-    name: Build
+  build:
     runs-on: windows-latest
     permissions:
       actions: write
+
+    strategy:
+      matrix:
+        platform: [x86, x64]
+        include:
+          - platform: x86
+            arch: Win32
+            qt_arch: win32_msvc2019
+            vcpkg_triplet: x86-windows-md-release
+          - platform: x64
+            arch: x64
+            qt_arch: win64_msvc2019_64
+            vcpkg_triplet: x64-windows-md-release
 
     env:
       vcpkg_path: "c:/vcpkg"
@@ -34,8 +46,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          if ((Get-Command "ninja.exe" -ErrorAction SilentlyContinue) -eq $null)
-          {
+          if ((Get-Command "ninja.exe" -ErrorAction SilentlyContinue) -eq $null) {
              choco install ninja
           }
           where.exe ninja
@@ -51,25 +62,25 @@ jobs:
 
       - name: Install dependencies with vcpkg
         run: |
-          # create our own triplet
+          # create our own triplet for 64-bit
           New-Item `
             -Force `
             -ItemType File `
-            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-md-release.cmake"
+            -Path "${{ env.vcpkg_path }}/triplets_overlay/${{ matrix.vcpkg_triplet }}.cmake"
           # OpenSSL isn't compatible with `/guard:cf` flag so we omit it for now, see: https://github.com/openssl/openssl/issues/22554
           Add-Content `
-            -Path "${{ env.vcpkg_path }}/triplets_overlay/x64-windows-md-release.cmake" `
-            -Value @("set(VCPKG_TARGET_ARCHITECTURE x64)",
+            -Path "${{ env.vcpkg_path }}/triplets_overlay/${{ matrix.vcpkg_triplet }}.cmake" `
+            -Value @("set(VCPKG_TARGET_ARCHITECTURE ${{ matrix.platform }})",
               "set(VCPKG_LIBRARY_LINKAGE dynamic)",
               "set(VCPKG_CRT_LINKAGE dynamic)",
               "set(VCPKG_BUILD_TYPE release)")
           # clear buildtrees after each package installation to reduce disk space requirements
           $packages = `
-            "openssl:x64-windows-md-release",
-            "python3:x64-windows-md-release",
-            "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:x64-windows-md-release",
-            "portaudio:x64-windows-md-release",
-            "zlib:x64-windows-md-release"
+            "openssl:${{ matrix.vcpkg_triplet }}",
+            "python3:${{ matrix.vcpkg_triplet }}",
+            "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:${{ matrix.vcpkg_triplet }}",
+            "portaudio:${{ matrix.vcpkg_triplet }}",
+            "zlib:${{ matrix.vcpkg_triplet }}"
           ${{ env.vcpkg_path }}/vcpkg.exe upgrade `
             --no-dry-run `
             --overlay-triplets="${{ env.vcpkg_path }}/triplets_overlay"
@@ -79,32 +90,31 @@ jobs:
             --overlay-triplets="${{ env.vcpkg_path }}/triplets_overlay" `
             $packages
 
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: "5.15.2"
-          arch: win64_msvc2019_64
-          archives: qtbase qtquickcontrols2 qtdeclarative qttools d3dcompiler_47 
+          arch: ${{ matrix.qt_arch }}
+          archives: qtbase qtquickcontrols2 qtdeclarative qttools d3dcompiler_47
           cache: true
 
       - name: Build FVD
         run: |
-          #$env:CXXFLAGS+="/DQT_FORCE_ASSERTS /WX"
           cmake `
             -B build `
-            -G "Ninja" `
+            -G "Visual Studio 17 2022" `
+            -A ${{ matrix.arch }} `
             -DCMAKE_BUILD_TYPE=RelWithDebInfo `
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON `
             -DCMAKE_TOOLCHAIN_FILE="${{ env.vcpkg_path }}/scripts/buildsystems/vcpkg.cmake" `
             -DMSVC_RUNTIME_DYNAMIC=ON `
-            -DVCPKG_TARGET_TRIPLET=x64-windows-md-release `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} `
             -DVERBOSE_CONFIGURE=ON
-          cmake --build build
-          cmake --install build
+          cmake --build build --config RelWithDebInfo
+          cmake --install build --config RelWithDebInfo
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: build-artifacts-${{matrix.platform}}
           path: ./build/bin
