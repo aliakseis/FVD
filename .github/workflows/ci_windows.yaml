@@ -78,7 +78,7 @@ jobs:
           $packages = `
             "openssl:${{ matrix.vcpkg_triplet }}",
             "python3:${{ matrix.vcpkg_triplet }}",
-            "ffmpeg[ffmpeg,x264,nonfree,gpl,vpx,webp,zlib,xml2]:${{ matrix.vcpkg_triplet }}",
+            "ffmpeg[ffmpeg,nonfree,gpl,vpx,webp,zlib,xml2]:${{ matrix.vcpkg_triplet }}",
             "portaudio:${{ matrix.vcpkg_triplet }}",
             "zlib:${{ matrix.vcpkg_triplet }}"
           ${{ env.vcpkg_path }}/vcpkg.exe upgrade `
