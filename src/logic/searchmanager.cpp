@@ -419,20 +419,22 @@ void SearchManager::addLinks(QStringList urls)
         return;
     }
 
+    const auto single = urls.size() == 1;
+
     auto *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, [this, timer, urls=std::move(urls)]() mutable {
+    connect(timer, &QTimer::timeout, [this, timer, single, urls=std::move(urls)]() mutable {
         if (urls.empty()) {
             timer->stop();
             timer->deleteLater();
             return;
         }
         const auto url = urls.takeFirst();
-        addLink(url);
+        addLink(url, single);
     });
     timer->start();
 }
 
-void SearchManager::addLink(const QString& url)
+void SearchManager::addLink(const QString& url, bool single)
 {
     const auto settingSitesSet =
         std::make_shared<QStringList>(QSettings()
@@ -441,7 +443,7 @@ void SearchManager::addLink(const QString& url)
                                           .split(';', QString::SkipEmptyParts));
  
 
-    auto lam = [this, url, settingSitesSet](auto& bda) -> void
+    auto lam = [this, url, single, settingSitesSet](auto& bda) -> void
     { 
         if (!settingSitesSet->empty())
         {
@@ -449,10 +451,17 @@ void SearchManager::addLink(const QString& url)
             EntitiesSetItem_t rve(new RemoteVideoEntity());
             rve->setCreatedByUrl(url, name);
 
-            if (m_allEntities.insert(rve).second)
+            auto ins = m_allEntities.insert(rve);
+            if (ins.second)
             {
                 connect(rve.data(), &RemoteVideoEntity::startByUrlFailed, [bda]() -> void { bda(bda); });
                 rve->requestStartDownload();
+            }
+            else if (single) {
+                if (auto dl = (*ins.first)->actualDownload())
+                {
+                    emit selectDownload(dl);
+                }
             }
         }
         else if (global_functions::isVideoFile(url))
@@ -460,9 +469,16 @@ void SearchManager::addLink(const QString& url)
             EntitiesSetItem_t rve(new RemoteVideoEntity());
             rve->setDirectByUrl(url);
 
-            if (m_allEntities.insert(rve).second)
+            auto ins = m_allEntities.insert(rve);
+            if (ins.second)
             {
                 rve->requestStartDownload();
+            }
+            else if (single) {
+                if (auto dl = (*ins.first)->actualDownload())
+                {
+                    emit selectDownload(dl);
+                }
             }
         }
     };

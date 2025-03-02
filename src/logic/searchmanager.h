@@ -82,7 +82,7 @@ private:
     static DownloadEntity* createLibraryDE(const QString& fileName);
     void InitializeStrategies();
 
-    void addLink(const QString& url);
+    void addLink(const QString& url, bool single);
 
 private:
     struct rveHasher
@@ -120,6 +120,8 @@ Q_SIGNALS:
 
     void downloadProgressChanged(int progress);
     void downloadFinished(const QString& videoTitle);
+
+    void selectDownload(const DownloadEntity* selEntity);
 
 public Q_SLOTS:
     void onSearchResultsFound(const QList<SearchResult>& searchResults);

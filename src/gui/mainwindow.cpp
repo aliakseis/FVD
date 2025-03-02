@@ -141,6 +141,7 @@ MainWindow::MainWindow(QWidget* parent)
                    SLOT(onDownloadProgressChanged(int))));
     VERIFY(connect(&SearchManager::Instance(), SIGNAL(downloadFinished(const QString&)),
                    SLOT(onDownloadFinished(const QString&))));
+    connect(&SearchManager::Instance(), &SearchManager::selectDownload, this, &MainWindow::activateDownloadsForm);
 
     m_askForSavingModelTimer.setSingleShot(true);
     connect(&m_askForSavingModelTimer, &QTimer::timeout, this, &MainWindow::condsiderSavingModel);
