@@ -77,10 +77,13 @@ void DownloadEntity::onSpeed(qint64 bytesPerSecond)
 
 void DownloadEntity::onFinished()
 {
-    if (getParent()->m_videoInfo.duration == 0)
+    if (getParent()->m_videoInfo.duration == 0 || currentResolution().isEmpty())
     {
         auto durationAndResolution = getVideoDurationAndResolution(filename());
-        getParent()->m_videoInfo.duration = std::lround(durationAndResolution.first);
+        if (getParent()->m_videoInfo.duration == 0)
+        {
+            getParent()->m_videoInfo.duration = std::lround(durationAndResolution.first);
+        }
         if (currentResolution().isEmpty())
         {
             setCurrentResolution(durationAndResolution.second);

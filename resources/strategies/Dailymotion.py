@@ -134,7 +134,7 @@ def Dailymotion_extractDirectLinks(link, receiver) :
             entity["resolution"] = x["resolution"]
             entity["extension"] = x["ext"]
 
-            if x["height"] > height:
+            if 'height' in x and x["height"] > height:
                 height = x["height"]
                 best = i
 
