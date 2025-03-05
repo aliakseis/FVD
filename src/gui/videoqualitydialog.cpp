@@ -56,10 +56,13 @@ void VideoQualityDialog::onLinksExtracted()
     ui->listWidget->show();
     ui->listWidget->clear();
     int dialogWidth = 120;
+    int num = 0;
     foreach (LinkInfo link, m_entity->m_resolutionLinks)
     {
         int row = ui->listWidget->count();
-        QString displayData = link.resolution + " " + link.extension;
+        const auto res = link.resolution.isEmpty()
+            ? QStringLiteral("#%1").arg(++num) : link.resolution;
+        QString displayData = res + " " + link.extension;
         auto* item = new QListWidgetItem(displayData, ui->listWidget);
         item->setData(Qt::UserRole, link.resolutionId);
         ui->listWidget->insertItem(row, item);
