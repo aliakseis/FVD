@@ -65,8 +65,8 @@ auto pythonQtInstance() {
             }
         }
 
-        QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut, [](const QString& str) { qInfo() << str; });
-        QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr, [](const QString& str) { qCritical() << str; });
+        QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut, [](const QString& str) { if (str.length() > 1) qInfo() << str; });
+        QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr, [](const QString& str) { if (str.length() > 1) qCritical() << str; });
 
         succeeded = true;
     });

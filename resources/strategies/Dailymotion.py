@@ -131,7 +131,10 @@ def Dailymotion_extractDirectLinks(link, receiver) :
                 continue
 
             entity["url"] = x["url"]
-            entity["resolution"] = x["resolution"]
+            if 'resolution' in x and x["resolution"]:
+                entity["resolution"] = x["resolution"]
+            elif 'format' in x:
+                entity["resolution"] = x["format"]
             entity["extension"] = x["ext"]
 
             if 'http_headers' in x:
@@ -140,6 +143,9 @@ def Dailymotion_extractDirectLinks(link, receiver) :
                     headers.append(k)
                     headers.append(str(v))
                     entity["http_headers"] = headers
+
+            if 'cookies' in x:
+                entity["cookies"] = x["cookies"]
 
             if 'height' in x and x["height"] > height:
                 height = x["height"]
