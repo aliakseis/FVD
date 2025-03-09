@@ -259,7 +259,8 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         if (!m_downloads.isEmpty())  // We appended one empty download
         {
             DownloadEntity* de = m_downloads[m_downloads.size() - 1];
-            de->setState(DownloadEntity::kFailed);
+            if (de->state() != DownloadEntity::kFinished)
+                de->setState(DownloadEntity::kFailed);
         }
         m_lastErrorCode = Errors::FailedToExtractLinks;
     }
@@ -353,6 +354,10 @@ void RemoteVideoEntity::manageDownloads()
     {
         --it;
         DownloadEntity* de = *it;
+        if (de->state() == DownloadEntity::kFinished)
+        {
+            continue;
+        }
         const bool entityBeingReloaded = DownloadEntity::kFailed == de->state() && !de->isFailed();
         if (nextIteraion && !entityBeingReloaded)
         {
