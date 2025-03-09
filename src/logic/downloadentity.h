@@ -270,6 +270,7 @@ private:
     qint64 m_downloadedSize;
     RemoteVideoEntity* m_parentVideoEntity;
     QString m_url;
+    QStringList m_httpHeaders;
     QString m_speed;
     QString m_fileExtension;
     VisibilityState m_visibilityState;

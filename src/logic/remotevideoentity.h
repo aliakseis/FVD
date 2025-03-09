@@ -21,6 +21,7 @@ struct LinkInfo
 {
     int resolutionId;
     QString resolution, extension, directLink;
+    QStringList httpHeaders;
 
     LinkInfo(int resId = 0, const QString& resolution_ = QString(), const QString& extension_ = QString(),
              const QString& link = QString())

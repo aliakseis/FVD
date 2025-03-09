@@ -77,13 +77,6 @@ struct DownloaderObserverInterface
 template <class SpeedControl = speed_readable_tag, bool delete_file_if_error = true>
 class Downloader : public detail::DownloaderBase<SpeedControl>, public Downloadable
 {
-    static QNetworkRequest getNetworkRequest(const QUrl& url)
-    {
-        QNetworkRequest request(url);
-        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
-        return request;
-    }
-
 public:
     typedef Downloader<SpeedControl, delete_file_if_error> class_type;
     typedef SpeedControl speed_access_category;
@@ -203,10 +196,11 @@ public:
     /// \param [in,out]    network_manager    If non-null, manager for network.
     /// \param    filename                   (Optional) Desired filename. May change depending on filename policy. If empty filename from reply will be used.
     /// \see            DuplicateDownloadNamePolicy
-    void Start(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString())
+    void Start(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
     {
         Q_ASSERT(network_manager);
         filename_ = filename;
+        http_headers_ = httpHeaders;
         download_from_url_ = true;
         doStart(url, QFileInfo(url.path()).fileName(), network_manager->get(getNetworkRequest(url)), network_manager);
     }
@@ -252,11 +246,12 @@ public:
     /// \param [in,out]    network_manager    If non-null, manager for network.
     /// \param    filename                   (Optional) filename have to coincide with previous.
 
-    void Resume(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString())
+    void Resume(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
     {
         Q_ASSERT(network_manager);
         filename_ = filename;
         output_.setFileName(SaveFileName(QFileInfo(url.path()).fileName()));
+        http_headers_ = httpHeaders;
         download_from_url_ = true;
         doResume(url, getNetworkRequest(url), network_manager);
     }
@@ -302,6 +297,21 @@ public:
     bool isRunning() const { return current_download_ != 0; }
 
 private:
+    QNetworkRequest getNetworkRequest(const QUrl& url)
+    {
+        QNetworkRequest request(url);
+        if (http_headers_.empty())
+            request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+        else
+        {
+            for (int i = 0; i < http_headers_.size() - 1; i += 2)
+            {
+                request.setRawHeader(http_headers_[i].toLatin1(), http_headers_[i + 1].toLatin1());
+            }
+        }
+        return request;
+    }
+
     // simplified adapter to void ProcessNetworkReply(QNetworkReply* reply, QNetworkAccessManager* network_manager, bool seekToTheEnd, speed_readable_tag)
     void ProcessNetworkReply(QNetworkReply* reply, QNetworkAccessManager* network_manager, bool seekToTheEnd = true)
     {
@@ -891,6 +901,7 @@ private:
     QString filename_;
     QFile output_;
     QUrl current_url_;
+    QStringList http_headers_;
     qint64 paused_download_size_, expected_size_;
     QPointer<QNetworkReply> current_download_;
     QNetworkReply* current_header_;

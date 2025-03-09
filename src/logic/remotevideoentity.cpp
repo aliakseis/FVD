@@ -390,6 +390,7 @@ void RemoteVideoEntity::onlinksExtracted(QVariantMap links, int preferredResolut
         linkInfo.directLink = map["url"].toString();
         linkInfo.extension = map["extension"].toString();
         linkInfo.resolution = map["resolution"].toString();
+        linkInfo.httpHeaders = map["http_headers"].toStringList();
         linkInfo.resolutionId = it.key().toInt();
         linksMap[it.key().toInt()] = linkInfo;
     }

@@ -158,6 +158,7 @@ void DownloadEntity::doSetup(const LinkInfo& linkInfo)
         savePath + m_filepath + "(" + QString(linkInfo.resolution).remove(filenameEnemies) + ")." + linkInfo.extension;
 
     m_url = linkInfo.directLink;
+    m_httpHeaders = linkInfo.httpHeaders;
     m_currentResolutionId = linkInfo.resolutionId;
     m_currentResolution = linkInfo.resolution;
     m_fileExtension = linkInfo.extension;
@@ -184,7 +185,10 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    downloader()->Start(m_url, &TheQNetworkAccessManager::Instance(), QFileInfo(m_filepath).fileName());
+    downloader()->Start(m_url, 
+        &TheQNetworkAccessManager::Instance(), 
+        QFileInfo(m_filepath).fileName(),
+        m_httpHeaders);
     emit downloadStarted(m_url);
     if (m_state != kFailed)
     {
@@ -211,7 +215,10 @@ bool DownloadEntity::doResume()
     }
     if (QFile::exists(m_filepath))
     {
-        downloader()->Resume(m_url, &TheQNetworkAccessManager::Instance(), QFileInfo(m_filepath).fileName());
+        downloader()->Resume(m_url, 
+            &TheQNetworkAccessManager::Instance(), 
+            QFileInfo(m_filepath).fileName(),
+            m_httpHeaders);
         if (m_state != kFinished)  // it can happen so that all the file is downloaded already
         {
             setState(kDownloading);
@@ -273,6 +280,7 @@ bool DownloadEntity::doRestart()
         }
 
         m_url = QString();
+        m_httpHeaders = QStringList();
         getParent()->extractLinks();
     }
     else
