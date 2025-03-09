@@ -545,12 +545,12 @@ private:
                     if (0 == paused_download_size_) // we are not resuming
                     {
                         KillFile();
-                        Start(redirect_src, network_manager_, filename_);
+                        Start(redirect_src, network_manager_, filename_, http_headers_);
                     }
                     else
                     {
                         output_.close();
-                        Resume(redirect_src, network_manager_, filename_);
+                        Resume(redirect_src, network_manager_, filename_, http_headers_);
                     }
                     return false;
                 }
