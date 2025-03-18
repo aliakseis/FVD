@@ -37,6 +37,42 @@ static QString UnescapeForHTML(QString text)
     return text;
 }
 
+/// Removes surrounding double quotes from a value if they exist.
+static QString unquote(const QString& value) {
+    QString trimmed = value.trimmed();
+    if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length() > 1) {
+        return trimmed.mid(1, trimmed.length() - 2);
+    }
+    return trimmed;
+}
+
+/// Processes an entire Cookie header string, removing quotes from any cookie values.
+static QString removeQuotesFromCookieHeader(const QString& cookieHeader) {
+    // Split the header by ';'
+    QStringList parts = cookieHeader.split(';', Qt::SkipEmptyParts);
+    for (int i = 0; i < parts.size(); ++i) {
+        // Trim whitespace for each token.
+        QString part = parts[i].trimmed();
+
+        // Try to find a '=' character.
+        int eqIndex = part.indexOf('=');
+        if (eqIndex != -1) {
+            // Separate the key and value.
+            QString key = part.left(eqIndex).trimmed();
+            QString value = part.mid(eqIndex + 1).trimmed();
+
+            // Remove quotes from the value if needed.
+            parts[i] = key + "=" + unquote(value);
+        }
+        else {
+            // If no '=' is found (e.g. a flag like "Secure"), just keep the trimmed part.
+            parts[i] = part;
+        }
+    }
+
+    // Join the parts back with a "; " delimiter.
+    return parts.join("; ");
+}
 
 class FileReleasedRestartCallback : public NotifyHelper
 {
@@ -399,6 +435,7 @@ void RemoteVideoEntity::onlinksExtracted(QVariantMap links, int preferredResolut
         auto cookies = map["cookies"].toString();
         if (!cookies.isEmpty())
         {
+            cookies = removeQuotesFromCookieHeader(cookies);
             linkInfo.httpHeaders.push_back("Cookie");
             linkInfo.httpHeaders.push_back(cookies);
         }
