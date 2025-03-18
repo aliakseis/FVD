@@ -14,6 +14,10 @@
 
 #include <mutex>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 namespace {
 
 bool isPythonInstalled()
@@ -46,6 +50,18 @@ auto pythonQtInstance() {
             showPythonNotInstalledMessageBox();
             return;
         }
+
+#ifdef Q_OS_WIN
+        // Allocate a console for the process.
+        if (AllocConsole()) {
+            // Get the handle to the new console window.
+            HWND hwndConsole = GetConsoleWindow();
+            if (hwndConsole != NULL) {
+                // Hide the console window.
+                ShowWindow(hwndConsole, SW_HIDE);
+            }
+        }
+#endif
 
         PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
         atexit(PythonQt::cleanup);

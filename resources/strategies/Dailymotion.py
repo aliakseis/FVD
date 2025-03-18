@@ -111,6 +111,7 @@ def Dailymotion_extractDirectLinks(link, receiver) :
     ydl_opts = {
         'format': 'best',
         'get-url': True,
+        'verbose': True,  # Enable verbose output
     }
 
     s = yt_dlp.YoutubeDL(ydl_opts).extract_info(link, download=False)['formats']
