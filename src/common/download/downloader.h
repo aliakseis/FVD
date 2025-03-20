@@ -687,7 +687,7 @@ private:
         qDebug() << __FUNCTION__ << " code=" << code//utilities::ErrorCode::instance().getDescription(code).key 
             << " url= " << current_url_;
         KillReply();
-        if (delete_file_if_error)
+        if (delete_file_if_error || output_.isOpen() && output_.size() == 0)
         {
             KillFile();
         }
