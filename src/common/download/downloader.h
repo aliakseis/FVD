@@ -378,6 +378,11 @@ private:
             return;
         }
         // create or open file to download to
+        if (!start_filename_.isEmpty())
+        {
+            output_.setFileName(ApplyDownloadNamePolicy(start_filename_));
+            start_filename_.clear();
+        }
         if (!output_.open(QIODevice::ReadWrite))
         {
             qDebug() << "ProcessNetworkReply() can't open file for writing url=" << current_url_ << ", filename=\"" << output_.fileName() << '"';
@@ -448,8 +453,9 @@ private:
     {
         qDebug() << "download::doStart " << url;
         paused_download_size_ = 0;
-        QString path = SaveFileName(remoteFileName);
-        output_.setFileName(ApplyDownloadNamePolicy(path));
+        //QString path = SaveFileName(remoteFileName);
+        //output_.setFileName(ApplyDownloadNamePolicy(path));
+        start_filename_ = SaveFileName(remoteFileName);
         current_url_ = url;
         ProcessNetworkReply(reply, network_manager);
     }
@@ -899,6 +905,7 @@ private:
     State state_;
     SpeedCalculation speed_calculation_;
     QString filename_;
+    QString start_filename_;
     QFile output_;
     QUrl current_url_;
     QStringList http_headers_;
