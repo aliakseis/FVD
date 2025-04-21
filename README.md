@@ -6,7 +6,7 @@ Either drag-and-drop an URL from a web browser or use the built-in search:
 
 ![Image](https://github.com/user-attachments/assets/43d17008-e23c-4938-aab8-0e5b31e71b35)
 
-This is (not) the greatest stuff in the world. [This is just a tribute.](resources/strategies/YouTube.py)
+Can be considered as an example of C++/Qt <-> Python integration.
 
 Sometimes it is needed to visit pytube issues list and apply fixes, for example 
 - https://github.com/pytube/pytube/issues/1498
