@@ -133,22 +133,26 @@ bool PythonEngine::loadFile(const QString& filename)
 
 QVariant PythonEngine::invokeFunction(const QString& object, const QString& method, const QVariantList& arguments /*= QVariantList()*/)
 {
-    //QStringList l = PythonQt::self()->introspection(PythonQt::self()->getMainModule(), callable, PythonQt::CallOverloads);
-    //qDebug() << l;
-    //auto obj = pythonQtInstance()->lookupObject(pythonQtInstance()->getMainModule(), callable);
-    //PyObject* pDocString = PyObject_GetAttrString(obj, "__doc__");
-    //if (pDocString)
-    //{
-    //    const char* docString = PyUnicode_AsUTF8(pDocString);
-    //    if (docString)
-    //    {
-    //        std::string result(docString);
-    //    }
-    //    Py_DECREF(pDocString);
-    //}
     if (auto inst = pythonQtInstance())
     {
         QString callable = (object.isEmpty()) ? method : object + QStringLiteral(".") + method;
+        /*
+        QStringList l = PythonQt::self()->introspection(PythonQt::self()->getMainModule(), callable, PythonQt::CallOverloads);
+        qDebug() << l;
+        if (auto obj = pythonQtInstance()->lookupObject(pythonQtInstance()->getMainModule(), callable))
+        {
+            if (auto pDocString = PyObject_GetAttrString(obj, "__doc__"))
+            {
+                const char* docString = PyUnicode_AsUTF8(pDocString);
+                if (docString)
+                {
+                    QString result(docString);
+                    qInfo() << result;
+                }
+                Py_DECREF(pDocString);
+            }
+        }
+        //*/
         std::lock_guard<std::mutex> guard(pythonMonitor);
         return inst->getMainModule().call(callable, arguments);
     }
