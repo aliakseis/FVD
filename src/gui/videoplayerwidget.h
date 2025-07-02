@@ -56,7 +56,7 @@ public:
     void exitFullScreen();
 
 private:
-    void playFile(const QString& fileName);
+    void playFile(QString fileName);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -74,6 +74,7 @@ private slots:
     void openVideoInBrowser(bool alt);
     void onPlayDownloadEntityAsynchronously(const QPointer<DownloadEntity>& entity);
     void onDownloadStateChanged(Downloadable::State newState, Downloadable::State prevState);
+    void onCustomContextMenuRequested(const QPoint& pos);
 
     /// \fn	void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage = true);
     ///
@@ -113,6 +114,7 @@ private:
     PlayerHeader* m_playerHeader{};
     RemoteVideoEntity* m_currentEntity{};
     int m_selectedRowNumber = 0;
+    bool m_repeatedPlaying = false;
 };
 
 VideoPlayerWidget* VideoPlayerWidgetInstance();

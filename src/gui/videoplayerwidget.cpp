@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QResizeEvent>
+#include <QMenu>
 
 #include "descriptionpanel.h"
 #include "downloadentity.h"
@@ -15,6 +16,7 @@
 #include "videocontrol.h"
 #include "videoprogressbar.h"
 #include "videowidget.h"
+#include "customdockwidget.h"
 
 VideoPlayerWidget* VideoPlayerWidgetInstance()
 {
@@ -53,9 +55,12 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
       m_spinner(nullptr),
       m_videoWidget(new VideoWidget(this))
 {
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
     qRegisterMetaType<QPointer<DownloadEntity> >("QPointer<DownloadEntity>");
     VERIFY(connect(this, SIGNAL(playDownloadEntityAsynchronously(const QPointer<DownloadEntity>&)),
                    SLOT(onPlayDownloadEntityAsynchronously(const QPointer<DownloadEntity>&)), Qt::QueuedConnection));
+    connect(this, &QWidget::customContextMenuRequested, this, &VideoPlayerWidget::onCustomContextMenuRequested);
     VERIFY(connect(getDecoder(), SIGNAL(fileReleased(bool)), SLOT(updateViewOnVideoStop(bool))));
     VERIFY(connect(getDecoder(), SIGNAL(playingFinished()), SLOT(onPlayingFinished())));
     VERIFY(connect(getDecoder(), SIGNAL(fileProbablyNotFull()), SLOT(disableSeeking())));
@@ -317,6 +322,7 @@ void VideoPlayerWidget::setControl(VideoControl* controlWidget)
 
 void VideoPlayerWidget::stopVideo(bool showDefaultImage)
 {
+    m_repeatedPlaying = false;
     hideSpinner();
     if (!getDecoder()->isFileLoaded())
     {
@@ -332,15 +338,16 @@ void VideoPlayerWidget::stopVideo(bool showDefaultImage)
     }
 }
 
-void VideoPlayerWidget::playFile(const QString& fileName)
+void VideoPlayerWidget::playFile(QString fileName)
 {
     hideSpinner();
     if (QFile::exists(fileName))
     {
         Q_ASSERT(!fileName.isEmpty());
-        m_currentFile = fileName;
+        m_currentFile.clear();
         FFmpegDecoder* decoder = getDecoder();
-        decoder->openFile(m_currentFile);
+        decoder->openFile(fileName);
+        m_currentFile = std::move(fileName);
         const bool fromPendingHeaderPaused = state() == PendingHeaderPaused;
         if (fromPendingHeaderPaused)
         {
@@ -608,7 +615,11 @@ void VideoPlayerWidget::exitFullScreen() { onPlayingFinished(); }
 
 void VideoPlayerWidget::onPlayingFinished()
 {
-    if ((m_videoWidget != nullptr) && m_videoWidget->isFullScreen())
+    if (m_repeatedPlaying && !m_currentFile.isEmpty())
+    {
+        playFile(m_currentFile);
+    }
+    else if ((m_videoWidget != nullptr) && m_videoWidget->isFullScreen())
     {
         m_videoWidget->fullScreen(false);
     }
@@ -625,6 +636,39 @@ void VideoPlayerWidget::onDownloadStateChanged(Downloadable::State newState, Dow
         disconnect(m_currentDownload, nullptr, m_progressBar, nullptr);
         disconnect(m_currentDownload, nullptr, getDecoder(), nullptr);
         setState(InitialState);
+    }
+}
+
+void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
+{
+    QMenu menu(this);
+
+    // 1) "Repeat playing" action (checkable)
+    QAction* repeatAction = menu.addAction(tr("Repeat playing"));
+    repeatAction->setCheckable(true);
+    repeatAction->setChecked(m_repeatedPlaying);
+
+    const bool isFullScreen = m_videoWidget && m_videoWidget->isFullScreen();
+
+    // 2) "Full screen" / "Exit full screen" action
+    QAction* fullScreenAction = menu.addAction(
+        isFullScreen ? tr("Exit Full Screen") : tr("Full Screen"));
+
+    // Show the menu at the cursor position
+    QAction* chosen = menu.exec(QCursor::pos());
+    if (!chosen)
+        return;
+
+    // Handle the user's choice
+    if (chosen == repeatAction) {
+        // Toggle the flag and the check state is already updated by Qt
+        m_repeatedPlaying = repeatAction->isChecked();
+    }
+    else if (chosen == fullScreenAction) {
+        if (isFullScreen)
+            m_videoWidget->fullScreen(false);
+        else
+            MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::FullScreen);
     }
 }
 
