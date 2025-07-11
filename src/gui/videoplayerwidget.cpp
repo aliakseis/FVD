@@ -654,6 +654,14 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
     QAction* fullScreenAction = menu.addAction(
         isFullScreen ? tr("Exit Full Screen") : tr("Full Screen"));
 
+    QAction* showInFolderAction = nullptr;
+    QAction* showInLibraryAction = nullptr;
+    if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
+    {
+        showInFolderAction = menu.addAction(tr("Show in folder"));
+        showInLibraryAction = menu.addAction(tr("Show in Library"));
+    }
+
     // Show the menu at the cursor position
     QAction* chosen = menu.exec(QCursor::pos());
     if (!chosen)
@@ -669,6 +677,20 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
             m_videoWidget->fullScreen(false);
         else
             MainWindow::Instance()->dockWidget()->setVisibilityState(CustomDockWidget::FullScreen);
+    }
+    else if (chosen == showInFolderAction)
+    {
+        if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
+        {
+            utilities::SelectFile(download->filename(), global_functions::GetVideoFolder());
+        }
+    }
+    else if (chosen == showInLibraryAction)
+    {
+        if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
+        {
+            MainWindow::Instance()->openLibraryTab(download);
+        }
     }
 }
 
