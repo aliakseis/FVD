@@ -22,9 +22,9 @@ Rectangle {
         Item {
             Rectangle {
                 anchors.centerIn: parent;
-                height: parent.height - 18;
-                width:parent.width - 18;
-                color: "lightsteelblue"
+                height: parent.height - 16;
+                width:parent.width - 16;
+                color: "deepskyblue"
                 radius: 5
             }
         }
