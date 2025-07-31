@@ -23,6 +23,7 @@
 #include "libraryform.h"
 #include "librarymodel.h"
 #include "maintoolbar.h"
+#include "player/ffmpegdecoder.h"
 #include "playerheader.h"
 #include "preferences.h"
 #include "searchmanager.h"
@@ -302,7 +303,11 @@ void MainWindow::activateSearchForm()
 
 void MainWindow::activateLibraryForm(const DownloadEntity* selEntity)
 {
-    ui->dockWidget->setVisibilityState(CustomDockWidget::FullyHidden);
+    auto decoder = VideoPlayerWidgetInstance()->getDecoder();
+    if (!decoder || !decoder->isPlaying())
+    {
+        ui->dockWidget->setVisibilityState(CustomDockWidget::FullyHidden);
+    }
     m_centralWidget->setCurrentWidget(m_libraryForm);
     m_libraryForm->onActivated(selEntity);
 }
