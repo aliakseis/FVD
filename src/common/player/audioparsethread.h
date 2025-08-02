@@ -17,6 +17,7 @@ private:
 
 private:
     void handlePacket(const AVPacket& packet);
+    void seek(const AVPacket& packet);
 
 public:
     explicit AudioParseThread(FFmpegDecoder* parent)

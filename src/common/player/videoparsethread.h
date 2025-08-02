@@ -21,4 +21,5 @@ public:
 private:
     bool handlePacket(AVPacket& packet);
     bool getVideoPacket(AVPacket* packet);
+    void seek();
 };

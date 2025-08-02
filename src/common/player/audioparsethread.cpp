@@ -82,6 +82,44 @@ bool AudioParseThread::getAudioPacket(AVPacket* packet)
     return false;
 }
 
+void AudioParseThread::seek(const AVPacket& packet)
+{
+    const bool isVE = (m_ffmpeg->m_mainVideoThread != nullptr);
+
+    QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
+    m_ffmpeg->m_seekFlags |= (isVE) ? 0x8 : 0xC;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+    if (isVE)
+    {
+        m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x4) != 0; },
+            &m_ffmpeg->m_seekFlagsMtx);
+    }
+
+    if (packet.pts != AV_NOPTS_VALUE)
+    {
+        m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
+    }
+    else
+    {
+        qDebug() << "No audio pts found";
+        m_ffmpeg->close();
+    }
+
+    m_ffmpeg->m_seekFlags &= (isVE) ? ~0x2 : ~0x3;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+    if (isVE)
+    {
+        m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x1) == 0; },
+            &m_ffmpeg->m_seekFlagsMtx);
+    }
+
+    // qDebug() << "ASOUT: " << seekflags << " = " << *seekflags;
+    m_ffmpeg->m_seekFlags |= (isVE) ? 0x20 : 0x30;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+
+    TAG("ffmpeg_sync") << "Audio position: " << m_ffmpeg->m_audioPTS;
+}
+
 void AudioParseThread::run()
 {
     TAG("ffmpeg_threads") << "Audio thread started";
@@ -192,40 +230,7 @@ void AudioParseThread::run()
 
                     if (packet.data != m_ffmpeg->m_downloadingPacket.data)
                     {
-                        const bool isVE = (m_ffmpeg->m_mainVideoThread != nullptr);
-
-                        QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
-                        m_ffmpeg->m_seekFlags |= (isVE) ? 0x8 : 0xC;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-                        if (isVE)
-                        {
-                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x4) != 0; },
-                                &m_ffmpeg->m_seekFlagsMtx);
-                        }
-
-                        if (packet.pts != AV_NOPTS_VALUE)
-                        {
-                            m_ffmpeg->m_audioPTS = av_q2d(m_ffmpeg->m_audioStream->time_base) * packet.pts;
-                        }
-                        else
-                        {
-                            qDebug() << "No audio pts found";
-                            m_ffmpeg->close();
-                        }
-
-                        m_ffmpeg->m_seekFlags &= (isVE) ? ~0x2 : ~0x3;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-                        if (isVE)
-                        {
-                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x1) == 0; },
-                                &m_ffmpeg->m_seekFlagsMtx);
-                        }
-
-                        // qDebug() << "ASOUT: " << seekflags << " = " << *seekflags;
-                        m_ffmpeg->m_seekFlags |= (isVE) ? 0x20 : 0x30;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-
-                        TAG("ffmpeg_sync") << "Audio position: " << m_ffmpeg->m_audioPTS;
+                        seek(packet);
 
                         break;
                     }

@@ -25,6 +25,43 @@ bool VideoParseThread::getVideoPacket(AVPacket* packet)
     return false;
 }
 
+void VideoParseThread::seek()
+{
+    int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
+    if (pts == AV_NOPTS_VALUE)
+    {
+        pts = 0;
+    }
+    double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
+
+    // Before sync we must sure that audio thread also begining sync
+    const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
+
+    QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
+    // qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
+    m_ffmpeg->m_seekFlags |= (isAE) ? 0x4 : 0xC;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+    if (isAE)
+    {
+        m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
+            &m_ffmpeg->m_seekFlagsMtx);
+    }
+
+    m_ffmpeg->m_videoStartClock = getCurrentTime() - stamp;
+
+    m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+    if (isAE)
+    {
+        m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
+            &m_ffmpeg->m_seekFlagsMtx);
+    }
+
+    // qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
+    m_ffmpeg->m_seekFlags |= (isAE) ? 0x10 : 0x30;
+    m_ffmpeg->m_seekFlagsCV.wakeAll();
+}
+
 void VideoParseThread::run()
 {
     TAG("ffmpeg_threads") << "Video thread started";
@@ -150,40 +187,7 @@ void VideoParseThread::run()
                     frameFinished = handlePacket(packet);
                     if (frameFinished)
                     {
-                        int64_t pts = m_ffmpeg->m_videoFrame->best_effort_timestamp;
-                        if (pts == AV_NOPTS_VALUE)
-                        {
-                            pts = 0;
-                        }
-                        double stamp = av_q2d(m_ffmpeg->m_videoStream->time_base) * pts;
-
-                        // Before sync we must sure that audio thread also begining sync
-                        const bool isAE = (m_ffmpeg->m_mainAudioThread != nullptr);
-
-                        QMutexLocker ml(&m_ffmpeg->m_seekFlagsMtx);
-                        // qDebug() << "VSIN: " << seekflags << " = " << *seekflags;
-                        m_ffmpeg->m_seekFlags |= (isAE) ? 0x4 : 0xC;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-                        if (isAE)
-                        {
-                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x8) != 0; },
-                                                            &m_ffmpeg->m_seekFlagsMtx);
-                        }
-
-                        m_ffmpeg->m_videoStartClock = getCurrentTime() - stamp;
-
-                        m_ffmpeg->m_seekFlags &= (isAE) ? ~0x1 : ~0x3;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-                        if (isAE)
-                        {
-                            m_ffmpeg->m_seekFlagsCV.wait([this]() { return (m_ffmpeg->m_seekFlags & 0x2) == 0; },
-                                                            &m_ffmpeg->m_seekFlagsMtx);
-                        }
-
-                        // qDebug() << "VSOUT: " << seekflags << " = " << *seekflags;
-                        m_ffmpeg->m_seekFlags |= (isAE) ? 0x10 : 0x30;
-                        m_ffmpeg->m_seekFlagsCV.wakeAll();
-
+                        seek();
                         seekDone = true;
 
                         break;
