@@ -120,10 +120,10 @@ FFmpegDecoder::FFmpegDecoder()
     m_resizeWithDecoder = false;
 
     // Init control packets
-    av_init_packet(&m_seekPacket);
+    //av_init_packet(&m_seekPacket);
     m_seekPacket.data = (uint8_t*)(intptr_t) "SEEKING";
     m_seekPacket.size = (int)strlen("SEEKING");
-    av_init_packet(&m_downloadingPacket);
+    //av_init_packet(&m_downloadingPacket);
     m_downloadingPacket.data = (uint8_t*)(intptr_t) "DOWNLOADING";
     m_downloadingPacket.size = (int)strlen("DOWNLOADING");
 

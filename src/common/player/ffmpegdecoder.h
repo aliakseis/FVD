@@ -169,7 +169,7 @@ private:
     AVFormatContext* m_formatContext;
 
     // Flush packet
-    AVPacket m_seekPacket;
+    AVPacket m_seekPacket{};
     unsigned int m_seekFlags;
 
     std::atomic_int64_t m_seekFrame;
@@ -180,7 +180,7 @@ private:
     std::atomic_uint m_generation = 0;
 
     // Downloading packet
-    AVPacket m_downloadingPacket;
+    AVPacket m_downloadingPacket{};
 
     // Video Stuff
     const AVCodec* m_videoCodec;
