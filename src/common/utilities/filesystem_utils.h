@@ -11,9 +11,6 @@ namespace utilities
 {
 
 // returns true if success
-bool MoveToTrash(const QString& path);
-
-// returns true if success
 bool DeleteFileWithWaiting(const QString& file);
 
 void SelectFile(const QString& fileName, const QString& defFolderName);

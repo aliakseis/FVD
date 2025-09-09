@@ -243,7 +243,19 @@ void DownloadEntity::doRemove()
         setVisibilityState(visLibOnly);
     }
 
-    utilities::DeleteFileWithWaiting(m_filepath);
+    QFileInfo info(m_filepath);
+    if (!info.exists()) {
+        qWarning() << "Path does not exist:" << m_filepath;
+    }
+    else if (info.isDir()) {
+        // Move directory to Recycle Bin / Trash
+        if (!QFile::moveToTrash(m_filepath)) {
+            qWarning() << "Failed to move folder to trash:" << m_filepath;
+        }
+    }
+    else {
+        utilities::DeleteFileWithWaiting(m_filepath);
+    }
 }
 
 void DownloadEntity::doStop()
