@@ -438,40 +438,43 @@ void VideoPlayerWidget::resumeVideo()
 
 void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/)
 {
-    if (m_videoWidget->isFullScreen())
+    if (!m_repeatedPlaying || m_currentFile.isEmpty())
     {
-        m_videoWidget->fullScreen(false);
-    }
+        if (m_videoWidget->isFullScreen())
+        {
+            m_videoWidget->fullScreen(false);
+        }
 
-    emit showPlaybutton(true);
+        emit showPlaybutton(true);
 
-    if (m_currentDownload != nullptr)
-    {
-        disconnect(m_currentDownload, nullptr, m_progressBar, nullptr);
-        disconnect(m_currentDownload, nullptr, getDecoder(), nullptr);
-    }
+        if (m_currentDownload != nullptr)
+        {
+            disconnect(m_currentDownload, nullptr, m_progressBar, nullptr);
+            disconnect(m_currentDownload, nullptr, getDecoder(), nullptr);
+        }
 
-    if ((m_currentDownload != nullptr) && (m_currentEntity != nullptr))
-    {
-        m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
-                                           m_currentEntity->m_videoInfo.description,
-                                           m_currentDownload->currentResolution(),
-                                           m_selectedRowNumber);
-        m_progressBar->resetProgress();
-        m_playerHeader->setVideoTitle(m_currentEntity->m_videoInfo.videoTitle);
-    }
-    else
-    {
-        m_currentFile = QString();
-        m_progressBar->resetProgress();
-        m_playerHeader->setVideoTitle({});
-        m_descriptionPanel->resetDescription();
-    }
-    setState(InitialState);
+        if ((m_currentDownload != nullptr) && (m_currentEntity != nullptr))
+        {
+            m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
+                m_currentEntity->m_videoInfo.description,
+                m_currentDownload->currentResolution(),
+                m_selectedRowNumber);
+            m_progressBar->resetProgress();
+            m_playerHeader->setVideoTitle(m_currentEntity->m_videoInfo.videoTitle);
+        }
+        else
+        {
+            m_currentFile = QString();
+            m_progressBar->resetProgress();
+            m_playerHeader->setVideoTitle({});
+            m_descriptionPanel->resetDescription();
+        }
+        setState(InitialState);
 
-    if (showDefaultImage)
-    {
-        m_videoWidget->setPreviewPicture(m_currentEntity);
+        if (showDefaultImage)
+        {
+            m_videoWidget->setPreviewPicture(m_currentEntity);
+        }
     }
 
     emit fileReleased();
