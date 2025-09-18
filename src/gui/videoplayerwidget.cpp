@@ -5,6 +5,8 @@
 #include <QPointer>
 #include <QResizeEvent>
 #include <QMenu>
+#include <QApplication>
+#include <QClipboard>
 
 #include "descriptionpanel.h"
 #include "downloadentity.h"
@@ -664,6 +666,11 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
         showInFolderAction = menu.addAction(tr("Show in folder"));
         showInLibraryAction = menu.addAction(tr("Show in Library"));
     }
+    QAction* copyUrlToClipboardAction = nullptr;
+    if (m_currentEntity != nullptr)
+    {
+        copyUrlToClipboardAction = menu.addAction(tr("Copy URL to Clipboard"));
+    }
 
     // Show the menu at the cursor position
     QAction* chosen = menu.exec(QCursor::pos());
@@ -693,6 +700,13 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
         if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
         {
             MainWindow::Instance()->openLibraryTab(download);
+        }
+    }
+    else if (chosen == copyUrlToClipboardAction)
+    {
+        if (m_currentEntity != nullptr)
+        {
+            QApplication::clipboard()->setText(m_currentEntity->m_videoInfo.originalUrl, QClipboard::Clipboard);
         }
     }
 }
