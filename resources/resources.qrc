@@ -136,10 +136,10 @@
         <file alias="stop_hover">images/downloadscontrol/btn_stop___hover.png</file>
     </qresource>
     <qresource prefix="/previewpanel">
-        <file alias="left_default">images/previewpanel/arrow-left-default.png</file>
-        <file alias="left_clicked">images/previewpanel/arrow-left-selected.png</file>
-        <file alias="right_default">images/previewpanel/arrow-right-default.png</file>
-        <file alias="right_clicked">images/previewpanel/arrow-right-selected.png</file>
+        <file alias="left_default">images/previewpanel/plus-default.png</file>
+        <file alias="left_clicked">images/previewpanel/plus-selected.png</file>
+        <file alias="right_default">images/previewpanel/cross-default.png</file>
+        <file alias="right_clicked">images/previewpanel/cross-selected.png</file>
         <file alias="scale_default">images/previewpanel/scale-default.png</file>
         <file alias="scale_clicked">images/previewpanel/scale-selected.png</file>
     </qresource>
