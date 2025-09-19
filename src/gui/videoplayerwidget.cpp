@@ -232,7 +232,8 @@ void VideoPlayerWidget::onPlayDownloadEntityAsynchronously(const QPointer<Downlo
 
     DownloadEntity* entity = e.data();
 
-    if (m_currentDownload != nullptr && entity != m_currentDownload)
+    if (//m_currentDownload != nullptr && 
+        entity != m_currentDownload)
     {
         stopVideo(false);
     }
@@ -455,11 +456,11 @@ void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/
             disconnect(m_currentDownload, nullptr, getDecoder(), nullptr);
         }
 
-        if ((m_currentDownload != nullptr) && (m_currentEntity != nullptr))
+        if (m_currentEntity != nullptr)
         {
             m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
                 m_currentEntity->m_videoInfo.description,
-                m_currentDownload->currentResolution(),
+                m_currentDownload? m_currentDownload->currentResolution() : m_currentEntity->prefResolution(),
                 m_selectedRowNumber);
             m_progressBar->resetProgress();
             m_playerHeader->setVideoTitle(m_currentEntity->m_videoInfo.videoTitle);

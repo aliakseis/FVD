@@ -219,7 +219,8 @@ QString RemoteVideoEntity::prefResolution() const
     {
         return entity->currentResolution();
     }
-    return m_resolutionLinks[m_preferredResolutionId].resolution;
+    return m_resolutionLinks.isEmpty()
+        ? QString() : m_resolutionLinks[m_preferredResolutionId].resolution;
 }
 
 DownloadEntity* RemoteVideoEntity::getLastVisible() const
