@@ -98,6 +98,21 @@ MainWindow::MainWindow(QWidget* parent)
       m_isModelFileOutdated(false)
 {
     ui->setupUi(this);
+
+    if (QSettings().value(app_settings::PlayerWidgetOnTheLeft, app_settings::PlayerWidgetOnTheLeft_Default).toBool()) {
+        addDockWidget(Qt::LeftDockWidgetArea, ui->dockWidget);
+    }
+
+    connect(ui->dockWidget, &QDockWidget::dockLocationChanged, [](Qt::DockWidgetArea area) {
+        bool isLeft = false;
+        switch (area) {
+        case Qt::LeftDockWidgetArea: isLeft = true; break;
+        case Qt::RightDockWidgetArea: break;
+        default: return;
+        }
+        QSettings().setValue(app_settings::PlayerWidgetOnTheLeft, isLeft);
+    });
+
     setContextMenuPolicy(Qt::NoContextMenu);
 
     const auto player = ui->dockFrame;

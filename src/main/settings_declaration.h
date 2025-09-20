@@ -44,6 +44,9 @@ const bool QuitAppWhenClosingWindow_Default = true;
 const char OpenInFolder[] = "OpenInFolder";
 const bool OpenInFolder_Default = true;
 
+const char PlayerWidgetOnTheLeft[] = "PlayerWidgetOnTheLeft";
+const bool PlayerWidgetOnTheLeft_Default = false;
+
 const char UseProxy[] = "UseProxy";
 const bool UseProxy_Default = false;
 
