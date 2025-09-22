@@ -483,7 +483,11 @@ void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage /* = false*/
     emit fileReleased();
 }
 
-VideoPlayerWidget::~VideoPlayerWidget() { stopVideo(); }
+VideoPlayerWidget::~VideoPlayerWidget() 
+{
+    m_repeatedPlaying = false;
+    stopVideo();
+}
 
 void VideoPlayerWidget::resizeEvent(QResizeEvent* event)
 {
