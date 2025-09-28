@@ -621,7 +621,11 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     m_descriptionPanel->resize(playerWidth, currHeight - yPos);
 }
 
-void VideoPlayerWidget::exitFullScreen() { onPlayingFinished(); }
+void VideoPlayerWidget::prepareToExit() 
+{
+    m_repeatedPlaying = false;
+    onPlayingFinished(); 
+}
 
 void VideoPlayerWidget::onPlayingFinished()
 {

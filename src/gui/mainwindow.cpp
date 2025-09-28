@@ -252,7 +252,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::prepareToExit()
 {
-    ui->dockFrame->exitFullScreen();
+    ui->dockFrame->prepareToExit();
     if ((m_downloadsForm != nullptr) &&
         QSettings().value(app_settings::ClearDownloadsOnExit, app_settings::ClearDownloadsOnExit_Default).toBool())
     {

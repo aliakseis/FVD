@@ -53,7 +53,7 @@ public:
     DownloadEntity* currentDownload() const { return m_currentDownload; }
     RemoteVideoEntity* entity() const { return m_currentEntity;  }
 
-    void exitFullScreen();
+    void prepareToExit();
 
 private:
     void playFile(QString fileName);
