@@ -10,7 +10,7 @@ void ThreadControl::setAbort()
 
     if (QMutex* const lock = m_lock)
     {
-        QMutexLocker locker(lock);
+        QMutexLocker locker(lock); // wait for m_lock to be released
     }
 
     if (InterruptibleWaitCondition* const waitCondition = m_waitCondition)
