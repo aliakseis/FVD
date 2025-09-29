@@ -45,7 +45,7 @@ Item {
             deleteLoader.sourceComponent = deleteButton;
     }
 
-    function looseHoverHandelr() {
+    function looseHoverHandler() {
         frameHoverTimer.stop();
         if(playLoader.status === Loader.Ready)
             playLoader.item.visible = false;
@@ -74,7 +74,7 @@ Item {
 
         onHoveredIndexChanged: {
             if(albumView.hoveredIndex != index)
-                looseHoverHandelr();
+                looseHoverHandler();
         }
     }
 
@@ -132,7 +132,7 @@ Item {
                             && !deleteLoader.hovered
                             && !delegate.isListenerWorking)
                     {
-                        delegate.looseHoverHandelr();
+                        delegate.looseHoverHandler();
                     }
                 }
             }
