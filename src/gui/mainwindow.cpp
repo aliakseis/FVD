@@ -473,6 +473,7 @@ const char documentNodeName[] = "document";
 const char modelNodeName[] = "model";
 const char downloadsNodeName[] = "downloads";
 const char libraryNodeName[] = "library";
+const char playerNodeName[] = "player";
 
 void MainWindow::loadModelData()
 {
@@ -498,6 +499,7 @@ void MainWindow::loadModelData()
         serializer.deserialize(&SearchManager::Instance(), modelNodeName);
         serializer.deserialize(m_downloadsForm->model(), downloadsNodeName);
         serializer.deserialize(m_libraryForm->model(), libraryNodeName);
+        serializer.deserialize(getPlayer(), playerNodeName);
 
         input.close();
     }
@@ -558,6 +560,7 @@ void MainWindow::saveModelData()
         serializer.serialize(&SearchManager::Instance(), modelNodeName);
         serializer.serialize(m_downloadsForm->model(), downloadsNodeName);
         serializer.serialize(m_libraryForm->model(), libraryNodeName);
+        serializer.serialize(getPlayer(), playerNodeName);
 
         stream.writeEndDocument();
         const bool failed = stream.hasError();

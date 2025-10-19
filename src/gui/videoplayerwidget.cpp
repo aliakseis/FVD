@@ -69,6 +69,8 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     VERIFY(connect(getDecoder(), SIGNAL(downloadPendingStarted()), SLOT(showSpinner())));
     VERIFY(connect(getDecoder(), SIGNAL(downloadPendingFinished()), SLOT(hideSpinner())));
 
+    connect(getDecoder(), &FFmpegDecoder::fileLoaded, this, &VideoPlayerWidget::onFileLoaded);
+
     getDecoder()->setDownloadBufferingAwait(1);
 
     setDisplay(m_videoWidget);
@@ -383,6 +385,27 @@ void VideoPlayerWidget::playFile(QString fileName)
     }
 }
 
+QObjectList VideoPlayerWidget::MRU() const
+{
+    QObjectList result;
+    for (const auto& o : qAsConst(m_mruList))
+    {
+        if (o)
+            result.push_back(o);
+    }
+    return result;
+}
+
+void VideoPlayerWidget::setMRU(const QObjectList& ents)
+{
+    QList<DownloadEntity*> deList;
+    std::transform(ents.begin(), ents.end(), std::back_inserter(deList),
+        [](QObject* const o) { return qobject_cast<DownloadEntity*>(o); });
+    deList.removeAll(nullptr);
+
+    m_mruList = { deList.begin(), deList.end() };
+}
+
 void VideoPlayerWidget::pauseVideo()
 {
     if (state() == Playing && getDecoder()->pauseResume())
@@ -681,6 +704,25 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
         copyUrlToClipboardAction = menu.addAction(tr("Copy URL to Clipboard"));
     }
 
+    std::map<QAction*, DownloadEntity*> recentEntities;
+    bool mruAdded = false;
+    for (const auto& o : qAsConst(m_mruList))
+    {
+        if (o && o != m_currentDownload)
+        {
+            if (auto currentEntity = o->getParent())
+            {
+                if (!mruAdded)
+                {
+                    menu.addSeparator();
+                    mruAdded = true;
+                }
+                QAction* action = menu.addAction(currentEntity->m_videoInfo.videoTitle);
+                recentEntities[action] = o;
+            }
+        }
+    }
+
     // Show the menu at the cursor position
     QAction* chosen = menu.exec(QCursor::pos());
     if (!chosen)
@@ -718,8 +760,32 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
             QApplication::clipboard()->setText(m_currentEntity->m_videoInfo.originalUrl, QClipboard::Clipboard);
         }
     }
+    else
+    {
+        auto it = recentEntities.find(chosen);
+        if (it != recentEntities.end())
+        {
+            m_mruList.removeAll(it->second);
+            playDownloadEntity(it->second);
+        }
+    }
 }
 
 void VideoPlayerWidget::showSpinner() { m_spinner->show(); }
 
 void VideoPlayerWidget::hideSpinner() { m_spinner->hide(); }
+
+enum { MAX_MRU_SIZE = 20 };
+
+void VideoPlayerWidget::onFileLoaded()
+{
+    if (m_currentDownload)
+    {
+        m_mruList.removeAll(m_currentDownload);
+        m_mruList.removeAll(nullptr);
+        m_mruList.push_front(m_currentDownload);
+        if (m_mruList.size() > MAX_MRU_SIZE)
+            m_mruList.resize(MAX_MRU_SIZE);
+        MainWindow::Instance()->askForSavingModel();
+    }
+}

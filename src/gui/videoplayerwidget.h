@@ -3,6 +3,8 @@
 #include <QFrame>
 #include <QPointer>
 
+#include <QVector>
+
 #include "downloadentity.h"
 #include "player/videoplayer.h"
 
@@ -55,8 +57,13 @@ public:
 
     void prepareToExit();
 
+    Q_PROPERTY(QObjectList MRU READ MRU WRITE setMRU)
+
 private:
     void playFile(QString fileName);
+    // serialization helpers
+    QObjectList MRU() const;
+    void setMRU(const QObjectList& ents);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -90,6 +97,8 @@ private slots:
     void showSpinner();
     void hideSpinner();
 
+    void onFileLoaded();
+
 signals:
     void fileReleased();
     void playingDownloadEntity(const DownloadEntity* entity);
@@ -115,6 +124,8 @@ private:
     RemoteVideoEntity* m_currentEntity{};
     int m_selectedRowNumber = 0;
     bool m_repeatedPlaying = false;
+
+    QVector<QPointer<DownloadEntity>> m_mruList;
 };
 
 VideoPlayerWidget* VideoPlayerWidgetInstance();
