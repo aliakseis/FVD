@@ -775,7 +775,7 @@ void VideoPlayerWidget::showSpinner() { m_spinner->show(); }
 
 void VideoPlayerWidget::hideSpinner() { m_spinner->hide(); }
 
-enum { MAX_MRU_SIZE = 20 };
+enum { MAX_MRU_SIZE = 25 };
 
 void VideoPlayerWidget::onFileLoaded()
 {
