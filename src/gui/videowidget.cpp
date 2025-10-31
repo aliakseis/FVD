@@ -245,13 +245,7 @@ void VideoWidget::wheelEvent(QWheelEvent* event)
 bool VideoWidget::pointInButton(const QPoint& point)
 {
     QPoint centerPoint(width() / 2, height() / 2);
-
-    if (point.x() >= centerPoint.x() - m_playBtnRadius && point.x() <= centerPoint.x() + m_playBtnRadius &&
-        point.y() >= centerPoint.y() - m_playBtnRadius && point.y() <= centerPoint.y() + m_playBtnRadius)
-    {
-        return std::hypot(centerPoint.x() - point.x(), centerPoint.y() - point.y()) < m_playBtnRadius;
-    }
-    return false;
+    return std::hypot(centerPoint.x() - point.x(), centerPoint.y() - point.y()) < m_playBtnRadius;
 }
 
 void VideoWidget::updatePlayButton()
