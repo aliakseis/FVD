@@ -21,13 +21,13 @@ public:
     int entityRow(const StorageType* const entity) const
     {
         auto foundIt = entInd.find(entity);
-        return (foundIt != entInd.constEnd() ? foundIt.value() : -1);
+        return (foundIt != entInd.constEnd()) ? foundIt.value() : -1;
     }
 
     // returns the entity by row-index
     StorageType* item(int index) const
     {
-        return (index >= 0 && index < m_entities.size() ? m_entities.at(index) : nullptr);
+        return (index >= 0 && index < m_entities.size()) ? m_entities.at(index) : nullptr;
     }
 
     template <class Fn>
