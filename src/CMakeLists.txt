@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 ###################################################
 ###  SECTION Paths
@@ -598,27 +598,25 @@ endif()
 ###  SECTION Post Build
 ###################################################
 
-get_target_property(BINARY_FILE ${PROJECT_NAME} LOCATION)
-get_filename_component(BINARY_PATH ${BINARY_FILE} PATH)
+#get_target_property(BINARY_FILE ${PROJECT_NAME} LOCATION)
+#get_filename_component(BINARY_PATH ${BINARY_FILE} PATH)
 
 
 # Start to install
 INSTALL_IMAGEFORMATS(${PROJECT_NAME})
-	INSTALL_QT5PLUGINS(${PROJECT_NAME})
+INSTALL_QT5PLUGINS(${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} pythonqt DESTINATION ${BINARY_INSTALL_DIR})
 TARGET_BUNDLEFIX(${PROJECT_NAME})
 INSTALL_TRANSLATIONS(${PROJECT_NAME} ${QM_FILES})
 
 if(WIN32)
-	set(certFile ${CMAKE_SOURCE_DIR}/sign/${PROJECT_COMPANYNAME}/Cert.pfx)
-	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND 
-			mt -manifest "${CMAKE_SOURCE_DIR}/resources/win7.manifest" -outputresource:"${BINARY_FILE}"
-		COMMAND
-			if exist "${certFile}"(
-				signtool sign /v /f "${certFile}" "${BINARY_FILE}"
-			)
-	)
+  set(certFile "${CMAKE_SOURCE_DIR}/sign/${PROJECT_COMPANYNAME}/Cert.pfx")
+
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND mt -manifest "${CMAKE_SOURCE_DIR}/resources/win7.manifest" -outputresource:$<TARGET_FILE:${PROJECT_NAME}>
+    COMMAND cmd /c "if exist \"${certFile}\" (\"${CMAKE_COMMAND}\" -E echo Signing ${PROJECT_NAME} & signtool sign /v /f \"${certFile}\" \"$<TARGET_FILE:${PROJECT_NAME}>\")"
+    VERBATIM
+  )
 elseif(APPLE)
 	set_target_properties(${PROJECT_NAME} PROPERTIES 
 		MACOSX_BUNDLE_ICON_FILE 
