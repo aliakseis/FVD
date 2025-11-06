@@ -1,4 +1,7 @@
 # FVD
+
+<img src="https://github.com/user-attachments/assets/ff631f73-b7b1-4bd4-a3bf-3524c3ea10b7" alt="Image" width="300"/>
+
 Either drag-and-drop an URL from a web browser or use the built-in search:
 ![demo](demo.png)
 
