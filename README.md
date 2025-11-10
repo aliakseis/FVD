@@ -3,6 +3,9 @@
 <img src="https://github.com/user-attachments/assets/ff631f73-b7b1-4bd4-a3bf-3524c3ea10b7" alt="Image" width="300"/>
 
 Either drag-and-drop an URL from a web browser or use the built-in search:
+
+![Image](https://github.com/user-attachments/assets/f7bbd8ef-7b34-460c-bcdc-3f0b1daef190)
+
 ![demo](demo.png)
 
 ![demo2](demo2.jpg)
