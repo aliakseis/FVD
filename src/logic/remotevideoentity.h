@@ -12,10 +12,6 @@
 #include "utilities/utils.h"
 
 class DownloadEntity;
-namespace strategies
-{
-class LinkExtractorInterface;
-}
 
 struct LinkInfo
 {
