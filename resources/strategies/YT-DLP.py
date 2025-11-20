@@ -89,6 +89,7 @@ def YT_DLP_extractDirectLinks(link, receiver) :
     ydl_opts = {
         'format': 'best',
         'get-url': True,
+        'noplaylist': True,
     }
 
     s = yt_dlp.YoutubeDL(ydl_opts).extract_info(link, download=False)['formats']
