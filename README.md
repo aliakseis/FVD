@@ -1,6 +1,6 @@
 # FVD
 
-<img src="https://github.com/user-attachments/assets/ff631f73-b7b1-4bd4-a3bf-3524c3ea10b7" alt="Image" width="300"/>
+<img height="600" alt="Image" src="https://github.com/user-attachments/assets/601912b9-9d4f-4102-a4ef-39dc3fc51a44" /><img src="https://github.com/user-attachments/assets/ff631f73-b7b1-4bd4-a3bf-3524c3ea10b7" alt="Image" height="600"/>
 
 Either drag-and-drop an URL from a web browser or use the built-in search:
 
