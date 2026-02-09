@@ -223,7 +223,8 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
 
         if (act == ui->actionOpenFile)
         {
-            videoPlayer->playPauseButtonAction();
+            //videoPlayer->playPauseButtonAction();
+            videoPlayer->playDownloadEntity(entity);
         }
         else if (act == ui->actionOpenFolder)
         {
