@@ -44,6 +44,8 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
+CMakeSettings.json
+
 build/
 build64/
 .vs/
