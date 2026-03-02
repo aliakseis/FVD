@@ -366,11 +366,7 @@ void VideoPlayerWidget::playFile(QString fileName)
             emit showPlaybutton(false);
         }
 
-        if (m_videoWidget->isFullScreen())
-        {
-            decoder->setPreferredSize(m_videoWidget->width(), m_videoWidget->height());
-        }
-        else
+        if (!m_videoWidget->isFullScreen())
         {
             updateLayout(fromPendingHeaderPaused);
         }
@@ -574,13 +570,8 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     }
     else if (dec->isPlaying())
     {
-#ifdef DEVELOPER_OPENGL
         QSize pictureSize = QSize(playerWidth, playerWidth);
         double aspectRatio = 1. / dec->aspectRatio();
-#else
-        QSize pictureSize = dec->getPreferredSize(playerWidth, playerWidth).size();
-        double aspectRatio = (double)pictureSize.height() / pictureSize.width();
-#endif
         playerHeight = pictureSize.width() * aspectRatio;
         // Display too big: do recalculation
         if (playerHeight > minPlayerHeight)
@@ -592,16 +583,10 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         if (m_videoWidget->isFullScreen())
         {
             m_videoWidget->setGeometry(0, 0, currWidth, currHeight);
-#ifndef DEVELOPER_OPENGL
-            dec->setPreferredSize(currWidth, currHeight);
-#endif
         }
         else
         {
             m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
-#ifndef DEVELOPER_OPENGL
-            dec->setPreferredSize(playerWidth, playerHeight);
-#endif
         }
         // Not required by opengl
 #ifndef DEVELOPER_OPENGL

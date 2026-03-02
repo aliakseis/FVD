@@ -108,16 +108,11 @@ FFmpegDecoder::FFmpegDecoder()
 
     m_frameListener = nullptr;
 
-    // Set startup sizes
-    m_targetWidth = 0;
-    m_targetHeight = 0;
-
     // time for sleeper
     m_waitSleperTime = 0;
 
     // Choose default pixel format
     m_pixelFormat = AV_PIX_FMT_YUV420P;
-    m_resizeWithDecoder = false;
 
     // Init control packets
     //av_init_packet(&m_seekPacket);
@@ -331,7 +326,6 @@ void FFmpegDecoder::cleanup()
     // Close the audio codec
     avcodec_free_context(&m_audioCodecContext);
 
-
     // Close video file
     if (m_formatContext != nullptr)
     {
@@ -365,14 +359,6 @@ void FFmpegDecoder::openFileProcessing()
     m_bytesCurrent = 0;
 
     openAudioProcessing();
-
-    if (m_videoStreamNumber >= 0)
-    {
-        if (m_targetWidth == 0 || m_targetHeight == 0)
-        {
-            setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
-        }
-    }
 
     m_isReadReady = true;
     emit fileLoaded();
@@ -580,7 +566,7 @@ void FFmpegDecoder::allocateFrames()
 }
 
 /**
- * Starts play video.
+ * Starts playing video.
  *
  * @brief FFmpegDecoder::play
  */
@@ -637,23 +623,12 @@ bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
     {
         int width = m_videoFrame->width;
         int height = m_videoFrame->height;
-
-        if (m_resizeWithDecoder)
-        {
-            QMutexLocker locker(&m_resizeMutex);
-            if (m_targetWidth > 0 && m_targetHeight > 0)
-            {
-                width = m_targetWidth;
-                height = m_targetHeight;
-            }
-        }
-
         videoFrameData.realloc(m_pixelFormat, width, height);
 
         // Prepare image conversion
         m_imageCovertContext = sws_getCachedContext(m_imageCovertContext, m_videoFrame->width, m_videoFrame->height,
             (AVPixelFormat)m_videoFrame->format, width, height, m_pixelFormat,
-            m_resizeWithDecoder ? SWS_BICUBIC : SWS_POINT,
+            SWS_POINT,
             nullptr, nullptr, nullptr);
 
         Q_ASSERT(m_imageCovertContext != nullptr);
@@ -668,78 +643,6 @@ bool FFmpegDecoder::frameToImage(FPicture& videoFrameData)
             videoFrameData.data(), videoFrameData.linesize()) > 0);
     }
     return true;
-}
-
-void FFmpegDecoder::setTargetSize(int w, int h, bool is_ceil)
-{
-    // Lock resizing
-    QMutexLocker locker(&m_resizeMutex);
-    Q_ASSERT(w > 0);
-    Q_ASSERT(h > 0);
-    m_targetWidth = w;
-    m_targetHeight = h;
-    correctDisplay(is_ceil);
-}
-
-void FFmpegDecoder::correctDisplay(bool is_ceil)
-{
-    // Calculate sizes
-    if (m_targetWidth % 16 != 0)
-    {
-        double aspect_revert = 1. / aspectRatio();
-        if (!is_ceil)
-        {
-            m_targetWidth = m_targetWidth - (m_targetWidth % 16);  // m_targetWidth must be divisible by 16
-        }
-        else
-        {
-            m_targetWidth = (m_targetWidth - (m_targetWidth % 16)) << 4;  // m_targetWidth must be divisible by 16
-        }
-        m_targetHeight = aspect_revert * m_targetWidth;
-    }
-}
-
-QRect FFmpegDecoder::setPreferredSize(const QSize& size, int scr_xleft, int scr_ytop)
-{
-    return setPreferredSize(size.width(), size.height(), scr_xleft, scr_ytop);
-}
-
-QRect FFmpegDecoder::setPreferredSize(int scr_width, int scr_height, int scr_xleft, int scr_ytop)
-{
-    QRect targetRect = getPreferredSize(scr_width, scr_height, scr_xleft, scr_ytop);
-    /* Correct display */
-    if (scr_width > 0 && scr_height > 0)
-    {
-        QMutexLocker locker(&m_resizeMutex);
-        m_targetWidth = targetRect.width();
-        m_targetHeight = targetRect.height();
-    }
-    else
-    {
-        return {0, 0, 0, 0};
-    }
-    return targetRect;
-}
-
-QRect FFmpegDecoder::getPreferredSize(int scr_width, int scr_height, int scr_xleft /* = 0*/,
-                                      int scr_ytop /* = 0*/) const
-{
-    TAG("ffmpeg_resizeframe") << "Target frame size: " << scr_width << "x" << scr_height;
-
-    const double aspect_ratio = aspectRatio();
-
-    int width = int(scr_height * aspect_ratio) & ~0xf;
-    int height = std::lround(width / aspect_ratio);
-
-    if (width > scr_width)
-    {
-        width = scr_width & ~0xf;
-        height = std::lround(width / aspect_ratio);
-    }
-    int x = ((scr_width - width) >> 1);
-    int y = ((scr_height - height) >> 1);
-
-    return {scr_xleft + x, scr_ytop + y, FFMAX(width, 1), FFMAX(height, 1)};
 }
 
 void FFmpegDecoder::finishedDisplayingFrame(unsigned int frameDisplayingGeneration)
@@ -826,7 +729,6 @@ void FFmpegDecoder::setFrameListener(VideoDisplay* listener)
     m_frameListener = listener;
     m_frameListener->setDecoderObject(this);
     setPixelFormat(m_frameListener->preferablePixelFormat());
-    setResizeWithDecoder(m_frameListener->resizeWithDecoder());
 }
 
 bool FFmpegDecoder::pauseResume()
@@ -899,8 +801,6 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
     {
         allocateFrames();
         setPixelFormat(AV_PIX_FMT_RGB24);
-        setResizeWithDecoder(true);
-        setTargetSize(m_videoCodecContext->width, m_videoCodecContext->height);
 
         FPicture pic;
         for (const auto percent : percents)
@@ -1067,5 +967,3 @@ bool FFmpegDecoder::isPacketsQueueDepleting() const
 }
 
 void FFmpegDecoder::setPixelFormat(AVPixelFormat format) { m_pixelFormat = format; }
-
-void FFmpegDecoder::setResizeWithDecoder(bool policy) { m_resizeWithDecoder = policy; }

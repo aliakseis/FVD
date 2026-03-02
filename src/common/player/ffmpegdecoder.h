@@ -74,12 +74,8 @@ public:
 
     double volume() const;
 
-    void setTargetSize(int width, int height, bool is_ceil = false);
     float aspectRatio() const;
 
-    QRect setPreferredSize(const QSize& size, int scr_xleft = 0, int scr_ytop = 0);
-    QRect setPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0);
-    QRect getPreferredSize(int scr_width, int scr_height, int scr_xleft = 0, int scr_ytop = 0) const;
     bool isPlaying() const { return m_isPlaying; }
     bool isPaused() const { return m_isPaused; }
 
@@ -162,9 +158,6 @@ private:
     // Basic file path
     QString m_openedFilePath;
 
-    int m_targetWidth;
-    int m_targetHeight;
-
     // Basic stuff
     AVFormatContext* m_formatContext;
 
@@ -220,8 +213,6 @@ private:
     // Stuff for converting image
     AVFrame* m_videoFrame;
     SwsContext* m_imageCovertContext;
-    QMutex m_resizeMutex;
-    bool m_resizeWithDecoder;
     AVPixelFormat m_pixelFormat;
 
     // Video and audio threads stuff
@@ -254,8 +245,6 @@ private:
 
 private:
     void setPixelFormat(AVPixelFormat format);
-    void setResizeWithDecoder(bool policy);
-    void correctDisplay(bool is_ceil = false);
     bool openFileDecoder(const QString& file);
     bool openInputFile(const QString& file);
     bool retrieveStreamInfo();

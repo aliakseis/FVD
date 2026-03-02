@@ -278,10 +278,6 @@ void VideoWidget::fullScreen(bool isEnable)
 #ifndef Q_OS_LINUX
         fullScreenProcess();
 #endif
-        // FIXME: OpenGL full support
-#ifndef DEVELOPER_OPENGL
-        m_skipDisplay = true;
-#endif
     }
     else
     {
@@ -311,8 +307,6 @@ void VideoWidget::fullScreenProcess()
         setPixmap(pixmap()->scaledToHeight(height(), Qt::SmoothTransformation));
 #endif
     }
-
-    m_decoder->setPreferredSize(width(), height(), 1);
 
     QWidget* videoControl = MainWindow::Instance()->videoControlWidget();
     videoControl->setParent(nullptr,

@@ -25,7 +25,6 @@ public:
     virtual void showPicture(const QPixmap& picture);
 
     virtual AVPixelFormat preferablePixelFormat() const = 0;
-    virtual bool resizeWithDecoder() const = 0;
 
 protected:
     void displayFrameFinished(unsigned int videoGeneration);

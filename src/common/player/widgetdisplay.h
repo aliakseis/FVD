@@ -16,7 +16,6 @@ public:
     void renderFrame(const FPicture& frame, unsigned int videoGeneration) override;
     void displayFrame(unsigned int videoGeneration) override;
     AVPixelFormat preferablePixelFormat() const override;
-    bool resizeWithDecoder() const override;
 
     void showPicture(const QImage& picture) override;
     void showPicture(const QPixmap& picture) override;
@@ -30,7 +29,6 @@ protected:
      * @note data set using not good one QPixmap::loadFromData()
      */
     QPixmap m_display;
-    bool m_skipDisplay;
 protected slots:
     virtual void currentDisplay();
 signals:
