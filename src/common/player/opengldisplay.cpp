@@ -437,8 +437,6 @@ void OpenGLDisplay::showPicture(const QPixmap& picture) { showPicture(picture.to
 
 AVPixelFormat OpenGLDisplay::preferablePixelFormat() const { return AV_PIX_FMT_YUV420P; }
 
-bool OpenGLDisplay::resizeWithDecoder() const { return false; }
-
 void OpenGLDisplay::displayFrame(unsigned int videoGeneration)
 {
     if (!(impl->m_pendingUpdate.exchange(true)))

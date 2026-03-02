@@ -23,7 +23,6 @@ public:
     void displayFrame(unsigned int videoGeneration) override;
 
     AVPixelFormat preferablePixelFormat() const override;
-    bool resizeWithDecoder() const override;
 
 protected:
     void initializeGL() override;
