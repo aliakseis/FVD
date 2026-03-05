@@ -108,7 +108,7 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
             rectf.adjust(0, 0, -24, 0);
             painter->save();
             painter->setFont(QFont("Segoe UI", 10));
-            painter->setPen(QColor("#4e6a31"));
+            painter->setPen(QColor(0x4e6a31));
             painter->drawText(rectf, utilities::Tr::Tr(DOWNLOAD_BUTTON), QTextOption(Qt::AlignCenter));
             painter->restore();
         }

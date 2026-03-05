@@ -32,8 +32,8 @@ void BarberPoleProgress::paintEvent(QPaintEvent *event)
 
     QStylePainter painter(this);
     QLinearGradient linearGradient(offset, 0., patternSize + offset, patternSize);
-    linearGradient.setColorAt(0., QColor("#d1e6bb"));
-    linearGradient.setColorAt(1., QColor("#649330"));
+    linearGradient.setColorAt(0., QColor(0xd1e6bb));
+    linearGradient.setColorAt(1., QColor(0x649330));
     linearGradient.setSpread(QRadialGradient::ReflectSpread);
     painter.fillRect(rect(), linearGradient);
 }

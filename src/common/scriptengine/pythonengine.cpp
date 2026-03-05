@@ -71,7 +71,7 @@ auto pythonQtInstance() {
 
         qDebug() << "Python sys.path:" << paths;
 
-        for (auto path : paths.value<QVariantList>())
+        for (const auto &path : paths.value<QVariantList>())
         {
             auto sitePackages = path.toString() + QStringLiteral("/site-packages");
 

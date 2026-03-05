@@ -338,11 +338,11 @@ void SearchResultForm::onSearchContextMenu(const QPoint& point)
 
         if (act == ui->actionShowInDownload)
         {
-            MainWindow::Instance()->openDownloadsTab(rve->allDownloadEntities().first());
+            MainWindow::Instance()->openDownloadsTab(rve->allDownloadEntities().constFirst());
         }
         else if (act == ui->actionShowInLibrary)
         {
-            MainWindow::Instance()->openLibraryTab(rve->allDownloadEntities().first());
+            MainWindow::Instance()->openLibraryTab(rve->allDownloadEntities().constFirst());
         }
     }
 }

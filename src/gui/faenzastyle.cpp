@@ -65,10 +65,10 @@ void FaenzaStyle::drawControl(ControlElement element, const QStyleOption* option
 #endif
 
             QLinearGradient backgroundGradient(option->rect.topRight(), option->rect.bottomRight());
-            backgroundGradient.setColorAt(0, QColor("#d0f2b4"));
-            backgroundGradient.setColorAt(1, QColor("#9dc072"));
+            backgroundGradient.setColorAt(0, QColor(0xd0f2b4));
+            backgroundGradient.setColorAt(1, QColor(0x9dc072));
 
-            painter->setPen(QColor("#649330"));
+            painter->setPen(QColor(0x649330));
             painter->setBrush(backgroundGradient);
 
             if (width > 0)
@@ -79,7 +79,7 @@ void FaenzaStyle::drawControl(ControlElement element, const QStyleOption* option
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing, true);
             painter->setClipRect(progressBar.adjusted(3, 3, -2, -2));
-            painter->setPen(QPen(QColor("#d1e6bb"), 5));
+            painter->setPen(QPen(QColor(0xd1e6bb), 5));
 
             for (int x = progressBar.left() - 32; x < rect.right(); x += 18)
             {
@@ -109,7 +109,7 @@ void FaenzaStyle::drawControl(ControlElement element, const QStyleOption* option
 #ifdef Q_OS_WIN32
         windowsClassicBug = rctGroove;
 #endif
-        QPen pen = QPen(QColor("#73ab36"));
+        QPen pen = QPen(QColor(0x73ab36));
         QBrush brush = QBrush(QColor(Qt::white));
         painter->setPen(pen);
         painter->setBrush(brush);
@@ -123,7 +123,7 @@ void FaenzaStyle::drawControl(ControlElement element, const QStyleOption* option
         QFont font = painter->font();
         font.setPointSize(8);
         painter->setFont(font);
-        QPen pen = QPen(QColor("#4e6a31"));
+        QPen pen = QPen(QColor(0x4e6a31));
         painter->setPen(pen);
         painter->drawText(progressOptions->rect, Qt::AlignCenter, progressOptions->text);
         painter->restore();

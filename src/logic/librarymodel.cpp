@@ -27,7 +27,7 @@ int countFiles(const QString& dirPath)
     int fileCount = dir.count();
 
     QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QFileInfo& subDir : subDirs)
+    for (const QFileInfo& subDir : qAsConst(subDirs))
     {
         fileCount += countFiles(subDir.filePath());
     }
