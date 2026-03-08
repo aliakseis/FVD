@@ -300,13 +300,6 @@ void VideoWidget::fullScreenProcess()
         updatePlayButton();
         setPreviewPicture(VideoPlayerWidgetInstance()->entity());
     }
-    else
-    {
-        // FIXME: OpenGL full support
-#ifndef DEVELOPER_OPENGL
-        setPixmap(pixmap()->scaledToHeight(height(), Qt::SmoothTransformation));
-#endif
-    }
 
     QWidget* videoControl = MainWindow::Instance()->videoControlWidget();
     videoControl->setParent(nullptr,

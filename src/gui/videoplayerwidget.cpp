@@ -588,20 +588,6 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         {
             m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
         }
-        // Not required by opengl
-#ifndef DEVELOPER_OPENGL
-        if (state() == Playing)
-        {
-            // FIXME: OpenGL full support
-            m_videoWidget->setPixmap(
-                m_videoWidget->pixmap()->scaledToHeight(m_videoWidget->height(), Qt::SmoothTransformation));
-        }
-        else if (state() == Paused && !fromPendingHeaderPaused)
-        {
-            m_videoWidget->showPicture(m_videoWidget->originalFrame().scaled(
-                playerWidth, playerHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        }
-#endif
     }
 
     yPos += playerHeight;
