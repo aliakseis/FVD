@@ -16,13 +16,3 @@ void VideoDisplay::displayFrameFinished(unsigned int videoGeneration)
 { 
     m_decoder->finishedDisplayingFrame(videoGeneration); 
 }
-
-void VideoDisplay::showPicture(const QImage& picture)
-{
-    // Override this
-}
-
-void VideoDisplay::showPicture(const QPixmap& picture)
-{
-    // Override this
-}

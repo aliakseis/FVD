@@ -21,8 +21,8 @@ public:
     virtual void displayFrame(unsigned int videoGeneration) = 0;
     void setDecoderObject(FFmpegDecoder* decoder);
 
-    virtual void showPicture(const QImage& picture);
-    virtual void showPicture(const QPixmap& picture);
+    virtual void showPicture(const QImage& picture) = 0;
+    virtual void showPicture(const QPixmap& picture) = 0;
 
     virtual AVPixelFormat preferablePixelFormat() const = 0;
 
