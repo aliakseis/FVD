@@ -32,10 +32,13 @@ bool isPythonInstalled()
 void showPythonNotInstalledMessageBox()
 {
     QMetaObject::invokeMethod(QApplication::instance(), [] {
+        const QString bitness =
+        (Q_PROCESSOR_WORDSIZE == 8) ? QStringLiteral("64-bit")
+                                    : QStringLiteral("32-bit");
         QMessageBox::warning(
             utilities::getMainWindow(),
             QObject::tr("Matching Python is not installed."),
-            QObject::tr("Matching Python is not installed: ") + PY_VERSION
+            QObject::tr("Matching Python is not installed: ") + PY_VERSION + " (" + bitness + ")"
         );
         });
 }
