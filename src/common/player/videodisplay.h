@@ -26,6 +26,8 @@ public:
 
     virtual AVPixelFormat preferablePixelFormat() const = 0;
 
+    virtual QPixmap toQPixmap() const = 0;
+
 protected:
     void displayFrameFinished(unsigned int videoGeneration);
 

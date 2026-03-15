@@ -16,19 +16,15 @@ public:
     void renderFrame(const FPicture& frame, unsigned int videoGeneration) override;
     void displayFrame(unsigned int videoGeneration) override;
     AVPixelFormat preferablePixelFormat() const override;
+    QPixmap toQPixmap() const override { return m_display; }
 
     void showPicture(const QImage& picture) override;
     void showPicture(const QPixmap& picture) override;
 
 protected:
     QImage m_image;
-
-    /**
-     * Pixmap to rendering
-     *
-     * @note data set using not good one QPixmap::loadFromData()
-     */
     QPixmap m_display;
+
 protected slots:
     virtual void currentDisplay();
 signals:

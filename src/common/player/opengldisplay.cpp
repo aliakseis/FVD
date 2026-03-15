@@ -451,3 +451,52 @@ void OpenGLDisplay::displayFrame(unsigned int videoGeneration)
     }
     //displayFrameFinished();
 }
+
+QPixmap OpenGLDisplay::toQPixmap() const
+{
+    std::unique_lock<std::mutex> lock(impl->m_mutex);
+
+    if (!impl->mBufYuv || impl->mVideoW == 0 || impl->mVideoH == 0)
+        return QPixmap();
+
+    const int w = impl->mVideoW;
+    const int h = impl->mVideoH;
+
+    const uint8_t* yPlane = reinterpret_cast<uint8_t*>(impl->mBufYuv);
+    const uint8_t* uPlane = yPlane + w * h;
+    const uint8_t* vPlane = uPlane + (w / 2) * (h / 2);
+
+    QImage img(w, h, QImage::Format_RGB888);
+
+    for (int j = 0; j < h; ++j)
+    {
+        uint8_t* rgb = img.scanLine(j);
+
+        for (int i = 0; i < w; ++i)
+        {
+            int Y = yPlane[j * w + i];
+            int U = uPlane[(j / 2) * (w / 2) + (i / 2)];
+            int V = vPlane[(j / 2) * (w / 2) + (i / 2)];
+
+            // Convert YUV -> RGB (BT.601)
+            int C = Y - 16;
+            int D = U - 128;
+            int E = V - 128;
+
+            int R = (298 * C + 409 * E + 128) >> 8;
+            int G = (298 * C - 100 * D - 208 * E + 128) >> 8;
+            int B = (298 * C + 516 * D + 128) >> 8;
+
+            // Clamp
+            R = qBound(0, R, 255);
+            G = qBound(0, G, 255);
+            B = qBound(0, B, 255);
+
+            rgb[3 * i + 0] = static_cast<uint8_t>(R);
+            rgb[3 * i + 1] = static_cast<uint8_t>(G);
+            rgb[3 * i + 2] = static_cast<uint8_t>(B);
+        }
+    }
+
+    return QPixmap::fromImage(img);
+}

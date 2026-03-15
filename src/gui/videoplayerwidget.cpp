@@ -669,6 +669,11 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
         showInFolderAction = menu.addAction(tr("Show in folder"));
         showInLibraryAction = menu.addAction(tr("Show in Library"));
     }
+    QAction* copyImageToClipboardAction = nullptr;
+    if (m_videoWidget != nullptr)
+    {
+        copyImageToClipboardAction = menu.addAction(tr("Copy image to Clipboard"));
+    }
     QAction* copyUrlToClipboardAction = nullptr;
     if (m_currentEntity != nullptr)
     {
@@ -722,6 +727,14 @@ void VideoPlayerWidget::onCustomContextMenuRequested(const QPoint& pos)
         if (DownloadEntity* download = m_currentDownload ? m_currentDownload : m_selectedDownload)
         {
             MainWindow::Instance()->openLibraryTab(download);
+        }
+    }
+    else if (chosen == copyImageToClipboardAction)
+    {
+        if (m_videoWidget != nullptr)
+        {
+            QPixmap pixmap = m_videoWidget->toQPixmap();
+            QApplication::clipboard()->setPixmap(pixmap, QClipboard::Clipboard);
         }
     }
     else if (chosen == copyUrlToClipboardAction)

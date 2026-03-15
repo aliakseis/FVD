@@ -24,6 +24,8 @@ public:
 
     AVPixelFormat preferablePixelFormat() const override;
 
+    QPixmap toQPixmap() const override;
+
 protected:
     void initializeGL() override;
     void paintGL() override;
