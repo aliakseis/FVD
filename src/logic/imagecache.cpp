@@ -216,7 +216,7 @@ QImage getImage(QByteArray& imageArray)
     auto pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
     if (pCodec == NULL || avcodec_open2(pCodecCtx, pCodec, NULL) < 0)
     {
-        avcodec_close(pCodecCtx);
+        avcodec_free_context(&pCodecCtx);
         avformat_close_input(&pFormatCtx);
         return {};
     }
@@ -286,7 +286,7 @@ QImage getImage(QByteArray& imageArray)
         sws_freeContext(img_convert_ctx);
     }
     av_free(pFrame);
-    avcodec_close(pCodecCtx);
+    avcodec_free_context(&pCodecCtx);
     avformat_close_input(&pFormatCtx);
 
     return result;
