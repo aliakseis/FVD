@@ -21,10 +21,10 @@ const int TrafficLimitKbs_Default = 1000;
 const char VideoFolder[] = "VideoFolder";
 
 const char Sites[] = "Sites";
-const char Sites_Default[] = "YouTube";
+const char Sites_Default[] = "YT-DLP";
 
 const char CheckedSites[] = "CheckedSites";
-const char CheckedSites_Default[] = "YouTube";
+const char CheckedSites_Default[] = "YT-DLP";
 
 const char maximumNumberLoads[] = "maximumNumberLoads";
 const int maximumNumberLoads_Default = 10;
@@ -56,6 +56,6 @@ const char ProxyPort[] = "ProxyPort";
 
 const char UseProxyAuthorization[] = "UseProxyAuthorization";
 
-const char SiteScripts[] = "YT-DLP.py";
+const char SiteScripts[] = "YouTube.py;Dailymotion.py;Vimeo.py;YT-DLP.py";
 
 }  // namespace app_settings

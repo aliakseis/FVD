@@ -258,10 +258,23 @@ def YT_DLP_extractDirectLinks(link, receiver) :
                 continue
 
             entity["url"] = x["url"]
-            entity["resolution"] = x["resolution"]
+            if 'resolution' in x and x["resolution"]:
+                entity["resolution"] = x["resolution"]
+            elif 'format' in x:
+                entity["resolution"] = x["format"]
             entity["extension"] = x["ext"]
 
-            if x["height"] > height:
+            if 'http_headers' in x:
+                headers = []
+                for k, v in x["http_headers"].items():
+                    headers.append(k)
+                    headers.append(str(v))
+                    entity["http_headers"] = headers
+
+            if 'cookies' in x:
+                entity["cookies"] = x["cookies"]
+
+            if 'height' in x and x["height"] > height:
                 height = x["height"]
                 best = i
 
