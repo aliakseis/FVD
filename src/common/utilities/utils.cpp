@@ -80,22 +80,30 @@ int getEscape(const QChar* uc, int* pos, int len, int maxNumber = 999)
     return -1;
 }
 
-bool isPortAvalible(unsigned short int dwPort, int type)
+bool isPortAvailable(unsigned short int dwPort, int type)
 {
     sockaddr_in client{};
-
     client.sin_family = AF_INET;
     client.sin_port = htons(dwPort);
     client.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-    auto sock = socket(AF_INET, type, 0);
-    int result = bind(sock, (sockaddr*)&client, sizeof(client));
-#ifdef Q_OS_WIN
-    closesocket(sock);
-#else
-    close(sock);
-#endif
+#if defined(Q_OS_WIN)
+    SOCKET sock = ::socket(AF_INET, type, 0);
+    if (sock == INVALID_SOCKET) {
+        return false;
+    }
+    int result = ::bind(sock, reinterpret_cast<sockaddr*>(&client), sizeof(client));
+    ::closesocket(sock);
     return result != SOCKET_ERROR;
+#else
+    int sock = ::socket(AF_INET, type, 0);
+    if (sock < 0) {
+        return false;
+    }
+    int result = ::bind(sock, reinterpret_cast<sockaddr*>(&client), sizeof(client));
+    ::close(sock);
+    return result != SOCKET_ERROR;
+#endif
 }
 
 } // namespace
@@ -185,8 +193,10 @@ QString SizeToString(quint64 size, int precision, int fieldWidth)
 
 bool IsAsyncUrl(const QString& path)
 {
-    QString s(path.toLower().trimmed());
-    return s.contains(QRegExp("^https?://")) || s.startsWith("qrc:/");
+    QString s = path.trimmed().toLower();
+    return s.startsWith(QStringLiteral("http://"))
+        || s.startsWith(QStringLiteral("https://"))
+        || s.startsWith(QStringLiteral("qrc:/"));
 }
 
 QString secondsToString(long seconds)
@@ -327,7 +337,7 @@ bool CheckPortAvailable(int targetPort, const char** reason)
         return false;
     }
 
-    if (!isPortAvalible(targetPort, SOCK_STREAM))
+    if (!isPortAvailable(targetPort, SOCK_STREAM))
     {
         if (reason)
         {
@@ -336,7 +346,7 @@ bool CheckPortAvailable(int targetPort, const char** reason)
         return false;
     }
 
-    if (!isPortAvalible(targetPort, SOCK_DGRAM))
+    if (!isPortAvailable(targetPort, SOCK_DGRAM))
     {
         if (reason)
         {
