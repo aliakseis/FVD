@@ -141,8 +141,6 @@ IOContext::IOContext(std::unique_ptr<std::streambuf> s) : stream(std::move(s))
 
 IOContext::~IOContext()
 {
-    //CHANNEL_LOG(ffmpeg_closing) << "In IOContext::~IOContext()";
-
     // NOTE: ffmpeg messes up the buffer
     // so free the buffer first then free the context
     av_free(ioCtx->buffer);
@@ -154,24 +152,6 @@ void IOContext::initAVFormatContext(AVFormatContext* pCtx)
 {
     pCtx->pb = ioCtx;
     pCtx->flags |= AVFMT_FLAG_CUSTOM_IO;
-
-    // you can specify a format directly
-    // pCtx->iformat = av_find_input_format("h264");
-
-    // or read some of the file and let ffmpeg do the guessing
-    auto len = stream->sgetn((char*)buffer, bufferSize);
-    if (len <= 0)
-    {
-        return;
-    }
-    // reset to beginning of file
-    stream->pubseekoff(0, std::ios_base::beg, std::ios_base::in);
-
-    AVProbeData probeData = {nullptr};
-    probeData.buf = buffer;
-    probeData.buf_size = bufferSize - 1;
-    probeData.filename = "";
-    pCtx->iformat = av_probe_input_format(&probeData, 1);
 }
 
 

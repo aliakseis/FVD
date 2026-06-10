@@ -198,6 +198,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     setAcceptDrops(true);
 
+    if (auto player = getPlayer())
+        player->setVisible(true);
+
 #if defined(Q_OS_WIN)
     m_hPlay = LoadIcon(L"IDI_ICON_PLAY");
     m_hPause = LoadIcon(L"IDI_ICON_PAUSE");
