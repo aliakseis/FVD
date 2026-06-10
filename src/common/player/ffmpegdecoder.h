@@ -53,6 +53,7 @@ struct AVFormatContext;
 struct AVStream;
 struct SwrContext;
 struct SwsContext;
+struct AVIOContext;
 
 class FFmpegDecoder : public QObject
 {
@@ -239,6 +240,12 @@ private:
     void* m_stream{};
     std::atomic<double> m_volume = 1.;
 
+    // custom IO
+    QFile* m_file = nullptr;
+    bool m_seekActive = false;
+    AVIOContext* m_avioCtx = nullptr;
+    unsigned char* m_customBuffer = nullptr;
+
     void resetVariables();
     void cleanup();
     bool frameToImage(FPicture& videoFrameData);
@@ -246,7 +253,7 @@ private:
 private:
     void setPixelFormat(AVPixelFormat format);
     bool openFileDecoder(const QString& file);
-    bool openInputFile(const QString& file);
+    //bool openInputFile(const QString& file);
     bool retrieveStreamInfo();
     void findStreams();
     void setStreamDuration();
@@ -255,6 +262,11 @@ private:
     bool openAudioProcessing();
     void allocateFrames();
     void startLimiterThread();
+
+    static int read_packet(void* opaque, uint8_t* buf, int buf_size);
+    static int64_t seek(void* opaque, int64_t offset, int whence);
+
+    bool openInputFile();
 
     void seekWhilePaused();
 

@@ -14,51 +14,13 @@ extern "C"
 bool ParseThread::readFrame(AVPacket* packet)
 {
     auto* parent = static_cast<FFmpegDecoder*>(this->parent());
-    if (parent->m_bytesLimiter >= 0 && parent->m_bytesLimiter - parent->m_bytesCurrent < PLAYBACK_AVPACKET_MAX)
-    {
-        if (!parent->isPacketsQueueDepleting())
-        {
-            reader_eof = false;
-            preciseSleep(0.05);
-            return false;
-        }
-        parent->m_downloading = true;
-
-        parent->m_videoPacketsQueue.enqueue(parent->m_downloadingPacket, &parent->m_packetsQueueMutex,
-                                            &parent->m_packetsQueueCV);
-        parent->m_audioPacketsQueue.enqueue(parent->m_downloadingPacket, &parent->m_packetsQueueMutex,
-                                            &parent->m_packetsQueueCV);
-
-        double longSleepTime = parent->m_waitSleperTime;
-        while (
-            (parent->m_bytesLimiter >= 0 && parent->m_bytesLimiter - parent->m_bytesCurrent < PLAYBACK_AVPACKET_MAX) ||
-            (parent->m_bytesLimiter >= 0 && longSleepTime > 0 && m_seekDuration < 0))  // 512kb move
-        {
-            TAG("ffmpeg_readpacket_limitation")
-                << "Wait downloading limitation = "
-                << PLAYBACK_AVPACKET_MAX - (parent->m_bytesLimiter - parent->m_bytesCurrent);
-
-            if (isAbort())
-            {
-                emit parent->downloadPendingFinished();
-                return false;  // Closing reading thread without packet
-            }
-
-            longSleepTime -= 0.05;
-            preciseSleep(0.05);
-        }
-
-        QMutexLocker locker(&parent->m_downloadLockerMutex);
-        parent->m_downloading = false;
-        parent->m_downloadLockerWait.wakeAll();
-    }
 
     int ret = av_read_frame(parent->m_formatContext, packet);
+
     if (ret >= 0)
     {
-        if (packet->pos > 0) {
+        if (packet->pos > 0)
             parent->m_bytesCurrent = packet->pos;
-        }
 
         static int packet_max = 0;
         if (packet->size > packet_max)
@@ -68,12 +30,25 @@ bool ParseThread::readFrame(AVPacket* packet)
         }
 
         reader_eof = false;
+        return true;
     }
+
+    if (ret == AVERROR_EOF)
+    {
+        reader_eof = true;
+    }
+    //else if (ret == AVERROR_EXIT)
+    //{
+    //    reader_eof = false;
+    //    return false;
+    //}
     else
     {
-        reader_eof = ret == AVERROR_EOF;
+        reader_eof = false;
+        // при желании: TAG("ffmpeg_readpacket") << "Error: " << ret;
     }
-    return ret >= 0;
+
+    return false;
 }
 
 void ParseThread::run()

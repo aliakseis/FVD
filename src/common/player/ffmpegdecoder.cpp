@@ -332,6 +332,40 @@ void FFmpegDecoder::cleanup()
         avformat_close_input(&m_formatContext);
     }
 
+    if (m_avioCtx)
+    {
+        // ВАЖНО: avio_context_free освобождает только структуру,
+        // но НЕ освобождает внутренний буфер, который мы передали вручную.
+        avio_context_free(&m_avioCtx);
+        m_avioCtx = nullptr;
+    }
+
+    // ------------------------------------------------------------
+    // 3. Освобождаем внутренний буфер AVIOContext
+    // ------------------------------------------------------------
+    if (m_customBuffer)
+    {
+        av_free(m_customBuffer);
+        m_customBuffer = nullptr;
+    }
+
+    // ------------------------------------------------------------
+    // 4. Закрываем файл
+    // ------------------------------------------------------------
+    if (m_file)
+    {
+        m_file->close();
+        delete m_file;
+        m_file = nullptr;
+    }
+
+    // ------------------------------------------------------------
+    // 5. Сбрасываем служебные переменные
+    // ------------------------------------------------------------
+    m_bytesCurrent = 0;
+    m_seekActive = false;
+    m_downloading = false;
+
     TAG("ffmpeg_closing") << "Old file closed";
 
     resetVariables();
@@ -413,7 +447,7 @@ bool FFmpegDecoder::openAudioProcessing()
 bool FFmpegDecoder::openFileDecoder(const QString& file)
 {
     m_openedFilePath = file;
-    if (!openInputFile(file)) return false;
+    if (!openInputFile()) return false;
     if (!retrieveStreamInfo()) return false;
     findStreams();
     if (!setupCodecContexts()) return false;
@@ -422,6 +456,7 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
     return true;
 }
 
+/*
 bool FFmpegDecoder::openInputFile(const QString& file)
 {
     const int error = avformat_open_input(&m_formatContext,
@@ -439,6 +474,7 @@ bool FFmpegDecoder::openInputFile(const QString& file)
     TAG("ffmpeg_opening") << "Opening '" + file + "' video/audio file...";
     return true;
 }
+*/
 
 bool FFmpegDecoder::retrieveStreamInfo()
 {
@@ -596,6 +632,232 @@ void FFmpegDecoder::play(bool isPaused)
         m_mainParseThread->start();
     }
 }
+
+
+// ------------------------------------------------------------
+// 2. READ PACKET — с полной логикой ожидания + растущий файл
+// ------------------------------------------------------------
+int FFmpegDecoder::read_packet(void* opaque, uint8_t* buf, int buf_size)
+{
+    auto* parent = static_cast<FFmpegDecoder*>(opaque);
+
+    int64_t pos = parent->m_bytesCurrent;
+
+    // ------------------------------------------------------------
+    // SEEK: если seek указывает на область, которой ещё нет — EOF
+    // ------------------------------------------------------------
+    if (parent->m_seekActive)
+    {
+        int64_t fileSize = parent->m_file->size();
+
+        if (fileSize <= pos)
+        {
+            // Файл ещё не дорос до позиции seek
+            return 0; // EOF
+        }
+    }
+
+    // ------------------------------------------------------------
+    // ОСНОВНОЙ ЦИКЛ ОЖИДАНИЯ ПОЯВЛЕНИЯ ДАННЫХ
+    // ------------------------------------------------------------
+    while (true)
+    {
+        int64_t fileSize = parent->m_file->size();
+
+        // Есть новые данные — читаем
+        if (fileSize > pos)
+            break;
+
+        // -----------------------------
+        // 1) Очереди НЕ опустошаются
+        // -----------------------------
+        if (!parent->isPacketsQueueDepleting())
+        {
+            parent->reader_eof = false;
+
+            if (auto control = dynamic_cast<ThreadControl*>(QThread::currentThread()); control->isAbort())
+                return AVERROR_EXIT;
+
+            preciseSleep(0.05);
+            continue;
+        }
+
+        // -----------------------------
+        // 2) Очереди опустошаются — длинное ожидание
+        // -----------------------------
+        parent->m_downloading = true;
+
+        parent->m_videoPacketsQueue.enqueue(
+            parent->m_downloadingPacket,
+            &parent->m_packetsQueueMutex,
+            &parent->m_packetsQueueCV);
+
+        parent->m_audioPacketsQueue.enqueue(
+            parent->m_downloadingPacket,
+            &parent->m_packetsQueueMutex,
+            &parent->m_packetsQueueCV);
+
+        double longSleepTime = parent->m_waitSleperTime;
+
+        while (true)
+        {
+            fileSize = parent->m_file->size();
+
+            if (fileSize > pos)
+                break;
+
+            // SEEK: при seek не ждём
+            if (parent->m_seekActive)
+                break;
+
+            if (longSleepTime <= 0)
+                break;
+
+            if (auto control = dynamic_cast<ThreadControl*>(QThread::currentThread()); control->isAbort())
+            {
+                emit parent->downloadPendingFinished();
+                parent->m_downloading = false;
+                return AVERROR_EXIT;
+            }
+
+            longSleepTime -= 0.05;
+            preciseSleep(0.05);
+        }
+
+        {
+            QMutexLocker locker(&parent->m_downloadLockerMutex);
+            parent->m_downloading = false;
+            parent->m_downloadLockerWait.wakeAll();
+        }
+    }
+
+    // ------------------------------------------------------------
+    // ЧТЕНИЕ БАЙТОВ
+    // ------------------------------------------------------------
+    int ret = parent->m_file->read((char*)buf, buf_size);
+
+    if (ret > 0)
+        parent->m_bytesCurrent += ret;
+
+    return ret;
+}
+
+
+// ------------------------------------------------------------
+// 3. SEEK — корректный seek по файлу
+// ------------------------------------------------------------
+int64_t FFmpegDecoder::seek(void* opaque, int64_t offset, int whence)
+{
+    auto* parent = static_cast<FFmpegDecoder*>(opaque);
+
+    // FFmpeg спрашивает размер файла
+    if (whence & AVSEEK_SIZE)
+        return parent->m_file->size();
+
+    qint64 newPos = -1;
+
+    if (whence == SEEK_SET)
+        newPos = offset;
+    else if (whence == SEEK_CUR)
+        newPos = parent->m_file->pos() + offset;
+    else if (whence == SEEK_END)
+        newPos = parent->m_file->size() + offset;
+    else
+        return -1;
+
+    if (newPos < 0)
+        return -1;
+
+    if (!parent->m_file->seek(newPos))
+        return -1;
+
+    parent->m_bytesCurrent = newPos;
+    parent->m_seekActive = true;   // ВАЖНО: включаем режим seek
+
+    return newPos;
+}
+
+bool FFmpegDecoder::openInputFile()
+{
+    // ------------------------------------------------------------
+    // 1. Открываем файл вручную (растущий файл, без буферизации)
+    // ------------------------------------------------------------
+    m_file = new QFile(m_openedFilePath);
+    if (!m_file->open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+    {
+        qWarning() << "Couldn't open '" + m_openedFilePath + "'";
+        delete m_file;
+        m_file = nullptr;
+        return false;
+    }
+
+    m_bytesCurrent = 0;
+    m_seekActive = false;
+
+    // ------------------------------------------------------------
+    // 2. Создаём буфер для AVIOContext
+    // ------------------------------------------------------------
+    const int bufferSize = 32768;
+    m_customBuffer = static_cast<unsigned char*>(av_malloc(bufferSize));
+    if (!m_customBuffer)
+    {
+        qWarning() << "Failed to allocate IO buffer";
+        return false;
+    }
+
+    // ------------------------------------------------------------
+    // 3. Создаём AVIOContext
+    // ------------------------------------------------------------
+    m_avioCtx = avio_alloc_context(
+        m_customBuffer,          // внутренний буфер
+        bufferSize,              // размер буфера
+        0,                       // write_flag = 0 (только чтение)
+        this,                    // opaque
+        read_packet,          // read callback
+        nullptr,                 // write callback
+        seek                  // seek callback
+    );
+
+    if (!m_avioCtx)
+    {
+        qWarning() << "Failed to allocate AVIOContext";
+        av_free(m_customBuffer);
+        m_customBuffer = nullptr;
+        return false;
+    }
+
+    // ------------------------------------------------------------
+    // 4. Создаём AVFormatContext и подключаем кастомный IO
+    // ------------------------------------------------------------
+    m_formatContext = avformat_alloc_context();
+    if (!m_formatContext)
+    {
+        qWarning() << "Failed to allocate AVFormatContext";
+        av_free(m_avioCtx);
+        m_avioCtx = nullptr;
+        av_free(m_customBuffer);
+        m_customBuffer = nullptr;
+        return false;
+    }
+
+    m_formatContext->pb = m_avioCtx;
+    m_formatContext->flags |= AVFMT_FLAG_CUSTOM_IO;
+
+    // ------------------------------------------------------------
+    // 5. Открываем вход (через кастомный IO)
+    // ------------------------------------------------------------
+    int error = avformat_open_input(&m_formatContext, nullptr, nullptr, nullptr);
+    if (error != 0)
+    {
+        qWarning() << "avformat_open_input failed:" << error;
+        return false;
+    }
+
+    TAG("ffmpeg_opening") << "Opening '" + m_openedFilePath + "' via custom IO...";
+
+    return true;
+}
+
 
 void FFmpegDecoder::setVolume(double volume)
 {
