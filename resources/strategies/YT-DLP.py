@@ -155,6 +155,13 @@ def regex_extract_from_html(html: str) -> Dict[str, Optional[str]]:
 
     return result
 
+
+import shutil
+
+node_path = shutil.which("node") or shutil.which("node.exe")
+
+print("Detected node:", node_path)
+
 def YT_DLP_search(query, order, searchLimit, page, strategy):
     socket.setdefaulttimeout(30)
 
@@ -166,6 +173,16 @@ def YT_DLP_search(query, order, searchLimit, page, strategy):
         'quiet': True,
         'skip_download': True,
     }
+
+    if node_path:
+        # Enable Node + EJS only when Node is available
+        ydl_opts["js_runtimes"] = {
+            "node": {
+                "path": node_path,
+                "enabled": True
+            }
+        }
+        ydl_opts["remote_components"] = ["ejs:github"]
 
     session = requests.Session()
     session.headers.update(HEADERS)
@@ -239,6 +256,16 @@ def YT_DLP_extractDirectLinks(link, receiver) :
         'get-url': True,
         'noplaylist': True,
     }
+
+    if node_path:
+        # Enable Node + EJS only when Node is available
+        ydl_opts["js_runtimes"] = {
+            "node": {
+                "path": node_path,
+                "enabled": True
+            }
+        }
+        ydl_opts["remote_components"] = ["ejs:github"]
 
     s = yt_dlp.YoutubeDL(ydl_opts).extract_info(link, download=False)['formats']
 
