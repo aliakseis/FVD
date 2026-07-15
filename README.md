@@ -27,3 +27,5 @@ sudo dnf install qt5-qtquickcontrols2-devel
 sudo dnf install qt5-qtbase-private-devel
 sudo dnf install qt5-linguist
 ```
+
+You may need to install Node.js and make its executable reachable through the PATH environment variable.
