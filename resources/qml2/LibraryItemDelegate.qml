@@ -72,7 +72,7 @@ Item {
     Connections {
         target: albumView
 
-        onHoveredIndexChanged: {
+        function onHoveredIndexChanged(index) {
             if(albumView.hoveredIndex != index)
                 looseHoverHandler();
         }
