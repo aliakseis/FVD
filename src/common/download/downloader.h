@@ -40,17 +40,6 @@ struct Downloadable
     };
 };
 
-namespace download
-{
-
-struct SpeedCalculation
-{
-    QTime previous_time;
-    qint64 previous_progress;
-    double speed;
-    SpeedCalculation() : previous_progress(0), speed(0) {}
-}; // SpeedCalculation
-
 /// \class DownloaderObserverInterface Observer interface for the Downloader
 struct DownloaderObserverInterface
 {
@@ -65,6 +54,43 @@ struct DownloaderObserverInterface
     virtual void onStart(const QByteArray& data) = 0;
 }; // DownloaderObserverInterface
 
+struct IDownloader : public Downloadable
+{
+    /// \enum    DuplicateDownloadNamePolicy
+    /// \brief    kReplaceFile does not change name;
+    ///         kGenerateNewName downloads to "filename(<N+1>).ext", where N=0..MAX_INT, until file exists;
+    ///
+    enum DuplicateDownloadNamePolicy { kGenerateNewName, kReplaceFile };
+
+    virtual const QString& destinationPath() const = 0;
+    virtual bool setDestinationPath(const QString& destination_path) = 0;
+    virtual qint64 totalFileSize() const = 0;
+    virtual void setTotalFileSize(qint64 value) = 0;
+    virtual void setExpectedFileSize(qint64 expected_size) = 0;
+    virtual int speedLimit() const = 0;
+    virtual void setSpeedLimit(int) = 0;
+    virtual void setDownloadNamePolicy(DuplicateDownloadNamePolicy download_name_policy) = 0;
+
+    virtual void Start(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList()) = 0;
+    virtual void Pause() = 0;
+
+    virtual void Resume(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList()) = 0;
+    virtual void Stop() = 0;
+
+    virtual void setObserver(DownloaderObserverInterface* observer) = 0;
+};
+
+namespace download
+{
+
+struct SpeedCalculation
+{
+    QTime previous_time;
+    qint64 previous_progress;
+    double speed;
+    SpeedCalculation() : previous_progress(0), speed(0) {}
+}; // SpeedCalculation
+
 
 /// \class    Downloader
 ///
@@ -75,17 +101,12 @@ struct DownloaderObserverInterface
 ///
 
 template <class SpeedControl = speed_readable_tag, bool delete_file_if_error = true>
-class Downloader : public detail::DownloaderBase<SpeedControl>, public Downloadable
+class Downloader : public detail::DownloaderBase<SpeedControl>, public IDownloader
 {
 public:
     typedef Downloader<SpeedControl, delete_file_if_error> class_type;
     typedef SpeedControl speed_access_category;
 
-    /// \enum    DuplicateDownloadNamePolicy
-    /// \brief    kReplaceFile does not change name;
-    ///         kGenerateNewName downloads to "filename(<N+1>).ext", where N=0..MAX_INT, until file exists;
-    ///
-    enum DuplicateDownloadNamePolicy {kGenerateNewName, kReplaceFile};
     enum { DOWNLOAD_MAX_REDIRECTS_ALLOWED = 10 };
 
     explicit Downloader(QObject* parent = nullptr)
@@ -106,6 +127,15 @@ public:
     {
         delete current_header_catcher_;
         delete current_download_catcher_;
+    }
+
+    int speedLimit() const override
+    {
+        return detail::DownloaderBase<SpeedControl>::speedLimit();
+    }
+    void setSpeedLimit(int limit) override
+    {
+        detail::DownloaderBase<SpeedControl>::setSpeedLimit(limit);
     }
 
     State state() const {return state_;}

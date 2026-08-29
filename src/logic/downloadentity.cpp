@@ -361,9 +361,15 @@ void DownloadEntity::enqueueAndResetFailedState()
 
 DownloadEntity::DownloaderType* DownloadEntity::downloader()
 {
+#ifdef ALLOW_TRAFFIC_CONTROL
+    typedef download::Downloader<download::speed_limitable_tag, false> ConcreteDownloaderType;
+#else
+    typedef download::Downloader<download::speed_readable_tag, false> ConcreteDownloaderType;
+#endif  // ALLOW_TRAFFIC_CONTROL
+
     if (m_downloader.isNull())
     {
-        m_downloader.reset(new DownloaderType(this));
+        m_downloader.reset(new ConcreteDownloaderType(this));
 
         m_downloader->setObserver(this);
         m_downloader->setDownloadNamePolicy(m_isFileAssigned ? DownloaderType::kReplaceFile

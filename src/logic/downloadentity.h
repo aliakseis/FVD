@@ -86,7 +86,7 @@ class DownloadEntity : public QObject,
                        public ControllableByRVEandSM<DownloadEntity>,
                        public ControllableByDM<DownloadEntity>,
                        public ControllableByRVEandDM<DownloadEntity>,
-                       public download::DownloaderObserverInterface,
+                       public DownloaderObserverInterface,
                        public IParentAdvice
 {
     Q_OBJECT
@@ -106,11 +106,12 @@ private:
                    bool isFileAssigned = true);
 
 public:
-#ifdef ALLOW_TRAFFIC_CONTROL
-    typedef download::Downloader<download::speed_limitable_tag, false> DownloaderType;
-#else
-    typedef download::Downloader<download::speed_readable_tag, false> DownloaderType;
-#endif  // ALLOW_TRAFFIC_CONTROL
+//#ifdef ALLOW_TRAFFIC_CONTROL
+//    typedef download::Downloader<download::speed_limitable_tag, false> DownloaderType;
+//#else
+//    typedef download::Downloader<download::speed_readable_tag, false> DownloaderType;
+//#endif  // ALLOW_TRAFFIC_CONTROL
+    typedef IDownloader DownloaderType;
 
     ~DownloadEntity()
     {
