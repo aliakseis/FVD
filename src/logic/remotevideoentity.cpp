@@ -180,7 +180,7 @@ DownloadEntity* RemoteVideoEntity::download(int resolutionId, VisibilityState vi
                 download(resolutionId, visState);
             }
         }
-        else if (isFileExists && resultEntity->state() == Downloadable::kFinished)
+        else if (isFileExists && resultEntity->state() == kFinished)
         {
             if (DownloadEntity::confirmRestartDownload())
             {
@@ -203,7 +203,7 @@ DownloadEntity* RemoteVideoEntity::download(int resolutionId, VisibilityState vi
             m_downloads.append(resultEntity);  // move it to the end
             extractLinks();
         }
-        else if (resultEntity->state() == Downloadable::kFailed)
+        else if (resultEntity->state() == kFailed)
         {
             resultEntity->enqueueAndResetFailedState();
         }
@@ -245,11 +245,11 @@ QVariant RemoteVideoEntity::progress() const
     return (lastVisible != nullptr) ? lastVisible->progress() : QVariant();
 }
 
-Downloadable::State RemoteVideoEntity::state() const
+DownloadState RemoteVideoEntity::state() const
 {
     DownloadEntity* lastVisible = getLastVisible();
 
-    return (lastVisible != nullptr) ? lastVisible->state() : Downloadable::kFailed;
+    return (lastVisible != nullptr) ? lastVisible->state() : kFailed;
 }
 
 const char USER_AGENT[] = "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
@@ -296,8 +296,8 @@ void RemoteVideoEntity::onHandleExtractedLinks(const QMap<int, LinkInfo>& links,
         if (!m_downloads.isEmpty())  // We appended one empty download
         {
             DownloadEntity* de = m_downloads[m_downloads.size() - 1];
-            if (de->state() != DownloadEntity::kFinished)
-                de->setState(DownloadEntity::kFailed);
+            if (de->state() != kFinished)
+                de->setState(kFailed);
         }
         m_lastErrorCode = Errors::FailedToExtractLinks;
     }
@@ -391,11 +391,11 @@ void RemoteVideoEntity::manageDownloads()
     {
         --it;
         DownloadEntity* de = *it;
-        if (de->state() == DownloadEntity::kFinished)
+        if (de->state() == kFinished)
         {
             continue;
         }
-        const bool entityBeingReloaded = DownloadEntity::kFailed == de->state() && !de->isFailed();
+        const bool entityBeingReloaded = kFailed == de->state() && !de->isFailed();
         if (nextIteraion && !entityBeingReloaded)
         {
             break;
@@ -418,7 +418,7 @@ void RemoteVideoEntity::manageDownloads()
             break;
         }
 
-        de->setState(DownloadEntity::kQueued);  // trigger download, unless it failed for the second time
+        de->setState(kQueued);  // trigger download, unless it failed for the second time
     }
 }
 
@@ -503,9 +503,9 @@ void RemoteVideoEntity::setDownloads(const QObjectList& items)
             continue;
         }
 
-        if (entity->state() == DownloadEntity::kDownloading)
+        if (entity->state() == kDownloading)
         {
-            entity->setState(DownloadEntity::kQueued);
+            entity->setState(kQueued);
         }
 
         m_downloads.append(entity);
@@ -513,7 +513,7 @@ void RemoteVideoEntity::setDownloads(const QObjectList& items)
         if (entity->visibilityState() == visNorm)
         {
             VERIFY(connect(entity, SIGNAL(progressChanged(qint64, qint64)), this, SIGNAL(signRVEProgressUpdated())));
-            VERIFY(connect(entity, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)), this,
+            VERIFY(connect(entity, SIGNAL(stateChanged(DownloadState, DownloadState)), this,
                            SIGNAL(signRVEUpdated())));
         }
     }
@@ -539,7 +539,7 @@ bool RemoteVideoEntity::hasPersistableDownloads() const
 DownloadEntity* RemoteVideoEntity::createDownloadEntityByFilename(const QString& fileName)
 {
     DownloadEntity* entity = DownloadEntity::create(this, visLibOnly, true);
-    entity->setState(Downloadable::kFinished);
+    entity->setState(kFinished);
     entity->setFilename(fileName);
     QFileInfo fileInfo(fileName);
     entity->setDownloadedSize(fileInfo.isDir() ? 0 : fileInfo.size());

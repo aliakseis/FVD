@@ -143,7 +143,7 @@ void LibraryModel::onAppendEntities(const QList<DownloadEntity*>& entitisList)
     QList<DownloadEntity*> list(entitisList);
     auto newEnd = std::remove_if(list.begin(), list.end(),
                                  [this](DownloadEntity* entity)
-                                 { return entity->state() != Downloadable::kFinished || -1 != entityRow(entity); });
+                                 { return entity->state() != kFinished || -1 != entityRow(entity); });
     list.erase(newEnd, list.end());
 
     if (!list.empty())
@@ -155,8 +155,8 @@ void LibraryModel::onAppendEntities(const QList<DownloadEntity*>& entitisList)
 
         Q_FOREACH (DownloadEntity* ent, list)
         {
-            VERIFY(connect(ent, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)),
-                           SLOT(entityStateChanged(Downloadable::State, Downloadable::State))));
+            VERIFY(connect(ent, SIGNAL(stateChanged(DownloadState, DownloadState)),
+                           SLOT(entityStateChanged(DownloadState, DownloadState))));
         }
         MainWindow::Instance()->askForSavingModel();
     }
@@ -347,17 +347,17 @@ void LibraryModel::onLibraryFileMissing(const QString& filePath)
     SearchManager::Instance().onItemsDeletedNotify(entities);
 }
 
-void LibraryModel::entityStateChanged(Downloadable::State newState, Downloadable::State oldState)
+void LibraryModel::entityStateChanged(DownloadState newState, DownloadState oldState)
 {
     Q_UNUSED(oldState);
     auto* ent = qobject_cast<DownloadEntity*>(sender());
     Q_ASSERT(ent);
 
-    VERIFY(disconnect(ent, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)), this,
-                      SLOT(entityStateChanged(Downloadable::State, Downloadable::State))));
+    VERIFY(disconnect(ent, SIGNAL(stateChanged(DownloadState, DownloadState)), this,
+                      SLOT(entityStateChanged(DownloadState, DownloadState))));
 
     // take into account that order of notifications can be altered
-    if (newState != Downloadable::kFinished)
+    if (newState != kFinished)
     {
         removeRowDontReportSM(ent);
     }
@@ -395,7 +395,7 @@ void LibraryModel::onIdle()
         {
             DownloadEntity* ent = missingEntity.data();
             if ((ent->visibilityState() == visLibOnly) ||
-                (ent->visibilityState() == visNorm && ent->state() == Downloadable::kFinished))
+                (ent->visibilityState() == visNorm && ent->state() == kFinished))
             {
                 qDebug() << __FUNCTION__ << " fileName: " << ent->filename();
                 validEntities.push_back(ent);

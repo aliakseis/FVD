@@ -148,20 +148,20 @@ void ItemsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 
             switch (entity->state())
             {
-            case Downloadable::kFinished:
+            case kFinished:
                 progressBarOption.progress = progressBarOption.maximum;
                 progressBarOption.text = tr("Completed");
                 break;
-            case Downloadable::kPaused:
+            case kPaused:
                 progressBarOption.text = tr("Paused");
                 break;
-            case Downloadable::kCanceled:
+            case kCanceled:
                 progressBarOption.text = tr("Canceled");
                 break;
-            case Downloadable::kFailed:
+            case kFailed:
                 progressBarOption.text = tr("Failed");
                 break;
-            case Downloadable::kQueued:
+            case kQueued:
                 progressBarOption.text = tr("Queued");
                 break;
             default:;

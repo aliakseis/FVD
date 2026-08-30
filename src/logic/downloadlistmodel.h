@@ -51,7 +51,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void updateEntityRow();
-    void entityStateChanged(Downloadable::State newState, Downloadable::State oldState);
+    void entityStateChanged(DownloadState newState, DownloadState oldState);
     void onAddItemsInModel(const QList<DownloadEntity*>& list, QObject* obj);
     void onRemoveItemsFromModel(const QList<DownloadEntity*>& list, QObject* obj);
 

@@ -23,22 +23,7 @@
 #include "download/detail/downloader_signal_catchers.h"
 #include "download/detail/downloader_base.h"
 #include "download/downloader_traits.h"
-#include "utilities/errorcode.h"
 
-
-// Holds states for download items
-struct Downloadable
-{
-    enum State
-    {
-        kQueued,        // initial state, download is in queue to start
-        kDownloading,    // download in progress
-        kPaused,        // Paused means freeze, and able to be resumed, if supported by server
-        kFinished,        // Final state of normal download. File should exist, network reply closed
-        kFailed,        // Error happened, see error details. Can be redownloaded by placing in queue.
-        kCanceled        // Cancelled by user, file deleted. Can be redownloaded by placing in queue.
-    };
-};
 
 /// \class DownloaderObserverInterface Observer interface for the Downloader
 struct DownloaderObserverInterface
@@ -54,7 +39,7 @@ struct DownloaderObserverInterface
     virtual void onStart(const QByteArray& data) = 0;
 }; // DownloaderObserverInterface
 
-struct IDownloader : public Downloadable
+struct IDownloader
 {
     /// \enum    DuplicateDownloadNamePolicy
     /// \brief    kReplaceFile does not change name;
@@ -104,6 +89,16 @@ template <class SpeedControl = speed_readable_tag, bool delete_file_if_error = t
 class Downloader : public detail::DownloaderBase<SpeedControl>, public IDownloader
 {
 public:
+    enum State
+    {
+        kQueued,        // initial state, download is in queue to start
+        kDownloading,    // download in progress
+        kPaused,        // Paused means freeze, and able to be resumed, if supported by server
+        kFinished,        // Final state of normal download. File should exist, network reply closed
+        kFailed,        // Error happened, see error details. Can be redownloaded by placing in queue.
+        kCanceled        // Cancelled by user, file deleted. Can be redownloaded by placing in queue.
+    };
+
     typedef Downloader<SpeedControl, delete_file_if_error> class_type;
     typedef SpeedControl speed_access_category;
 

@@ -61,7 +61,7 @@ private Q_SLOTS:
     void onLibraryFileDeleted(const QPointer<DownloadEntity>& entity);
     void onLibraryFileMissing(const QString& filePath);
 
-    void entityStateChanged(Downloadable::State newState, Downloadable::State oldState);
+    void entityStateChanged(DownloadState newState, DownloadState oldState);
 
     void onIdle();
 

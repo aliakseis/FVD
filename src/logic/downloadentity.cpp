@@ -315,21 +315,21 @@ void DownloadEntity::onFileToBeReleased(const QString& filename)
     emit fileRemoving();
 }
 
-QString DownloadEntity::stateToString(State s)
+QString DownloadEntity::stateToString(DownloadState s)
 {
     switch (s)
     {
-    case DownloadEntity::kQueued:
+    case kQueued:
         return Tr::Tr(TREEVIEW_QUEUED_STATUS);
-    case DownloadEntity::kDownloading:
+    case kDownloading:
         return Tr::Tr(TREEVIEW_DOWNLOADING_STATUS);
-    case DownloadEntity::kPaused:
+    case kPaused:
         return Tr::Tr(TREEVIEW_PAUSED_STATUS);
-    case DownloadEntity::kFinished:
+    case kFinished:
         return Tr::Tr(TREEVIEW_FINISHED_STATUS);
-    case DownloadEntity::kFailed:
+    case kFailed:
         return Tr::Tr(TREEVIEW_ERROR_STATUS);
-    case DownloadEntity::kCanceled:
+    case kCanceled:
         return Tr::Tr(TREEVIEW_CANSELED_STATUS);
     }
     return {};
@@ -354,7 +354,7 @@ bool DownloadEntity::startDownloadWithHighestPriority()
 void DownloadEntity::enqueueAndResetFailedState()
 {
     m_isFailed = false;
-    Downloadable::State previousState = m_state;
+    DownloadState previousState = m_state;
     m_state = kQueued;
     emit stateChanged(m_state, previousState);
 }
@@ -392,7 +392,7 @@ DownloadEntity::DownloaderType* DownloadEntity::downloader()
     return m_downloader.data();
 }
 
-void DownloadEntity::setState(State state)
+void DownloadEntity::setState(DownloadState state)
 {
     if (m_state != state)
     {
@@ -400,7 +400,7 @@ void DownloadEntity::setState(State state)
         {
             m_isFailed = true;
         }
-        Downloadable::State previousState = m_state;
+        DownloadState previousState = m_state;
 
         m_state = state;
         m_lastModified = nullDateTime;  // invalidate

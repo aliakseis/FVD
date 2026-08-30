@@ -276,7 +276,7 @@ void SearchManager::onItemsRemovedNotify(const QList<DownloadEntity*>& list)
 {
     Q_FOREACH (DownloadEntity* ent, list)
     {
-        if (ent->state() != Downloadable::kFinished)
+        if (ent->state() != kFinished)
         {
             removeDownload(ent);
         }
@@ -309,7 +309,7 @@ void SearchManager::onDownloadChanged()
     int downloadsAmount = 0;
     for (const auto& entity : m_allEntities)
     {
-        if (entity->state() == Downloadable::kDownloading && !entity->progress().isNull())
+        if (entity->state() == kDownloading && !entity->progress().isNull())
         {
             overallProgress += entity->progress().toFloat();
             ++downloadsAmount;

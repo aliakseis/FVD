@@ -152,7 +152,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
             {
                 QModelIndex srcIdx = m_proxyModel->mapToSource(index);
                 DownloadEntity* entity = m_model->item(srcIdx.row());
-                if (entity->state() == DownloadEntity::kDownloading)
+                if (entity->state() == kDownloading)
                 {
                     DownloadListModel::pauseDownload(m_model->item(srcIdx.row()));
                 }
@@ -164,11 +164,11 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
             {
                 QModelIndex srcIdx = m_proxyModel->mapToSource(index);
                 DownloadEntity* entity = m_model->item(srcIdx.row());
-                if (entity->state() == DownloadEntity::kPaused)
+                if (entity->state() == kPaused)
                 {
                     m_model->resumeDownload(m_model->item(srcIdx.row()));
                 }
-                else if (entity->state() == DownloadEntity::kQueued)
+                else if (entity->state() == kQueued)
                 {
                     m_model->restartDownload(m_model->item(srcIdx.row()));
                 }
@@ -180,7 +180,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
             {
                 QModelIndex srcIdx = m_proxyModel->mapToSource(index);
                 DownloadEntity* entity = m_model->item(srcIdx.row());
-                if (entity->state() != DownloadEntity::kFinished)
+                if (entity->state() != kFinished)
                 {
                     DownloadListModel::stopDownload(m_model->item(srcIdx.row()));
                 }
@@ -314,7 +314,7 @@ void DownloadsForm::restartDownload()
 
     int mappedRow = m_proxyModel->mappedRow(control->affectedRow());
     auto de = m_model->item(mappedRow);
-    if (de->state() != Downloadable::kFinished || DownloadEntity::confirmRestartDownload())
+    if (de->state() != kFinished || DownloadEntity::confirmRestartDownload())
     {
         m_model->restartDownload(de);
     }
@@ -327,11 +327,11 @@ void DownloadsForm::onPauseItem()
 
     DownloadEntity* entity = m_model->item(row);
     Q_ASSERT(entity);
-    if (entity->state() == DownloadEntity::kDownloading)
+    if (entity->state() == kDownloading)
     {
         DownloadListModel::pauseDownload(m_model->item(row));
     }
-    else if (entity->state() == DownloadEntity::kPaused)
+    else if (entity->state() == kPaused)
     {
         m_model->resumeDownload(m_model->item(row));
     }
@@ -344,11 +344,11 @@ void DownloadsForm::onStartItem()
 
     DownloadEntity* entity = m_model->item(row);
     Q_ASSERT(entity);
-    if (entity->state() == DownloadEntity::kPaused)
+    if (entity->state() == kPaused)
     {
         m_model->resumeDownload(entity);
     }
-    else if (entity->state() == DownloadEntity::kQueued)
+    else if (entity->state() == kQueued)
     {
         m_model->restartDownload(entity);
     }
@@ -435,7 +435,7 @@ void DownloadsForm::deleteItems(QModelIndexList const& indexList, bool deleteCom
                                    [capture0 = videoPlayer](auto PH1)
                                    { return fileIsInUse(capture0, PH1); });
         // if currently played entity to be deleted, stop playing
-        if (played != itemsToDelete.constEnd() && (deleteCompletely || (*played)->state() != Downloadable::kFinished))
+        if (played != itemsToDelete.constEnd() && (deleteCompletely || (*played)->state() != kFinished))
         {
             videoPlayer->stopVideo(true);
         }
@@ -484,9 +484,9 @@ bool DownloadsForm::eventFilter(QObject* obj, QEvent* event)
                 Q_ASSERT(entity);
 
                 int proxyRow = index.row();  // m_proxyModel->mapFromSource(m_model->index(index.row() , 0)).row();
-                auto is_edownload = entity->state() != DownloadEntity::kFinished;
-                control->setState((entity->state() == DownloadEntity::kDownloading) ? DownloadsControl::Started
-                                                                                    : DownloadsControl::Paused,
+                auto is_edownload = entity->state() != kFinished;
+                control->setState((entity->state() == kDownloading) ? DownloadsControl::Started
+                                                                    : DownloadsControl::Paused,
                                   (proxyRow > 0), (proxyRow < (m_proxyModel->rowCount() - 1)),
                                   DownloadListModel::canStopDownload(entity), is_edownload, entity->speedLimit());
                 control->showAtCursor(index.row());

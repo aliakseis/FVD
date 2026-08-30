@@ -80,7 +80,7 @@ private slots:
     void setVideoFilename(const QString& fileName);
     void openVideoInBrowser(bool alt);
     void onPlayDownloadEntityAsynchronously(const QPointer<DownloadEntity>& entity);
-    void onDownloadStateChanged(Downloadable::State newState, Downloadable::State prevState);
+    void onDownloadStateChanged(DownloadState newState, DownloadState prevState);
     void onCustomContextMenuRequested(const QPoint& pos);
 
     /// \fn	void VideoPlayerWidget::updateViewOnVideoStop(bool showDefaultImage = true);

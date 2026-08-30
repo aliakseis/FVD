@@ -3,6 +3,7 @@
 #include <QObject>
 
 #include "basefacademodel.h"
+#include "downloadstate.h"
 #include "download/downloader.h"
 
 class DownloadEntity;
@@ -11,7 +12,7 @@ class DownloadManager : public BaseFacadeModel<DownloadEntity>
 {
 public:
     DownloadManager();
-    void entityStateChanged(DownloadEntity* dle, Downloadable::State newState, Downloadable::State oldState);
+    void entityStateChanged(DownloadEntity* dle, DownloadState newState, DownloadState oldState);
     void considerStartNextDownload();
 
     static void stopDownload(DownloadEntity* de);

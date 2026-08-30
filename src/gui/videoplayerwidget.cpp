@@ -93,29 +93,29 @@ void VideoPlayerWidget::processPreviewEntity()
 
     switch (m_currentDownload->state())
     {
-    case DownloadEntity::kQueued:
+    case kQueued:
         VERIFY(connect(m_currentDownload, SIGNAL(fileCreated(QString)), SLOT(setVideoFilename(QString))));
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)),
                        SLOT(downloadingToPreview(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)), getDecoder(),
                        SLOT(limitPlayback(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(finished()), getDecoder(), SLOT(resetLimitPlayback())));
-        VERIFY(connect(m_currentDownload, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)),
-                       SLOT(onDownloadStateChanged(Downloadable::State, Downloadable::State))));
+        VERIFY(connect(m_currentDownload, SIGNAL(stateChanged(DownloadState, DownloadState)),
+                       SLOT(onDownloadStateChanged(DownloadState, DownloadState))));
         break;
-    case DownloadEntity::kFinished:
+    case kFinished:
         m_progressBar->displayDownloadProgress(m_currentDownload->totalFileSize(), m_currentDownload->totalFileSize());
         playFile(m_currentDownload->filename());
         break;
-    case DownloadEntity::kDownloading:
-    case DownloadEntity::kPaused:
+    case kDownloading:
+    case kPaused:
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)),
                        SLOT(downloadingToPreview(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(progressChanged(qint64, qint64)), getDecoder(),
                        SLOT(limitPlayback(qint64, qint64))));
         VERIFY(connect(m_currentDownload, SIGNAL(finished()), getDecoder(), SLOT(resetLimitPlayback())));
         break;
-    case DownloadEntity::kFailed:
+    case kFailed:
         setState(InitialState);
         hideSpinner();
         emit showPlaybutton(true);
@@ -242,7 +242,7 @@ void VideoPlayerWidget::onPlayDownloadEntityAsynchronously(const QPointer<Downlo
 
     m_currentDownload = entity;
     m_currentFile = m_currentDownload->filename();
-    if (entity->state() == Downloadable::kPaused && entity->visibilityState() == visTemp)
+    if (entity->state() == kPaused && entity->visibilityState() == visTemp)
     {
         RemoteVideoEntity::startTempDownloading(entity);
     }
@@ -276,7 +276,7 @@ void VideoPlayerWidget::startPreviewDownload()
         if (current == nullptr)
         {
             current = m_currentEntity->requestStartDownload(visTemp);
-            if (current->state() != Downloadable::kFailed)  // We don't resurrect preview downloads
+            if (current->state() != kFailed)  // We don't resurrect preview downloads
             {
                 m_videoWidget->hidePlayButton();
                 showSpinner();
@@ -287,7 +287,7 @@ void VideoPlayerWidget::startPreviewDownload()
                 return;
             }
         }
-        else if (current->state() == Downloadable::kQueued)
+        else if (current->state() == kQueued)
         {
             current->startDownloadWithHighestPriority();
             m_videoWidget->hidePlayButton();
@@ -636,10 +636,10 @@ void VideoPlayerWidget::onPlayingFinished()
 // TODO: not needed more, now seeking is using dynamic update
 void VideoPlayerWidget::disableSeeking() { Q_ASSERT(m_progressBar != nullptr); }
 
-void VideoPlayerWidget::onDownloadStateChanged(Downloadable::State newState, Downloadable::State prevState)
+void VideoPlayerWidget::onDownloadStateChanged(DownloadState newState, DownloadState prevState)
 {
     Q_UNUSED(prevState)
-    if (newState == Downloadable::kFailed && state() == PendingHeader)
+    if (newState == kFailed && state() == PendingHeader)
     {
         disconnect(m_currentDownload, nullptr, m_progressBar, nullptr);
         disconnect(m_currentDownload, nullptr, getDecoder(), nullptr);

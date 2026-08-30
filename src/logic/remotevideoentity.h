@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "download/downloader.h"
+#include "downloadstate.h"
 #include "errors.h"
 #include "utilities/utils.h"
 
@@ -74,7 +75,7 @@ public:
     DownloadEntity* createDownloadEntityByFilename(const QString& fileName);
 
     QVariant progress() const;
-    Downloadable::State state() const;
+    DownloadState state() const;
     LinkInfo linkInfo(int linkId) const { return m_resolutionLinks[linkId]; }
     QString prefResolution() const;
 

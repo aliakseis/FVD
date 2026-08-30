@@ -5,6 +5,7 @@
 #include <QString>
 
 #include "download/downloader.h"
+#include "downloadstate.h"
 #include "remotevideoentity.h"
 #include "utilities/credsretriever.h"
 #include "utilities/errorcode.h"
@@ -80,7 +81,6 @@ protected:
 };
 
 class DownloadEntity : public QObject,
-                       public Downloadable,
                        public ControllableByRVE<DownloadEntity>,
                        public ControllableBySM<DownloadEntity>,
                        public ControllableByRVEandSM<DownloadEntity>,
@@ -126,10 +126,10 @@ public:
         return m_parentVideoEntity->m_videoInfo.id == download_entity.m_parentVideoEntity->m_videoInfo.id;
     }
     bool operator!=(const DownloadEntity& download_entity) const { return !(*this == download_entity); }
-    State state() const { return m_state; }
-    void setState(State state);
+    DownloadState state() const { return m_state; }
+    void setState(DownloadState state);
     void enqueueAndResetFailedState();
-    static QString stateToString(State s);
+    static QString stateToString(DownloadState s);
 
     RemoteVideoEntity* getParent() const { return m_parentVideoEntity; }
 
@@ -233,7 +233,7 @@ private:
     void decerializeSetState(int state)
     {
         // we don't emit stateChanged here
-        m_state = (State)state;
+        m_state = (DownloadState)state;
     }
     void decerializeSetVisibilityState(int value) { m_visibilityState = (VisibilityState)value; }
 
@@ -263,7 +263,7 @@ private:
 
     DownloaderType* downloader();
 
-    State m_state;
+    DownloadState m_state;
     QScopedPointer<DownloaderType> m_downloader;
     QString m_filepath;
     int m_currentResolutionId;
@@ -294,7 +294,7 @@ private:
     friend class ControllableByRVEandDM<DownloadEntity>;
 
 Q_SIGNALS:
-    void stateChanged(Downloadable::State newState, Downloadable::State lastState);
+    void stateChanged(DownloadState newState, DownloadState lastState);
     void fileCreated(const QString& path);
     void fileRemoving();
     void finished();

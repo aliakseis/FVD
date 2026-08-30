@@ -208,8 +208,8 @@ void DownloadListModel::onAppendEntities(const QList<DownloadEntity*>& list)
             // do this in S.M.	if (de->visibilityState() != visTemp)
             VERIFY(connect(de, SIGNAL(progressChanged(qint64, qint64)), SLOT(updateEntityRow())));
             VERIFY(connect(de, SIGNAL(speed(qint64)), SLOT(updateEntityRow())));
-            VERIFY(connect(de, SIGNAL(stateChanged(Downloadable::State, Downloadable::State)),
-                           SLOT(entityStateChanged(Downloadable::State, Downloadable::State))));
+            VERIFY(connect(de, SIGNAL(stateChanged(DownloadState, DownloadState)),
+                           SLOT(entityStateChanged(DownloadState, DownloadState))));
             VERIFY(connect(de->getParent(), SIGNAL(linksExtracted()), SLOT(onLinkExtracted())));
         }
         endInsertRows();
@@ -232,13 +232,13 @@ void DownloadListModel::updateEntityRow()
     }
 }
 
-void DownloadListModel::entityStateChanged(Downloadable::State newState, Downloadable::State oldState)
+void DownloadListModel::entityStateChanged(DownloadState newState, DownloadState oldState)
 {
     auto* dle = qobject_cast<DownloadEntity*>(sender());
     Q_ASSERT(dle);
     DownloadManager::entityStateChanged(dle, newState, oldState);
 
-    if (newState == Downloadable::kFinished)
+    if (newState == kFinished)
     {
         emit notifyFinishedDownloading(QList<DownloadEntity*>() << dle);
     }

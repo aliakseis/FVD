@@ -5,11 +5,11 @@
 
 DownloadManager::DownloadManager() = default;
 
-void DownloadManager::entityStateChanged(DownloadEntity* dle, Downloadable::State state, Downloadable::State oldState)
+void DownloadManager::entityStateChanged(DownloadEntity* dle, DownloadState state, DownloadState oldState)
 {
     Q_UNUSED(dle)
-    if ((oldState == Downloadable::kDownloading && state != Downloadable::kDownloading) ||
-        (Downloadable::kQueued == state))
+    if ((oldState == kDownloading && state != kDownloading) ||
+        (kQueued == state))
     {
         considerStartNextDownload();
     }
@@ -25,7 +25,7 @@ void DownloadManager::considerStartNextDownload()
     for (int i = 0; numActive < maxDownloads && i < numEntities(); ++i)
     {
         DownloadEntity* nextDl = item(i);
-        if (nextDl->state() == DownloadEntity::kQueued && !nextDl->directUrl().isEmpty() && nextDl->download())
+        if (nextDl->state() == kQueued && !nextDl->directUrl().isEmpty() && nextDl->download())
         {
             ++numActive;
         }
@@ -37,7 +37,7 @@ void DownloadManager::clear_impl() { BaseFacadeModel<DownloadEntity>::clear_impl
 void DownloadManager::stopDownload(DownloadEntity* de)
 {
     Q_ASSERT(de);
-    if (de->state() == DownloadEntity::kDownloading || de->state() == DownloadEntity::kPaused)
+    if (de->state() == kDownloading || de->state() == kPaused)
     {
         de->stop();
     }
@@ -50,13 +50,13 @@ void DownloadManager::stopDownload(DownloadEntity* de)
 bool DownloadManager::canStopDownload(DownloadEntity* de)
 {
     Q_ASSERT(de);
-    return (de->state() == DownloadEntity::kDownloading || de->state() == DownloadEntity::kPaused);
+    return (de->state() == kDownloading || de->state() == kPaused);
 }
 
 void DownloadManager::pauseDownload(DownloadEntity* de)
 {
     Q_ASSERT(de);
-    if (de->state() == DownloadEntity::kDownloading || de->state() == DownloadEntity::kQueued)
+    if (de->state() == kDownloading || de->state() == kQueued)
     {
         de->pause();
     }
@@ -69,7 +69,7 @@ void DownloadManager::pauseDownload(DownloadEntity* de)
 void DownloadManager::resumeDownload(DownloadEntity* de)
 {
     Q_ASSERT(de);
-    de->setState(DownloadEntity::kQueued);
+    de->setState(kQueued);
     int numActiveDownloads = activeDownloadsCount();
     if (numActiveDownloads <
         QSettings().value(app_settings::maximumNumberLoads, app_settings::maximumNumberLoads_Default).toInt())
@@ -96,7 +96,7 @@ int DownloadManager::activeDownloadsCount() const
     iterateEntities(
         [&numActive](const DownloadEntity* e)
         {
-            if (DownloadEntity::kDownloading == e->state())
+            if (kDownloading == e->state())
             {
                 ++numActive;
             }
