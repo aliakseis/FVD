@@ -106,14 +106,15 @@ DownloadsForm::DownloadsForm(VideoPlayerWidget* video_widget, QWidget* parent)
     VERIFY(connect(ui->downloadsTreeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
                    SLOT(onSelectionChanged(QItemSelection, QItemSelection))));
     VERIFY(connect(ui->btnClear, SIGNAL(clicked()), SLOT(clearDownloadsList())));
-    VERIFY(connect(control, SIGNAL(up()), SLOT(onItemUp())));
-    VERIFY(connect(control, SIGNAL(down()), SLOT(onItemDown())));
-    VERIFY(connect(control, SIGNAL(start()), SLOT(onStartItem())));
-    VERIFY(connect(control, SIGNAL(stop()), SLOT(onStopItem())));
-    VERIFY(connect(control, SIGNAL(reload()), SLOT(onReloadItem())));
-    VERIFY(connect(control, SIGNAL(remove()), SLOT(onRemoveItem())));
-    VERIFY(connect(control, SIGNAL(pause()), SLOT(onPauseItem())));
-    VERIFY(connect(control, SIGNAL(setSpeedLimit(int)), SLOT(onSetSpeedLimit(int))));
+
+    connect(control, &DownloadsControl::up, this, &DownloadsForm::onItemUp);
+    connect(control, &DownloadsControl::down, this, &DownloadsForm::onItemDown);
+    connect(control, &DownloadsControl::start, this, &DownloadsForm::onStartItem);
+    connect(control, &DownloadsControl::stop, this, &DownloadsForm::onStopItem);
+    connect(control, &DownloadsControl::reload, this, &DownloadsForm::onReloadItem);
+    connect(control, &DownloadsControl::remove, this, &DownloadsForm::onRemoveItem);
+    connect(control, &DownloadsControl::pause, this, &DownloadsForm::onPauseItem);
+    connect(control, &DownloadsControl::setSpeedLimit, this, &DownloadsForm::onSetSpeedLimit);
 
     VERIFY(connect(ui->downloadsTreeView->verticalScrollBar(), SIGNAL(valueChanged(int)),
                    SLOT(onVerticalScrollChanged(int))));
@@ -344,7 +345,7 @@ void DownloadsForm::onStartItem()
 
     DownloadEntity* entity = m_model->item(row);
     Q_ASSERT(entity);
-    if (entity->state() == kPaused)
+    if (entity->state() == kPaused || entity->state() == kFailed)
     {
         m_model->resumeDownload(entity);
     }
