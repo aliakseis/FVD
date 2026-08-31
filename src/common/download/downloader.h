@@ -181,8 +181,11 @@ public:
     /// \param [in,out]    network_manager    If non-null, manager for network.
     /// \param    filename                   (Optional) Desired filename. May change depending on filename policy. If empty filename from reply will be used.
     /// \see            DuplicateDownloadNamePolicy
-    void Start(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
+    void Start(const QList<QUrl>& urls, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
     {
+        if (urls.size() != 1)
+            return; // TODO handle
+        const auto& url = urls[0];
         Q_ASSERT(network_manager);
         filename_ = filename;
         http_headers_ = httpHeaders;
@@ -231,8 +234,11 @@ public:
     /// \param [in,out]    network_manager    If non-null, manager for network.
     /// \param    filename                   (Optional) filename have to coincide with previous.
 
-    void Resume(const QUrl& url, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
+    void Resume(const QList<QUrl>& urls, QNetworkAccessManager* network_manager, const QString& filename = QString(), const QStringList& httpHeaders = QStringList())
     {
+        if (urls.size() != 1)
+            return; // TODO handle
+        const auto& url = urls[0];
         Q_ASSERT(network_manager);
         filename_ = filename;
         output_.setFileName(SaveFileName(QFileInfo(url.path()).fileName()));
@@ -481,7 +487,7 @@ private:
                 }
                 return true;
             }
-            Start(url, network_manager, filename_);
+            Start({ url }, network_manager, filename_);
         }
         else
         {
@@ -536,12 +542,12 @@ private:
                     if (0 == paused_download_size_) // we are not resuming
                     {
                         KillFile();
-                        Start(redirect_src, network_manager_, filename_, http_headers_);
+                        Start({ redirect_src }, network_manager_, filename_, http_headers_);
                     }
                     else
                     {
                         output_.close();
-                        Resume(redirect_src, network_manager_, filename_, http_headers_);
+                        Resume({ redirect_src }, network_manager_, filename_, http_headers_);
                     }
                     return false;
                 }

@@ -185,7 +185,7 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    downloader()->Start(m_url, 
+    downloader()->Start({ m_url },
         &TheQNetworkAccessManager::Instance(), 
         QFileInfo(m_filepath).fileName(),
         m_httpHeaders);
@@ -215,7 +215,7 @@ bool DownloadEntity::doResume()
     }
     if (QFile::exists(m_filepath))
     {
-        downloader()->Resume(m_url, 
+        downloader()->Resume({ m_url },
             &TheQNetworkAccessManager::Instance(), 
             QFileInfo(m_filepath).fileName(),
             m_httpHeaders);

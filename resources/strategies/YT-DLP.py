@@ -49,7 +49,7 @@ import requests
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/120.0.0.0 Safari/537.36",
+                  "Chrome/151.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Referer": "https://www.youtube.com/",
@@ -252,7 +252,7 @@ def YT_DLP_extractDirectLinks(link, receiver) :
     socket.setdefaulttimeout(30)
 
     ydl_opts = {
-        'format': 'best',
+        #'format': 'best',
         'get-url': True,
         'noplaylist': True,
     }
@@ -279,8 +279,8 @@ def YT_DLP_extractDirectLinks(link, receiver) :
         try:
             if x['protocol'] == 'm3u8_native':
                 continue
-            if 'audio_channels' in x and x['audio_channels'] is None:
-                continue
+            #if 'audio_channels' in x and x['audio_channels'] is None:
+            #    continue
             if 'vcodec' in x and x['vcodec'].startswith('av01'):
                 continue
 
