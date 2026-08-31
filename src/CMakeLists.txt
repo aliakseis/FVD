@@ -219,6 +219,7 @@ source_group("gui\\forms" FILES
 
 set(HEADERS_LOGIC
 	logic/basefacademodel.h
+	logic/downloadstate.h 
 	logic/errors.h
 	logic/downloadmanager.h
 	logic/configurableproxyfactory.h

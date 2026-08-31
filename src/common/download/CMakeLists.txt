@@ -25,6 +25,7 @@ source_group("sources\\detail" FILES
 )
 
 set(HEADERS
+	idownloader.h
 	downloader.h
 	downloader_traits.h
 )
