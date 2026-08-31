@@ -5,6 +5,7 @@ project(Download)
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
+	${FFMPEG_INCLUDE_DIR}
 )
 
 add_definitions(
@@ -28,10 +29,12 @@ set(HEADERS
 	idownloader.h
 	downloader.h
 	downloader_traits.h
+	FFmpegMergeDownloader.h
 )
 
 set(SOURCES
 	detail/downloader_signal_catchers.cpp
+	FFmpegMergeDownloader.cpp
 )
 
 source_group(sources FILES
