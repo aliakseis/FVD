@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QApplication>
 #include <QClipboard>
+#include <QFileInfo>
 
 #include "descriptionpanel.h"
 #include "downloadentity.h"
@@ -19,6 +20,7 @@
 #include "videoprogressbar.h"
 #include "videowidget.h"
 #include "customdockwidget.h"
+#include "utilities/filesystem_utils.h"
 
 VideoPlayerWidget* VideoPlayerWidgetInstance()
 {

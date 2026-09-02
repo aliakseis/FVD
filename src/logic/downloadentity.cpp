@@ -9,9 +9,12 @@
 #include "searchmanager.h"
 #include "settings_declaration.h"
 #include "strategiescommon.h"
+#include "download/downloader.h"
+#include "download/FFmpegMergeDownloader.h"
 #include "utilities/instantiator.h"
 #include "utilities/logger.h"
 #include "utilities/translation.h"
+#include "utilities/filesystem_utils.h"
 
 #include "player/ffmpegdecoder.h"
 
@@ -43,6 +46,14 @@ DownloadEntity::DownloadEntity(RemoteVideoEntity* parentVideoEntity /* = 0*/, Vi
       m_totalFileSize(0),
       m_isFileAssigned(isFileAssigned)
 {
+}
+
+DownloadEntity::~DownloadEntity()
+{
+    if (visTemp == m_visibilityState)
+    {
+        utilities::DeleteFileWithWaiting(m_filepath);
+    }
 }
 
 void DownloadEntity::onProgress(qint64 bytesDownloaded)
@@ -182,7 +193,8 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    auto downloarer = makeDownloader();
+    QStringList list = m_url.split('|');
+    auto downloarer = makeDownloader(list.size() == 2);
     if (!downloarer->setDestinationPath(global_functions::getSaveFolder(strategyName())))
     {
         setState(kFailed);
@@ -191,7 +203,7 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    downloarer->Start({ m_url },
+    downloarer->Start({ list.begin(), list.end() },
         &TheQNetworkAccessManager::Instance(), 
         QFileInfo(m_filepath).fileName(),
         m_httpHeaders);
@@ -222,8 +234,9 @@ bool DownloadEntity::doResume()
     }
     if (QFile::exists(m_filepath))
     {
-        auto downloarer = makeDownloader();
-        downloarer->Resume({ m_url },
+        QStringList list = m_url.split('|');
+        auto downloarer = makeDownloader(list.size() == 2);
+        downloarer->Resume({ list.begin(), list.end() },
             &TheQNetworkAccessManager::Instance(), 
             QFileInfo(m_filepath).fileName(),
             m_httpHeaders);
@@ -347,6 +360,21 @@ QString DownloadEntity::stateToString(DownloadState s)
     return {};
 }
 
+QDateTime DownloadEntity::fileCreated() const
+{
+    if (!m_lastModified.isValid())
+    {
+        m_lastModified = QFileInfo(m_filepath).lastModified();
+    }
+    return m_lastModified;
+}
+
+bool  DownloadEntity::isFileExists() const
+{ 
+    return QFile::exists(m_filepath);
+}
+
+
 void DownloadEntity::doSetVisibilityState(VisibilityState value) { m_visibilityState = value; }
 
 bool DownloadEntity::startDownloadWithHighestPriority()
@@ -371,17 +399,20 @@ void DownloadEntity::enqueueAndResetFailedState()
     emit stateChanged(m_state, previousState);
 }
 
-DownloadEntity::DownloaderType* DownloadEntity::makeDownloader()
+DownloadEntity::DownloaderType* DownloadEntity::makeDownloader(bool adaptive)
 {
 #ifdef ALLOW_TRAFFIC_CONTROL
-    typedef download::Downloader<download::speed_limitable_tag, false> ConcreteDownloaderType;
+    typedef download::Downloader<download::speed_limitable_tag, false> SimplwDownloaderType;
 #else
-    typedef download::Downloader<download::speed_readable_tag, false> ConcreteDownloaderType;
+    typedef download::Downloader<download::speed_readable_tag, false> SimplwDownloaderType;
 #endif  // ALLOW_TRAFFIC_CONTROL
 
     if (m_downloader.isNull())
     {
-        m_downloader.reset(new ConcreteDownloaderType(this));
+        if (adaptive)
+            m_downloader.reset(new FFmpegMergeDownloader(this));
+        else
+            m_downloader.reset(new SimplwDownloaderType(this));
 
         m_downloader->setObserver(this);
         m_downloader->setDownloadNamePolicy(m_isFileAssigned ? DownloaderType::kReplaceFile

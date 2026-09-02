@@ -13,6 +13,9 @@
 
 #include <QRegularExpression>
 #include <QTextCodec>
+#include <QNetworkReply>
+#include <QFileInfo>
+
 
 static QString UnescapeForHTML(QString text) 
 {

@@ -14,7 +14,7 @@
 #include "version.hxx"
 
 #include "utilities/logger.h"
-
+#include "utilities/filesystem_utils.h"
 
 #include "searchmanager.h"
 #include "configurableproxyfactory.h"

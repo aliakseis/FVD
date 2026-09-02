@@ -3,7 +3,7 @@
 #include <QAbstractItemModel>
 #include <set>
 
-#include "download/downloader.h"
+#include "download/idownloader.h"
 #include "downloadmanager.h"
 
 enum DownloadListHeaders

@@ -4,7 +4,7 @@
 
 #include "basefacademodel.h"
 #include "downloadstate.h"
-#include "download/downloader.h"
+#include "download/idownloader.h"
 
 class DownloadEntity;
 
