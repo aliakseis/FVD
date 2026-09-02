@@ -224,17 +224,17 @@ FFmpegMergeDownloader::destinationPath() const
 bool FFmpegMergeDownloader::setDestinationPath(
     const QString& destination_path)
 {
-    QDir dir(destination_path);
-
-    if (!dir.exists())
+    m_destinationPath = destination_path;
+    if (m_destinationPath.isEmpty())
     {
-        if (!QDir().mkpath(destination_path))
-            return false;
+        return false;
     }
-
-    m_destinationPath =
-        QDir::cleanPath(destination_path);
-
+    QDir path(m_destinationPath);
+    if (!path.exists(m_destinationPath) && !path.mkpath(m_destinationPath))
+    {
+        m_destinationPath.clear();
+        return false;
+    }
     return true;
 }
 
