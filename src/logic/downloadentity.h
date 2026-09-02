@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 #include <QString>
 
-#include "download/downloader.h"
+#include "download/idownloader.h"
 #include "downloadstate.h"
 #include "remotevideoentity.h"
 #include "utilities/credsretriever.h"
@@ -113,13 +113,7 @@ public:
 //#endif  // ALLOW_TRAFFIC_CONTROL
     typedef IDownloader DownloaderType;
 
-    ~DownloadEntity()
-    {
-        if (visTemp == m_visibilityState)
-        {
-            utilities::DeleteFileWithWaiting(m_filepath);
-        }
-    }
+    ~DownloadEntity();
 
     bool operator==(const DownloadEntity& download_entity) const
     {
@@ -163,14 +157,7 @@ public:
     }
 
     QDateTime published() const { return m_parentVideoEntity->m_videoInfo.published; }
-    QDateTime fileCreated() const
-    {
-        if (!m_lastModified.isValid())
-        {
-            m_lastModified = QFileInfo(m_filepath).lastModified();
-        }
-        return m_lastModified;
-    }
+    QDateTime fileCreated() const;
     qint64 totalFileSize() const
     {
         return qMax(m_downloadedSize, 
@@ -193,7 +180,7 @@ public:
     QString speedAsString() const { return (state() == kDownloading) ? m_speed : QString(); }
     qint64 speed() const { return m_bytesPerSecond; }
 
-    bool isFileExists() const { return QFile::exists(m_filepath); }
+    bool isFileExists() const;
     qint64 downloadedSize() const { return m_downloadedSize; }
     void setDownloadedSize(qint64 size) { m_downloadedSize = size; }
 
@@ -261,7 +248,7 @@ private:
     void setCurrentResolutionId(int currentResolutionId) { m_currentResolutionId = currentResolutionId; }
     void setCurrentResolution(const QString& cres) { m_currentResolution = cres; }
 
-    DownloaderType* makeDownloader();
+    DownloaderType* makeDownloader(bool adaptive);
 
     DownloadState m_state;
     QScopedPointer<DownloaderType> m_downloader;

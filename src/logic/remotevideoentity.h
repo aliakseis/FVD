@@ -7,7 +7,7 @@
 #include <QtGlobal>
 #include <utility>
 
-#include "download/downloader.h"
+#include "download/idownloader.h"
 #include "downloadstate.h"
 #include "errors.h"
 #include "utilities/utils.h"

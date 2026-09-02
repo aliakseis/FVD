@@ -5,6 +5,7 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QTimer>
+#include <QFileInfo>
 
 #include "branding.hxx"
 #include "global_functions.h"

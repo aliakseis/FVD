@@ -21,6 +21,7 @@
 #include "videoplayerwidget.h"
 #include "videowidget.h"
 #include "videoqualitydialog.h"
+#include "utilities/filesystem_utils.h"
 
 #ifdef DEVELOPER_FEATURES
 #include <QMouseEvent>

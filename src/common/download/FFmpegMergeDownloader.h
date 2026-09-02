@@ -18,7 +18,7 @@ struct AVPacket;
 
 class FFmpegMergeDownloader final : public QObject, public IDownloader
 {
-    Q_OBJECT
+    //Q_OBJECT
 
 public:
     explicit FFmpegMergeDownloader(QObject* parent = nullptr);
