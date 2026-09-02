@@ -52,7 +52,8 @@ void DownloadEntity::onProgress(qint64 bytesDownloaded)
         m_isFailed = false;
     }
     m_downloadedSize = bytesDownloaded;
-    emit progressChanged(bytesDownloaded, downloader()->totalFileSize());
+    if (m_downloader)
+        emit progressChanged(bytesDownloaded, m_downloader->totalFileSize());
 }
 
 void DownloadEntity::onSpeed(qint64 bytesPerSecond)
@@ -71,8 +72,11 @@ void DownloadEntity::onSpeed(qint64 bytesPerSecond)
             m_bytesPerSecond = 0;
         }
     }
-    bytesPerSecond *= static_cast<long long>(downloader()->totalFileSize() > m_downloadedSize);
-    emit speed(bytesPerSecond);
+    if (m_downloader)
+    {
+        bytesPerSecond *= static_cast<long long>(m_downloader->totalFileSize() > m_downloadedSize);
+        emit speed(bytesPerSecond);
+    }
 }
 
 void DownloadEntity::onFinished()
@@ -127,7 +131,8 @@ void DownloadEntity::onStart(const QByteArray& data)
 
 void DownloadEntity::onFileCreated(const QString& filename)
 {
-    downloader()->setDownloadNamePolicy(DownloaderType::kReplaceFile);
+    if (m_downloader)
+        m_downloader->setDownloadNamePolicy(DownloaderType::kReplaceFile);
 
     m_filepath = QDir::toNativeSeparators(filename);
     emit fileCreated(filename);
@@ -177,7 +182,8 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    if (!downloader()->setDestinationPath(global_functions::getSaveFolder(strategyName())))
+    auto downloarer = makeDownloader();
+    if (!downloarer->setDestinationPath(global_functions::getSaveFolder(strategyName())))
     {
         setState(kFailed);
         emit errorHappened(utilities::ErrorCode::eDOWLDOPENFILERR,
@@ -185,7 +191,7 @@ bool DownloadEntity::doDownload()
         return false;
     }
 
-    downloader()->Start({ m_url },
+    downloarer->Start({ m_url },
         &TheQNetworkAccessManager::Instance(), 
         QFileInfo(m_filepath).fileName(),
         m_httpHeaders);
@@ -203,7 +209,8 @@ void DownloadEntity::doPause()
     {
         return;
     }
-    downloader()->Pause();
+    if (m_downloader)
+        m_downloader->Pause();
     setState(kPaused);
 }
 
@@ -215,7 +222,8 @@ bool DownloadEntity::doResume()
     }
     if (QFile::exists(m_filepath))
     {
-        downloader()->Resume({ m_url },
+        auto downloarer = makeDownloader();
+        downloarer->Resume({ m_url },
             &TheQNetworkAccessManager::Instance(), 
             QFileInfo(m_filepath).fileName(),
             m_httpHeaders);
@@ -235,7 +243,8 @@ bool DownloadEntity::doResume()
 
 void DownloadEntity::doRemove()
 {
-    downloader()->Stop();
+    if (m_downloader)
+        m_downloader->Stop();
     m_downloadedSize = 0;
     setState(kQueued);
     if (visibilityState() != visTemp)
@@ -264,7 +273,8 @@ void DownloadEntity::doStop()
     {
         return;
     }
-    downloader()->Stop();
+    if (m_downloader)
+        m_downloader->Stop();
     m_downloadedSize = 0;
     if (m_state != kFailed)
     {
@@ -288,7 +298,8 @@ bool DownloadEntity::doRestart()
     {
         if (!m_url.isEmpty())
         {
-            downloader()->Stop();
+            if (m_downloader)
+                m_downloader->Stop();
         }
 
         m_url = QString();
@@ -297,7 +308,8 @@ bool DownloadEntity::doRestart()
     }
     else
     {
-        downloader()->Stop();
+        if (m_downloader)
+            m_downloader->Stop();
     }
     m_downloadedSize = 0;
     setState(kQueued);
@@ -359,7 +371,7 @@ void DownloadEntity::enqueueAndResetFailedState()
     emit stateChanged(m_state, previousState);
 }
 
-DownloadEntity::DownloaderType* DownloadEntity::downloader()
+DownloadEntity::DownloaderType* DownloadEntity::makeDownloader()
 {
 #ifdef ALLOW_TRAFFIC_CONTROL
     typedef download::Downloader<download::speed_limitable_tag, false> ConcreteDownloaderType;
