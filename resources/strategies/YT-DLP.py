@@ -248,11 +248,10 @@ def YT_DLP_search(query, order, searchLimit, page, strategy):
     strategy.onSearchFinished(entities)
 
 
-def YT_DLP_extractDirectLinks(link, receiver) :
+def YT_DLP_extractDirectLinks(link, receiver):
     socket.setdefaulttimeout(30)
 
     ydl_opts = {
-        #'format': 'best',
         'get-url': True,
         'noplaylist': True,
     }
@@ -267,28 +266,58 @@ def YT_DLP_extractDirectLinks(link, receiver) :
         }
         ydl_opts["remote_components"] = ["ejs:github"]
 
-    s = yt_dlp.YoutubeDL(ydl_opts).extract_info(link, download=False)['formats']
+    formats = yt_dlp.YoutubeDL(ydl_opts).extract_info(
+        link, download=False
+    )['formats']
 
     entities = {}
     i = 0
     height = 0
     best = 0
 
-    for x in s:
-        entity = {}
+    # Best adaptive video/audio streams.
+    best_video = None
+    best_audio = None
+
+    for x in formats:
         try:
-            if x['protocol'] == 'm3u8_native':
-                continue
-            #if 'audio_channels' in x and x['audio_channels'] is None:
-            #    continue
-            if 'vcodec' in x and x['vcodec'].startswith('av01'):
+            if x.get('protocol') == 'm3u8_native':
                 continue
 
+            # Skip AV1 video, as in the original code.
+            if x.get('vcodec', 'none').startswith('av01'):
+                continue
+
+            vcodec = x.get('vcodec', 'none')
+            acodec = x.get('acodec', 'none')
+
+            has_video = vcodec != 'none'
+            has_audio = acodec != 'none'
+
+            # Adaptive video-only format.
+            if has_video and not has_audio:
+                if (best_video is None or
+                        (x.get('height') or 0) > (best_video.get('height') or 0) or
+                        ((x.get('height') or 0) == (best_video.get('height') or 0) and
+                         (x.get('tbr') or 0) > (best_video.get('tbr') or 0))):
+                    best_video = x
+
+            # Adaptive audio-only format.
+            elif has_audio and not has_video:
+                if (best_audio is None or
+                        (x.get('abr') or 0) > (best_audio.get('abr') or 0)):
+                    best_audio = x
+
+            # Keep the original entity handling for combined formats.
+            entity = {}
+
             entity["url"] = x["url"]
-            if 'resolution' in x and x["resolution"]:
+
+            if x.get('resolution'):
                 entity["resolution"] = x["resolution"]
-            elif 'format' in x:
+            elif x.get('format'):
                 entity["resolution"] = x["format"]
+
             entity["extension"] = x["ext"]
 
             if 'http_headers' in x:
@@ -296,19 +325,40 @@ def YT_DLP_extractDirectLinks(link, receiver) :
                 for k, v in x["http_headers"].items():
                     headers.append(k)
                     headers.append(str(v))
-                    entity["http_headers"] = headers
+                entity["http_headers"] = headers
 
             if 'cookies' in x:
                 entity["cookies"] = x["cookies"]
 
-            if 'height' in x and x["height"] > height:
-                height = x["height"]
+            if x.get('height', 0) > height:
+                height = x['height']
                 best = i
 
             entities[i] = entity
-
             i += 1
-        except:
-            logging.warning('Item adding skipped.\n' + traceback.format_exc())
 
-    receiver.onlinksExtracted(entities, best);
+        except:
+            logging.warning(
+                'Item adding skipped.\n' + traceback.format_exc()
+            )
+
+    # If adaptive video+audio streams exist, add them as one entry.
+    if best_video is not None and best_audio is not None:
+        adaptive_entity = {
+            "url": best_video["url"] + "|" + best_audio["url"],
+            "resolution": best_video.get("resolution", ""),
+            "extension": best_video.get("ext", ""),
+        }
+
+        if 'http_headers' in best_video:
+            headers = []
+            for k, v in best_video["http_headers"].items():
+                headers.append(k)
+                headers.append(str(v))
+
+            adaptive_entity["http_headers"] = headers
+
+        entities[i] = adaptive_entity
+        best = i
+
+    receiver.onlinksExtracted(entities, best)

@@ -261,7 +261,7 @@ private:
     void setCurrentResolutionId(int currentResolutionId) { m_currentResolutionId = currentResolutionId; }
     void setCurrentResolution(const QString& cres) { m_currentResolution = cres; }
 
-    DownloaderType* downloader();
+    DownloaderType* makeDownloader();
 
     DownloadState m_state;
     QScopedPointer<DownloaderType> m_downloader;
