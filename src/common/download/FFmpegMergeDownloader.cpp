@@ -331,8 +331,7 @@ void FFmpegMergeDownloader::setDownloadNamePolicy(
 void FFmpegMergeDownloader::setObserver(
     DownloaderObserverInterface* observer)
 {
-    std::lock_guard<std::mutex> lock(m_observerMutex);
-    m_observer = observer;
+    m_observer.store(observer);
 }
 
 
@@ -421,22 +420,15 @@ QString FFmpegMergeDownloader::makeOutputFilename(
 void FFmpegMergeDownloader::notifyStart(
     const QByteArray& data)
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
-
+    DownloaderObserverInterface* const observer = m_observer.load();
+ 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer, data]()
+        [observer, data]()
         {
-            Q_UNUSED(this);
-
             observer->onStart(data);
         },
         Qt::QueuedConnection);
@@ -445,22 +437,15 @@ void FFmpegMergeDownloader::notifyStart(
 void FFmpegMergeDownloader::notifyProgress(
     qint64 bytes)
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
+    DownloaderObserverInterface* const observer = m_observer.load();
 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer, bytes]()
+        [observer, bytes]()
         {
-            Q_UNUSED(this);
-
             observer->onProgress(bytes);
         },
         Qt::QueuedConnection);
@@ -469,22 +454,15 @@ void FFmpegMergeDownloader::notifyProgress(
 void FFmpegMergeDownloader::notifySpeed(
     qint64 bytesPerSecond)
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
+    DownloaderObserverInterface* const observer = m_observer.load();
 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer, bytesPerSecond]()
+        [observer, bytesPerSecond]()
         {
-            Q_UNUSED(this);
-
             observer->onSpeed(bytesPerSecond);
         },
         Qt::QueuedConnection);
@@ -493,22 +471,15 @@ void FFmpegMergeDownloader::notifySpeed(
 void FFmpegMergeDownloader::notifyFileCreated(
     const QString& filename)
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
+    DownloaderObserverInterface* const observer = m_observer.load();
 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer, filename]()
+        [observer, filename]()
         {
-            Q_UNUSED(this);
-
             observer->onFileCreated(filename);
         },
         Qt::QueuedConnection);
@@ -516,22 +487,15 @@ void FFmpegMergeDownloader::notifyFileCreated(
 
 void FFmpegMergeDownloader::notifyFinished()
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
+    DownloaderObserverInterface* const observer = m_observer.load();
 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer]()
+        [observer]()
         {
-            Q_UNUSED(this);
-
             observer->onFinished();
         },
         Qt::QueuedConnection);
@@ -541,22 +505,15 @@ void FFmpegMergeDownloader::notifyError(
     utilities::ErrorCode::ERROR_CODES code,
     const QString& description)
 {
-    DownloaderObserverInterface* observer = nullptr;
-
-    {
-        std::lock_guard<std::mutex> lock(m_observerMutex);
-        observer = m_observer;
-    }
+    DownloaderObserverInterface* const observer = m_observer.load();
 
     if (!observer)
         return;
 
     QMetaObject::invokeMethod(
         this,
-        [this, observer, code, description]()
+        [observer, code, description]()
         {
-            Q_UNUSED(this);
-
             observer->onError(code, description);
         },
         Qt::QueuedConnection);

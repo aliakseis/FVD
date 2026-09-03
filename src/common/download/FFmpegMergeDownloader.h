@@ -145,8 +145,5 @@ private:
     // ---------------------------------------------------------------------
     // Observer
     // ---------------------------------------------------------------------
-
-    mutable std::mutex m_observerMutex;
-
-    DownloaderObserverInterface* m_observer = nullptr;
+    std::atomic<DownloaderObserverInterface*> m_observer = nullptr;
 };
