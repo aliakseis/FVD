@@ -71,6 +71,11 @@ namespace
             stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO;
     }
 
+    int InterruptionRequested(void* ptr)
+    {
+        return ptr && static_cast<std::atomic<bool>*>(ptr)->load();
+    }
+
 } // namespace
 
 
@@ -675,7 +680,9 @@ void FFmpegMergeDownloader::mergeWorker(
     // Open video input
     // ------------------------------------------------------------------------
 
-    AVFormatContext* videoRaw = nullptr;
+    AVFormatContext* videoRaw = avformat_alloc_context();
+    videoRaw->interrupt_callback.opaque = &m_stopRequested;
+    videoRaw->interrupt_callback.callback = InterruptionRequested;
 
     int ret =
         avformat_open_input(
@@ -721,7 +728,9 @@ void FFmpegMergeDownloader::mergeWorker(
     // Open audio input
     // ------------------------------------------------------------------------
 
-    AVFormatContext* audioRaw = nullptr;
+    AVFormatContext* audioRaw = avformat_alloc_context();
+    audioRaw->interrupt_callback.opaque = &m_stopRequested;
+    audioRaw->interrupt_callback.callback = InterruptionRequested;
 
     ret =
         avformat_open_input(
