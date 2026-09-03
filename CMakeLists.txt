@@ -335,6 +335,7 @@ set(PY_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/YouTube.py
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/Vimeo.py
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/Dailymotion.py 
+	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/YT-DLP-old.py
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/strategies/YT-DLP.py
 )
 

@@ -6,6 +6,7 @@
         <file>strategies/Vimeo.js</file>
         <file>strategies/Vimeo.py</file>
         <file>strategies/YT-DLP.py</file>
+        <file>strategies/YT-DLP-old.py</file>
         <file>strategies/Dailymotion.js</file>
         <file>strategies/Dailymotion.py</file>
         <file>images/downloads41.png</file>
@@ -65,6 +66,7 @@
         <file alias="Vimeo-logo">images/sites/Vimeo32.png</file>
         <file alias="YouTube-logo">images/sites/YouTube32.png</file>
         <file alias="YT-DLP-logo">images/sites/YT-DLP32.png</file>
+        <file alias="YT-DLP-old-logo">images/sites/YT-DLP32.png</file>
     </qresource>
     <qresource prefix="/style">
         <file alias="header_line.png">images/style/header_line.png</file>
