@@ -520,15 +520,12 @@ void FFmpegMergeDownloader::notifyError(
 }
 
 
-// ============================================================================
-// Start / Resume / Pause / Stop
-// ============================================================================
-
-void FFmpegMergeDownloader::Start(
+void FFmpegMergeDownloader::run(
     const QList<QUrl>& urls,
     QNetworkAccessManager* network_manager,
     const QString& filename,
-    const QStringList& httpHeaders)
+    const QStringList& httpHeaders,
+    bool resume)
 {
     Q_UNUSED(network_manager);
     Q_UNUSED(httpHeaders);
@@ -566,8 +563,8 @@ void FFmpegMergeDownloader::Start(
     m_totalFileSize.store(-1);
     m_expectedFileSize.store(-1);
 
-    const QString outputFilename =
-        makeOutputFilename(urls, filename);
+    const QString outputFilename = resume? filename
+        : makeOutputFilename(urls, filename);
 
     if (outputFilename.isEmpty())
     {
@@ -583,10 +580,27 @@ void FFmpegMergeDownloader::Start(
 
     m_worker =
         std::thread(
-            [this, urls, outputFilename]()
+            [this, urls, outputFilename, resume]()
             {
-                mergeWorker(urls, outputFilename);
+                mergeWorker(urls, outputFilename, resume);
             });
+}
+
+// ============================================================================
+// Start / Resume / Pause / Stop
+// ============================================================================
+
+void FFmpegMergeDownloader::Start(
+    const QList<QUrl>& urls,
+    QNetworkAccessManager* network_manager,
+    const QString& filename,
+    const QStringList& httpHeaders)
+{
+    run(urls,
+        network_manager,
+        filename,
+        httpHeaders,
+        false);
 }
 
 void FFmpegMergeDownloader::Resume(
@@ -596,14 +610,11 @@ void FFmpegMergeDownloader::Resume(
     const QStringList& httpHeaders)
 {
     // Resume support is intentionally not implemented yet.
-    //
-    // For now a Resume() starts the merge again.
-
-    Start(
-        urls,
+    run(urls,
         network_manager,
         filename,
-        httpHeaders);
+        httpHeaders,
+        true);
 }
 
 void FFmpegMergeDownloader::Pause()
@@ -623,7 +634,8 @@ void FFmpegMergeDownloader::Stop()
 
 void FFmpegMergeDownloader::mergeWorker(
     QList<QUrl> urls,
-    QString outputFilename)
+    QString outputFilename,
+    bool resume)
 {
     auto finishWorker =
         [this]()
@@ -870,56 +882,33 @@ void FFmpegMergeDownloader::mergeWorker(
 
     outputContext.owner = this;
 
-    if (m_downloadNamePolicy == kReplaceFile)
+    const auto openMode = resume ? QIODevice::ReadWrite
+        : ((m_downloadNamePolicy == kReplaceFile) ? QIODevice::ReadWrite | QIODevice::Truncate
+            : QIODevice::ReadWrite | QIODevice::NewOnly);
+
+    outputContext.file.setFileName(outputFilename);
+
+    if (!outputContext.file.open(openMode))
     {
-        outputContext.file.setFileName(outputFilename);
+        for (auto& a : audioBindings)
+            av_packet_free(&a.pendingPacket);
 
-        if (!outputContext.file.open(
-            QIODevice::ReadWrite |
-            QIODevice::Truncate))
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
+        finishWorker();
 
-            finishWorker();
+        notifyError(
+            utilities::ErrorCode::eDOWLDOPENFILERR,
+            QStringLiteral(
+                "Could not create output file '%1': %2")
+            .arg(outputFilename,
+                outputContext.file.errorString()));
 
-            notifyError(
-                utilities::ErrorCode::eDOWLDOPENFILERR,
-                QStringLiteral(
-                    "Could not create output file '%1': %2")
-                .arg(outputFilename,
-                    outputContext.file.errorString()));
-
-            return;
-        }
-    }
-    else
-    {
-        outputContext.file.setFileName(outputFilename);
-
-        if (!outputContext.file.open(
-            QIODevice::ReadWrite |
-            QIODevice::NewOnly))
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-
-            finishWorker();
-
-            notifyError(
-                utilities::ErrorCode::eDOWLDOPENFILERR,
-                QStringLiteral(
-                    "Could not create output file '%1': %2")
-                .arg(outputFilename,
-                    outputContext.file.errorString()));
-
-            return;
-        }
+        return;
     }
 
     // This notification intentionally happens immediately after QFile
     // creation/open succeeds.
-    notifyFileCreated(outputFilename);
+    if (!resume)
+        notifyFileCreated(outputFilename);
 
     outputContext.timer.start();
 

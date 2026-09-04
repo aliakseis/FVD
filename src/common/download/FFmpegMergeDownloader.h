@@ -82,7 +82,8 @@ private:
 
     void mergeWorker(
         QList<QUrl> urls,
-        QString outputFilename);
+        QString outputFilename,
+        bool resume);
 
     // ---------------------------------------------------------------------
     // Filename handling
@@ -91,6 +92,14 @@ private:
     QString makeOutputFilename(
         const QList<QUrl>& urls,
         const QString& filename) const;
+
+    void run(
+        const QList<QUrl>& urls,
+        QNetworkAccessManager* network_manager,
+        const QString& filename,
+        const QStringList& httpHeaders,
+        bool resume);
+
 
     // ---------------------------------------------------------------------
     // Observer notification helpers
