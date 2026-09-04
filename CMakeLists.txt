@@ -52,8 +52,6 @@ option(DEVELOPER_GENERATE_TRANSLATIONS "Generate ts-files for ${PROJECT_NAME}" O
 option(DEVELOPER_TRAFFIC_CONTROL "allow traffic control functionality" ON)
 option(DEVELOPER_OPENGL "Enables opengl display" ON)
 
-option (LUA_SCRIPTING "Enables lua script engine" OFF)
-
 
 ###################################################
 ### END OF SECTION Options
@@ -162,28 +160,6 @@ find_package (FFmpeg REQUIRED)
 ###########
 
 find_package(OpenSSL REQUIRED)
-
-
-###########
-# Zlib
-###########
-
-
-###########
-# Lua?
-###########
-
-if(LUA_SCRIPTING)
-	find_package(Lua51 QUIET)
-	if(NOT LUA_FOUND AND WIN32)
-		add_subdirectory(src/3rdparty/lua)
-		include_directories ("${CMAKE_SOURCE_DIR}/src/3rdparty/lua")
-		set (LUA_LIBRARIES "lua")
-	else()
-		include_directories(${LUA_INCLUDE_DIR})
-	endif()
-	add_definitions(-DWITH_LUA)
-endif(LUA_SCRIPTING)
 
 ###################
 # Doxygen

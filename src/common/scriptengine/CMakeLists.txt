@@ -15,14 +15,12 @@ set(HEADERS_LOCAL_TOMOC
 )
 
 set(HEADERS_LOCAL
-	luaengine.h
 	jsengine.h
 	scriptengine.h
 	pythonengine.h
 )
 
 set(SOURCES_LOCAL
-	luaengine.cpp
 	jsengine.cpp
 	pythonengine.cpp
 	scriptextension.cpp
