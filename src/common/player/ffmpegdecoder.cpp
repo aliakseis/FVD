@@ -27,6 +27,10 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
+static int InterruptionRequested(void* ptr)
+{
+    return ptr && static_cast<std::atomic_bool*>(ptr)->load();
+}
 
 static double calculateQImageDispersion(const QImage& image)
 {
@@ -167,6 +171,8 @@ void FFmpegDecoder::resetVariables()
 
     m_isPaused = false;
 
+    m_isStopping.store(false);
+
     m_seekFlags = 0x0;
 
     m_seekFrame = 0;
@@ -205,6 +211,8 @@ void FFmpegDecoder::close(bool isBlocking)
 
     // Now we can't read from file
     m_isReadReady = false;
+
+    m_isStopping.store(true);
 
     TAG("ffmpeg_closing") << "Aborting threads";
     if (m_mainVideoThread != nullptr)
@@ -424,6 +432,10 @@ bool FFmpegDecoder::openFileDecoder(const QString& file)
 
 bool FFmpegDecoder::openInputFile(const QString& file)
 {
+    m_formatContext = avformat_alloc_context();
+    m_formatContext->interrupt_callback.opaque = &m_isStopping;
+    m_formatContext->interrupt_callback.callback = InterruptionRequested;
+
     const int error = avformat_open_input(&m_formatContext,
 #ifdef Q_OS_WIN
         file.toUtf8().constData(),

@@ -114,6 +114,8 @@ private:
     std::atomic_bool m_isReadReady;
     std::atomic_bool m_isPlaying;
 
+    std::atomic_bool m_isStopping = false;
+
     // Limit playback by bytes
     bool m_fileProbablyNotFull;
     bool m_durationRecheckIsRun;
