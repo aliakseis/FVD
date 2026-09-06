@@ -653,12 +653,20 @@ void FFmpegMergeDownloader::mergeWorker(
     videoRaw->interrupt_callback.opaque = &m_stopRequested;
     videoRaw->interrupt_callback.callback = InterruptionRequested;
 
+    AVDictionary* opts = nullptr;
+    av_dict_set(&opts, "reconnect", "1", 0);
+    av_dict_set(&opts, "reconnect_streamed", "1", 0);
+    av_dict_set(&opts, "reconnect_delay_max", "10", 0);
+    av_dict_set(&opts, "respect_retry_after", "1", 0);
+    av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
+
     int ret =
         avformat_open_input(
             &videoRaw,
             urls[0].toString().toUtf8().constData(),
             nullptr,
-            nullptr);
+            &opts);
+    av_dict_free(&opts);
 
     if (ret < 0)
     {
@@ -701,12 +709,20 @@ void FFmpegMergeDownloader::mergeWorker(
     audioRaw->interrupt_callback.opaque = &m_stopRequested;
     audioRaw->interrupt_callback.callback = InterruptionRequested;
 
+    opts = nullptr;
+    av_dict_set(&opts, "reconnect", "1", 0);
+    av_dict_set(&opts, "reconnect_streamed", "1", 0);
+    av_dict_set(&opts, "reconnect_delay_max", "10", 0);
+    av_dict_set(&opts, "respect_retry_after", "1", 0);
+    av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
+
     ret =
         avformat_open_input(
             &audioRaw,
             urls[1].toString().toUtf8().constData(),
             nullptr,
-            nullptr);
+            &opts);
+    av_dict_free(&opts);
 
     if (ret < 0)
     {
