@@ -645,6 +645,9 @@ void FFmpegMergeDownloader::mergeWorker(
 
     notifyStart(QByteArray());
 
+
+    ///////////////////////////////////////////////////////////////////////////
+
     // ------------------------------------------------------------------------
     // Open video input
     // ------------------------------------------------------------------------
@@ -757,102 +760,7 @@ void FFmpegMergeDownloader::mergeWorker(
         return;
     }
 
-    // ------------------------------------------------------------------------
-    // Select best video
-    // ------------------------------------------------------------------------
-
-    const int videoStreamIndex =
-        av_find_best_stream(
-            videoInput.get(),
-            AVMEDIA_TYPE_VIDEO,
-            -1,
-            -1,
-            nullptr,
-            0);
-
-    if (videoStreamIndex < 0)
-    {
-        finishWorker();
-
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "Could not find a video stream: %1")
-            .arg(ffmpegErrorString(videoStreamIndex)));
-
-        return;
-    }
-
-    AVStream* inputVideoStream =
-        videoInput->streams[videoStreamIndex];
-
-    // ------------------------------------------------------------------------
-    // Collect ALL audio streams
-    // ------------------------------------------------------------------------
-
-    struct AudioBinding
-    {
-        int inputIndex = -1;
-        AVStream* inputStream = nullptr;
-        AVStream* outputStream = nullptr;
-
-        AVPacket* pendingPacket = nullptr;
-
-        bool eof = false;
-    };
-
-    std::vector<AudioBinding> audioBindings;
-
-    for (unsigned int i = 0;
-        i < audioInput->nb_streams;
-        ++i)
-    {
-        AVStream* stream =
-            audioInput->streams[i];
-
-        if (!isAudioStream(stream))
-            continue;
-
-        AudioBinding binding;
-
-        binding.inputIndex =
-            static_cast<int>(i);
-
-        binding.inputStream =
-            stream;
-
-        binding.pendingPacket =
-            av_packet_alloc();
-
-        if (!binding.pendingPacket)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-
-            finishWorker();
-
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral(
-                    "Could not allocate audio packet."));
-
-            return;
-        }
-
-        audioBindings.push_back(binding);
-    }
-
-    if (audioBindings.empty())
-    {
-        finishWorker();
-
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "The audio input contains no audio streams."));
-
-        return;
-    }
+    ///////////////////////////////////////////////////////////////////////////
 
     // ------------------------------------------------------------------------
     // Estimate output size
@@ -906,8 +814,8 @@ void FFmpegMergeDownloader::mergeWorker(
 
     if (!outputContext.file.open(openMode))
     {
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+        //for (auto& a : audioBindings)
+        //    av_packet_free(&a.pendingPacket);
 
         finishWorker();
 
@@ -943,8 +851,8 @@ void FFmpegMergeDownloader::mergeWorker(
 
     if (ret < 0 || !output)
     {
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+        //for (auto& a : audioBindings)
+        //    av_packet_free(&a.pendingPacket);
 
         finishWorker();
 
@@ -971,8 +879,8 @@ void FFmpegMergeDownloader::mergeWorker(
     {
         avformat_free_context(output);
 
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+        //for (auto& a : audioBindings)
+        //    av_packet_free(&a.pendingPacket);
 
         finishWorker();
 
@@ -999,8 +907,8 @@ void FFmpegMergeDownloader::mergeWorker(
         av_free(ioBuffer);
         avformat_free_context(output);
 
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+        //for (auto& a : audioBindings)
+        //    av_packet_free(&a.pendingPacket);
 
         finishWorker();
 
@@ -1015,11 +923,602 @@ void FFmpegMergeDownloader::mergeWorker(
     output->pb = outputIo;
     output->flags |= AVFMT_FLAG_CUSTOM_IO;
 
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // transfer
+
+    struct AudioBinding
+    {
+        int inputIndex = -1;
+        AVStream* inputStream = nullptr;
+        AVStream* outputStream = nullptr;
+
+        AVPacket* pendingPacket = nullptr;
+
+        bool eof = false;
+    };
+
+
+    std::vector<AudioBinding> audioBindings;
+
+    bool videoEof = false;
+    bool audioEof = false;
+
+    int videoStreamIndex = -1;
+
+    AVStream* inputVideoStream = nullptr;
+
+    AVStream* outputVideoStream = nullptr;
+
+    struct QueuedAudioPacket
+    {
+        AVPacket* packet = nullptr;
+        int streamIndex = -1;
+    };
+
+    std::vector<QueuedAudioPacket> audioQueue;
+
+        // ------------------------------------------------------------------------
+    // Helper: read next video packet
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    // Pending video packet
+    // ------------------------------------------------------------------------
+
+    AVPacket* pendingVideoPacket =
+        av_packet_alloc();
+
+    if (!pendingVideoPacket)
+    {
+        av_write_trailer(output);
+        avio_context_free(&outputIo);
+        avformat_free_context(output);
+
+        for (auto& a : audioBindings)
+            av_packet_free(&a.pendingPacket);
+
+        finishWorker();
+
+        notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral(
+                "Could not allocate video packet."));
+
+        return;
+    }
+
+
+
+    auto readNextVideoPacket =
+        [&]() -> bool
+        {
+            av_packet_unref(pendingVideoPacket);
+
+            while (!videoEof)
+            {
+                if (m_stopRequested.load())
+                    return false;
+
+                ret =
+                    av_read_frame(
+                        videoInput.get(),
+                        pendingVideoPacket);
+
+                if (ret == AVERROR_EOF)
+                {
+                    videoEof = true;
+                    return false;
+                }
+
+                if (ret < 0)
+                {
+                    videoEof = true;
+                    return false;
+                }
+
+                if (pendingVideoPacket->stream_index ==
+                    videoStreamIndex)
+                {
+                    return true;
+                }
+
+                av_packet_unref(pendingVideoPacket);
+            }
+
+            return false;
+        };
+
+    auto selectedAudioStream =
+        [&](int streamIndex) -> AudioBinding*
+        {
+            for (auto& binding : audioBindings)
+            {
+                if (binding.inputIndex == streamIndex)
+                    return &binding;
+            }
+
+            return nullptr;
+        };
+
+
+
+    /*
+     * Fill one pending packet for every selected audio stream.
+     *
+     * We keep demuxing the audio input until every selected stream has a
+     * packet, or EOF is reached.
+     */
+    auto fillAudioPending =
+        [&]()
+        {
+            if (audioEof)
+                return;
+
+            for (;;)
+            {
+                bool allHavePacket = true;
+
+                for (const auto& binding : audioBindings)
+                {
+                    if (binding.eof)
+                        continue;
+
+                    if (!binding.pendingPacket ||
+                        binding.pendingPacket->size <= 0)
+                    {
+                        allHavePacket = false;
+                        break;
+                    }
+                }
+
+                if (allHavePacket)
+                    return;
+
+                AVPacket* packet =
+                    av_packet_alloc();
+
+                if (!packet)
+                {
+                    audioEof = true;
+                    return;
+                }
+
+                const int readRet =
+                    av_read_frame(
+                        audioInput.get(),
+                        packet);
+
+                if (readRet == AVERROR_EOF)
+                {
+                    av_packet_free(&packet);
+                    audioEof = true;
+
+                    for (auto& binding : audioBindings)
+                    {
+                        if (!binding.pendingPacket ||
+                            binding.pendingPacket->size <= 0)
+                        {
+                            binding.eof = true;
+                        }
+                    }
+
+                    return;
+                }
+
+                if (readRet < 0)
+                {
+                    av_packet_free(&packet);
+                    audioEof = true;
+
+                    for (auto& binding : audioBindings)
+                    {
+                        if (!binding.pendingPacket ||
+                            binding.pendingPacket->size <= 0)
+                        {
+                            binding.eof = true;
+                        }
+                    }
+
+                    return;
+                }
+
+                AudioBinding* binding =
+                    selectedAudioStream(
+                        packet->stream_index);
+
+                if (!binding)
+                {
+                    av_packet_free(&packet);
+                    continue;
+                }
+
+                if (binding->pendingPacket &&
+                    binding->pendingPacket->size > 0)
+                {
+                    /*
+                     * There is already a packet pending for this stream.
+                     *
+                     * Put this packet into the queue. It will be promoted
+                     * when the pending packet for this stream is consumed.
+                     */
+                    audioQueue.push_back(
+                        { packet, packet->stream_index });
+
+                    continue;
+                }
+
+                av_packet_ref(
+                    binding->pendingPacket,
+                    packet);
+
+                av_packet_free(&packet);
+            }
+        };
+
+        /*
+         * Promote a queued packet to a stream's pending slot.
+         */
+        auto promoteQueuedAudioPacket =
+            [&](AudioBinding& binding)
+            {
+                if (binding.pendingPacket &&
+                    binding.pendingPacket->size > 0)
+                {
+                    return;
+                }
+
+                for (auto it = audioQueue.begin();
+                    it != audioQueue.end();
+                    ++it)
+                {
+                    if (it->streamIndex != binding.inputIndex)
+                        continue;
+
+                    av_packet_ref(
+                        binding.pendingPacket,
+                        it->packet);
+
+                    av_packet_free(&it->packet);
+
+                    audioQueue.erase(it);
+
+                    return;
+                }
+
+                if (audioEof)
+                    binding.eof = true;
+            };
+
+        // ========================================================================
+        // IMPORTANT:
+        //
+        // av_read_frame() is sequential. Therefore the simple helper above is not
+        // sufficient when multiple audio streams are present: while looking for
+        // stream #1 we may consume packets belonging to stream #0.
+        //
+        // Use a demux queue for the complete audio input.
+        // ========================================================================
+
+
+        auto freeAudioQueue =
+            [&]()
+            {
+                for (auto& item : audioQueue)
+                    av_packet_free(&item.packet);
+
+                audioQueue.clear();
+            };
+
+
+    auto transfer = [&]() -> bool {
+
+        // ------------------------------------------------------------------------
+        // Initial packets
+        // ------------------------------------------------------------------------
+
+        const bool haveVideo =
+            readNextVideoPacket();
+
+        Q_UNUSED(haveVideo);
+
+        fillAudioPending();
+
+        for (auto& binding : audioBindings)
+            promoteQueuedAudioPacket(binding);
+
+        // ------------------------------------------------------------------------
+        // Main merge loop
+        // ------------------------------------------------------------------------
+
+        while (!m_stopRequested.load())
+        {
+            if (!videoEof &&
+                (!pendingVideoPacket ||
+                    pendingVideoPacket->size <= 0))
+            {
+                readNextVideoPacket();
+            }
+
+            fillAudioPending();
+
+            for (auto& binding : audioBindings)
+                promoteQueuedAudioPacket(binding);
+
+            // ------------------------------------------------------------
+            // Find earliest packet among video + ALL audio streams.
+            // ------------------------------------------------------------
+
+            AudioBinding* selectedAudio = nullptr;
+
+            qint64 selectedAudioTimestamp =
+                std::numeric_limits<qint64>::max();
+
+            for (auto& binding : audioBindings)
+            {
+                if (binding.eof)
+                    continue;
+
+                if (!binding.pendingPacket ||
+                    binding.pendingPacket->size <= 0)
+                    continue;
+
+                const qint64 ts =
+                    packetTimestampUs(
+                        binding.pendingPacket,
+                        binding.inputStream);
+
+                if (ts < selectedAudioTimestamp)
+                {
+                    selectedAudioTimestamp = ts;
+                    selectedAudio = &binding;
+                }
+            }
+
+            const bool haveVideoPacket =
+                !videoEof &&
+                pendingVideoPacket &&
+                pendingVideoPacket->size > 0;
+
+            const qint64 videoTimestamp =
+                haveVideoPacket
+                ? packetTimestampUs(
+                    pendingVideoPacket,
+                    inputVideoStream)
+                : std::numeric_limits<qint64>::max();
+
+            if (!haveVideoPacket &&
+                !selectedAudio)
+            {
+                /*
+                 * There are no immediately available packets.
+                 *
+                 * If the audio queue contains packets, promote them and retry.
+                 */
+                bool promoted = false;
+
+                for (auto& binding : audioBindings)
+                {
+                    if (!binding.eof &&
+                        (!binding.pendingPacket ||
+                            binding.pendingPacket->size <= 0))
+                    {
+                        const int before =
+                            static_cast<int>(audioQueue.size());
+
+                        promoteQueuedAudioPacket(binding);
+
+                        if (static_cast<int>(audioQueue.size()) != before ||
+                            (binding.pendingPacket &&
+                                binding.pendingPacket->size > 0))
+                        {
+                            promoted = true;
+                        }
+                    }
+                }
+
+                if (promoted)
+                    continue;
+
+                break;
+            }
+
+            bool writeVideo = false;
+
+            if (haveVideoPacket && !selectedAudio)
+            {
+                writeVideo = true;
+            }
+            else if (!haveVideoPacket && selectedAudio)
+            {
+                writeVideo = false;
+            }
+            else
+            {
+                writeVideo =
+                    videoTimestamp <= selectedAudioTimestamp;
+            }
+
+            // ------------------------------------------------------------
+            // Write video
+            // ------------------------------------------------------------
+
+            if (writeVideo)
+            {
+                AVPacket* packet =
+                    pendingVideoPacket;
+
+                packet->stream_index =
+                    outputVideoStream->index;
+
+                av_packet_rescale_ts(
+                    packet,
+                    inputVideoStream->time_base,
+                    outputVideoStream->time_base);
+
+                ret =
+                    av_interleaved_write_frame(
+                        output,
+                        packet);
+
+                if (ret < 0)
+                {
+                    av_packet_free(&pendingVideoPacket);
+
+                    av_write_trailer(output);
+
+                    avio_context_free(&outputIo);
+                    avformat_free_context(output);
+
+                    freeAudioQueue();
+
+                    for (auto& a : audioBindings)
+                        av_packet_free(&a.pendingPacket);
+
+                    finishWorker();
+
+                    notifyError(
+                        utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                        QStringLiteral(
+                            "Could not write video packet: %1")
+                        .arg(ffmpegErrorString(ret)));
+
+                    return false;
+                }
+
+                /*
+                 * av_interleaved_write_frame() takes ownership of the packet's
+                 * contents / unrefs it, so the packet can be reused.
+                 */
+                av_packet_unref(packet);
+
+                if (!readNextVideoPacket())
+                    videoEof = true;
+            }
+            // ------------------------------------------------------------
+            // Write audio
+            // ------------------------------------------------------------
+            else
+            {
+                AudioBinding& binding =
+                    *selectedAudio;
+
+                AVPacket* packet =
+                    binding.pendingPacket;
+
+                packet->stream_index =
+                    binding.outputStream->index;
+
+                av_packet_rescale_ts(
+                    packet,
+                    binding.inputStream->time_base,
+                    binding.outputStream->time_base);
+
+                ret =
+                    av_interleaved_write_frame(
+                        output,
+                        packet);
+
+                if (ret < 0)
+                {
+                    av_packet_free(&pendingVideoPacket);
+
+                    av_write_trailer(output);
+
+                    avio_context_free(&outputIo);
+                    avformat_free_context(output);
+
+                    freeAudioQueue();
+
+                    for (auto& a : audioBindings)
+                        av_packet_free(&a.pendingPacket);
+
+                    finishWorker();
+
+                    notifyError(
+                        utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                        QStringLiteral(
+                            "Could not write audio packet: %1")
+                        .arg(ffmpegErrorString(ret)));
+
+                    return false;
+                }
+
+                av_packet_unref(packet);
+
+                /*
+                 * The next packet for this audio stream may already be sitting
+                 * in the queue because av_read_frame() is shared by all audio
+                 * streams.
+                 */
+                promoteQueuedAudioPacket(binding);
+            }
+
+            // ------------------------------------------------------------
+            // Dynamic size estimate
+            // ------------------------------------------------------------
+
+            if (estimatedOutputSize > 0)
+            {
+                /*
+                 * Muxed output is normally smaller than the sum of both
+                 * complete source files because only the selected video and
+                 * audio packets are copied.
+                 *
+                 * Keep a conservative estimate above the amount already
+                 * written.
+                 */
+                const qint64 minimumEstimate =
+                    outputContext.bytesWritten +
+                    std::max<qint64>(
+                        64 * 1024,
+                        outputContext.bytesWritten / 20);
+
+                estimatedOutputSize =
+                    std::max(
+                        estimatedOutputSize,
+                        minimumEstimate);
+            }
+            else
+            {
+                /*
+                 * We don't know the input lengths.
+                 *
+                 * Grow the estimate dynamically so it always remains ahead
+                 * of the actual written amount during the operation.
+                 */
+                const qint64 minimumEstimate =
+                    outputContext.bytesWritten +
+                    std::max<qint64>(
+                        1024 * 1024,
+                        outputContext.bytesWritten / 5);
+
+                estimatedOutputSize =
+                    std::max(
+                        estimatedOutputSize,
+                        minimumEstimate);
+            }
+
+            m_totalFileSize.store(
+                std::max(
+                    estimatedOutputSize,
+                    outputContext.bytesWritten));
+        }
+
+        return true;
+        };
+
+
+    ///////////////////////////////////////////////////////////////////////////
+
+
     // ------------------------------------------------------------------------
     // Create output video stream
     // ------------------------------------------------------------------------
 
-    AVStream* outputVideoStream =
+    outputVideoStream =
         avformat_new_stream(output, nullptr);
 
     if (!outputVideoStream)
@@ -1027,8 +1526,8 @@ void FFmpegMergeDownloader::mergeWorker(
         avio_context_free(&outputIo);
         avformat_free_context(output);
 
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+        //for (auto& a : audioBindings)
+        //    av_packet_free(&a.pendingPacket);
 
         finishWorker();
 
@@ -1208,76 +1707,7 @@ void FFmpegMergeDownloader::mergeWorker(
         return;
     }
 
-    // ------------------------------------------------------------------------
-    // Pending video packet
-    // ------------------------------------------------------------------------
 
-    AVPacket* pendingVideoPacket =
-        av_packet_alloc();
-
-    if (!pendingVideoPacket)
-    {
-        av_write_trailer(output);
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
-
-        finishWorker();
-
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "Could not allocate video packet."));
-
-        return;
-    }
-
-    bool videoEof = false;
-
-    // ------------------------------------------------------------------------
-    // Helper: read next video packet
-    // ------------------------------------------------------------------------
-
-    auto readNextVideoPacket =
-        [&]() -> bool
-        {
-            av_packet_unref(pendingVideoPacket);
-
-            while (!videoEof)
-            {
-                if (m_stopRequested.load())
-                    return false;
-
-                ret =
-                    av_read_frame(
-                        videoInput.get(),
-                        pendingVideoPacket);
-
-                if (ret == AVERROR_EOF)
-                {
-                    videoEof = true;
-                    return false;
-                }
-
-                if (ret < 0)
-                {
-                    videoEof = true;
-                    return false;
-                }
-
-                if (pendingVideoPacket->stream_index ==
-                    videoStreamIndex)
-                {
-                    return true;
-                }
-
-                av_packet_unref(pendingVideoPacket);
-            }
-
-            return false;
-        };
 
     // ------------------------------------------------------------------------
     // Helper: read next packet for ONE particular audio stream
@@ -1339,485 +1769,110 @@ void FFmpegMergeDownloader::mergeWorker(
             return false;
         };
 
-    // ========================================================================
-    // IMPORTANT:
-    //
-    // av_read_frame() is sequential. Therefore the simple helper above is not
-    // sufficient when multiple audio streams are present: while looking for
-    // stream #1 we may consume packets belonging to stream #0.
-    //
-    // Use a demux queue for the complete audio input.
-    // ========================================================================
 
-    struct QueuedAudioPacket
-    {
-        AVPacket* packet = nullptr;
-        int streamIndex = -1;
-    };
 
-    std::vector<QueuedAudioPacket> audioQueue;
 
-    auto freeAudioQueue =
-        [&]()
-        {
-            for (auto& item : audioQueue)
-                av_packet_free(&item.packet);
 
-            audioQueue.clear();
-        };
 
-    bool audioEof = false;
 
-    auto selectedAudioStream =
-        [&](int streamIndex) -> AudioBinding*
-        {
-            for (auto& binding : audioBindings)
-            {
-                if (binding.inputIndex == streamIndex)
-                    return &binding;
-            }
 
-            return nullptr;
-        };
 
-    /*
-     * Fill one pending packet for every selected audio stream.
-     *
-     * We keep demuxing the audio input until every selected stream has a
-     * packet, or EOF is reached.
-     */
-    auto fillAudioPending =
-        [&]()
-        {
-            if (audioEof)
-                return;
 
-            for (;;)
-            {
-                bool allHavePacket = true;
+     //////////////////////////////////////////////////////////////////////////
 
-                for (const auto& binding : audioBindings)
-                {
-                    if (binding.eof)
-                        continue;
 
-                    if (!binding.pendingPacket ||
-                        binding.pendingPacket->size <= 0)
-                    {
-                        allHavePacket = false;
-                        break;
-                    }
-                }
 
-                if (allHavePacket)
-                    return;
-
-                AVPacket* packet =
-                    av_packet_alloc();
-
-                if (!packet)
-                {
-                    audioEof = true;
-                    return;
-                }
-
-                const int readRet =
-                    av_read_frame(
-                        audioInput.get(),
-                        packet);
-
-                if (readRet == AVERROR_EOF)
-                {
-                    av_packet_free(&packet);
-                    audioEof = true;
-
-                    for (auto& binding : audioBindings)
-                    {
-                        if (!binding.pendingPacket ||
-                            binding.pendingPacket->size <= 0)
-                        {
-                            binding.eof = true;
-                        }
-                    }
-
-                    return;
-                }
-
-                if (readRet < 0)
-                {
-                    av_packet_free(&packet);
-                    audioEof = true;
-
-                    for (auto& binding : audioBindings)
-                    {
-                        if (!binding.pendingPacket ||
-                            binding.pendingPacket->size <= 0)
-                        {
-                            binding.eof = true;
-                        }
-                    }
-
-                    return;
-                }
-
-                AudioBinding* binding =
-                    selectedAudioStream(
-                        packet->stream_index);
-
-                if (!binding)
-                {
-                    av_packet_free(&packet);
-                    continue;
-                }
-
-                if (binding->pendingPacket &&
-                    binding->pendingPacket->size > 0)
-                {
-                    /*
-                     * There is already a packet pending for this stream.
-                     *
-                     * Put this packet into the queue. It will be promoted
-                     * when the pending packet for this stream is consumed.
-                     */
-                    audioQueue.push_back(
-                        { packet, packet->stream_index });
-
-                    continue;
-                }
-
-                av_packet_ref(
-                    binding->pendingPacket,
-                    packet);
-
-                av_packet_free(&packet);
-            }
-        };
-
-    /*
-     * Promote a queued packet to a stream's pending slot.
-     */
-    auto promoteQueuedAudioPacket =
-        [&](AudioBinding& binding)
-        {
-            if (binding.pendingPacket &&
-                binding.pendingPacket->size > 0)
-            {
-                return;
-            }
-
-            for (auto it = audioQueue.begin();
-                it != audioQueue.end();
-                ++it)
-            {
-                if (it->streamIndex != binding.inputIndex)
-                    continue;
-
-                av_packet_ref(
-                    binding.pendingPacket,
-                    it->packet);
-
-                av_packet_free(&it->packet);
-
-                audioQueue.erase(it);
-
-                return;
-            }
-
-            if (audioEof)
-                binding.eof = true;
-        };
-
-    // ------------------------------------------------------------------------
-    // Initial packets
+         // ------------------------------------------------------------------------
+    // Select best video
     // ------------------------------------------------------------------------
 
-    const bool haveVideo =
-        readNextVideoPacket();
+    videoStreamIndex =
+         av_find_best_stream(
+             videoInput.get(),
+             AVMEDIA_TYPE_VIDEO,
+             -1,
+             -1,
+             nullptr,
+             0);
 
-    Q_UNUSED(haveVideo);
+     if (videoStreamIndex < 0)
+     {
+         finishWorker();
 
-    fillAudioPending();
+         notifyError(
+             utilities::ErrorCode::eDOWLDUNKWNFILERR,
+             QStringLiteral(
+                 "Could not find a video stream: %1")
+             .arg(ffmpegErrorString(videoStreamIndex)));
 
-    for (auto& binding : audioBindings)
-        promoteQueuedAudioPacket(binding);
+         return;
+     }
 
-    // ------------------------------------------------------------------------
-    // Main merge loop
-    // ------------------------------------------------------------------------
+     inputVideoStream =
+         videoInput->streams[videoStreamIndex];
 
-    while (!m_stopRequested.load())
-    {
-        if (!videoEof &&
-            (!pendingVideoPacket ||
-                pendingVideoPacket->size <= 0))
-        {
-            readNextVideoPacket();
-        }
+     // ------------------------------------------------------------------------
+     // Collect ALL audio streams
+     // ------------------------------------------------------------------------
 
-        fillAudioPending();
 
-        for (auto& binding : audioBindings)
-            promoteQueuedAudioPacket(binding);
+     for (unsigned int i = 0;
+         i < audioInput->nb_streams;
+         ++i)
+     {
+         AVStream* stream =
+             audioInput->streams[i];
 
-        // ------------------------------------------------------------
-        // Find earliest packet among video + ALL audio streams.
-        // ------------------------------------------------------------
+         if (!isAudioStream(stream))
+             continue;
 
-        AudioBinding* selectedAudio = nullptr;
+         AudioBinding binding;
 
-        qint64 selectedAudioTimestamp =
-            std::numeric_limits<qint64>::max();
+         binding.inputIndex =
+             static_cast<int>(i);
 
-        for (auto& binding : audioBindings)
-        {
-            if (binding.eof)
-                continue;
+         binding.inputStream =
+             stream;
 
-            if (!binding.pendingPacket ||
-                binding.pendingPacket->size <= 0)
-                continue;
+         binding.pendingPacket =
+             av_packet_alloc();
 
-            const qint64 ts =
-                packetTimestampUs(
-                    binding.pendingPacket,
-                    binding.inputStream);
+         if (!binding.pendingPacket)
+         {
+             for (auto& a : audioBindings)
+                 av_packet_free(&a.pendingPacket);
 
-            if (ts < selectedAudioTimestamp)
-            {
-                selectedAudioTimestamp = ts;
-                selectedAudio = &binding;
-            }
-        }
+             finishWorker();
 
-        const bool haveVideoPacket =
-            !videoEof &&
-            pendingVideoPacket &&
-            pendingVideoPacket->size > 0;
+             notifyError(
+                 utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                 QStringLiteral(
+                     "Could not allocate audio packet."));
 
-        const qint64 videoTimestamp =
-            haveVideoPacket
-            ? packetTimestampUs(
-                pendingVideoPacket,
-                inputVideoStream)
-            : std::numeric_limits<qint64>::max();
+             return;
+         }
 
-        if (!haveVideoPacket &&
-            !selectedAudio)
-        {
-            /*
-             * There are no immediately available packets.
-             *
-             * If the audio queue contains packets, promote them and retry.
-             */
-            bool promoted = false;
+         audioBindings.push_back(binding);
+     }
 
-            for (auto& binding : audioBindings)
-            {
-                if (!binding.eof &&
-                    (!binding.pendingPacket ||
-                        binding.pendingPacket->size <= 0))
-                {
-                    const int before =
-                        static_cast<int>(audioQueue.size());
+     if (audioBindings.empty())
+     {
+         finishWorker();
 
-                    promoteQueuedAudioPacket(binding);
+         notifyError(
+             utilities::ErrorCode::eDOWLDUNKWNFILERR,
+             QStringLiteral(
+                 "The audio input contains no audio streams."));
 
-                    if (static_cast<int>(audioQueue.size()) != before ||
-                        (binding.pendingPacket &&
-                            binding.pendingPacket->size > 0))
-                    {
-                        promoted = true;
-                    }
-                }
-            }
+         return;
+     }
 
-            if (promoted)
-                continue;
 
-            break;
-        }
+    ///////////////////////////////////////////////////////////////////////////
 
-        bool writeVideo = false;
 
-        if (haveVideoPacket && !selectedAudio)
-        {
-            writeVideo = true;
-        }
-        else if (!haveVideoPacket && selectedAudio)
-        {
-            writeVideo = false;
-        }
-        else
-        {
-            writeVideo =
-                videoTimestamp <= selectedAudioTimestamp;
-        }
-
-        // ------------------------------------------------------------
-        // Write video
-        // ------------------------------------------------------------
-
-        if (writeVideo)
-        {
-            AVPacket* packet =
-                pendingVideoPacket;
-
-            packet->stream_index =
-                outputVideoStream->index;
-
-            av_packet_rescale_ts(
-                packet,
-                inputVideoStream->time_base,
-                outputVideoStream->time_base);
-
-            ret =
-                av_interleaved_write_frame(
-                    output,
-                    packet);
-
-            if (ret < 0)
-            {
-                av_packet_free(&pendingVideoPacket);
-
-                av_write_trailer(output);
-
-                avio_context_free(&outputIo);
-                avformat_free_context(output);
-
-                freeAudioQueue();
-
-                for (auto& a : audioBindings)
-                    av_packet_free(&a.pendingPacket);
-
-                finishWorker();
-
-                notifyError(
-                    utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                    QStringLiteral(
-                        "Could not write video packet: %1")
-                    .arg(ffmpegErrorString(ret)));
-
-                return;
-            }
-
-            /*
-             * av_interleaved_write_frame() takes ownership of the packet's
-             * contents / unrefs it, so the packet can be reused.
-             */
-            av_packet_unref(packet);
-
-            if (!readNextVideoPacket())
-                videoEof = true;
-        }
-        // ------------------------------------------------------------
-        // Write audio
-        // ------------------------------------------------------------
-        else
-        {
-            AudioBinding& binding =
-                *selectedAudio;
-
-            AVPacket* packet =
-                binding.pendingPacket;
-
-            packet->stream_index =
-                binding.outputStream->index;
-
-            av_packet_rescale_ts(
-                packet,
-                binding.inputStream->time_base,
-                binding.outputStream->time_base);
-
-            ret =
-                av_interleaved_write_frame(
-                    output,
-                    packet);
-
-            if (ret < 0)
-            {
-                av_packet_free(&pendingVideoPacket);
-
-                av_write_trailer(output);
-
-                avio_context_free(&outputIo);
-                avformat_free_context(output);
-
-                freeAudioQueue();
-
-                for (auto& a : audioBindings)
-                    av_packet_free(&a.pendingPacket);
-
-                finishWorker();
-
-                notifyError(
-                    utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                    QStringLiteral(
-                        "Could not write audio packet: %1")
-                    .arg(ffmpegErrorString(ret)));
-
-                return;
-            }
-
-            av_packet_unref(packet);
-
-            /*
-             * The next packet for this audio stream may already be sitting
-             * in the queue because av_read_frame() is shared by all audio
-             * streams.
-             */
-            promoteQueuedAudioPacket(binding);
-        }
-
-        // ------------------------------------------------------------
-        // Dynamic size estimate
-        // ------------------------------------------------------------
-
-        if (estimatedOutputSize > 0)
-        {
-            /*
-             * Muxed output is normally smaller than the sum of both
-             * complete source files because only the selected video and
-             * audio packets are copied.
-             *
-             * Keep a conservative estimate above the amount already
-             * written.
-             */
-            const qint64 minimumEstimate =
-                outputContext.bytesWritten +
-                std::max<qint64>(
-                    64 * 1024,
-                    outputContext.bytesWritten / 20);
-
-            estimatedOutputSize =
-                std::max(
-                    estimatedOutputSize,
-                    minimumEstimate);
-        }
-        else
-        {
-            /*
-             * We don't know the input lengths.
-             *
-             * Grow the estimate dynamically so it always remains ahead
-             * of the actual written amount during the operation.
-             */
-            const qint64 minimumEstimate =
-                outputContext.bytesWritten +
-                std::max<qint64>(
-                    1024 * 1024,
-                    outputContext.bytesWritten / 5);
-
-            estimatedOutputSize =
-                std::max(
-                    estimatedOutputSize,
-                    minimumEstimate);
-        }
-
-        m_totalFileSize.store(
-            std::max(
-                estimatedOutputSize,
-                outputContext.bytesWritten));
-    }
+     if (!transfer())
+         return;
 
     // ------------------------------------------------------------------------
     // Stop requested
