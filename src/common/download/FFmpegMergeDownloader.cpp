@@ -1514,118 +1514,37 @@ void FFmpegMergeDownloader::mergeWorker(
     ///////////////////////////////////////////////////////////////////////////
 
 
-    // ------------------------------------------------------------------------
-    // Create output video stream
-    // ------------------------------------------------------------------------
+    auto setup = [&]() -> bool {
 
-    outputVideoStream =
-        avformat_new_stream(output, nullptr);
+        // ------------------------------------------------------------------------
+        // Create output video stream
+        // ------------------------------------------------------------------------
 
-    if (!outputVideoStream)
-    {
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-
-        //for (auto& a : audioBindings)
-        //    av_packet_free(&a.pendingPacket);
-
-        finishWorker();
-
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "Could not create output video stream."));
-
-        return;
-    }
-
-    ret =
-        avcodec_parameters_copy(
-            outputVideoStream->codecpar,
-            inputVideoStream->codecpar);
-
-    if (ret < 0)
-    {
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
-
-        finishWorker();
-
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "Could not copy video codec parameters: %1")
-            .arg(ffmpegErrorString(ret)));
-
-        return;
-    }
-
-    /*
-     * IMPORTANT:
-     *
-     * codec_tag values such as:
-     *
-     *   avc1
-     *   hvc1
-     *   hev1
-     *   av01
-     *
-     * belong to formats such as MP4/MOV.
-     *
-     * They must not simply be copied into Matroska.
-     *
-     * Let the Matroska muxer choose the appropriate mapping.
-     */
-    outputVideoStream->codecpar->codec_tag = 0;
-
-    outputVideoStream->time_base =
-        inputVideoStream->time_base;
-
-    outputVideoStream->sample_aspect_ratio =
-        inputVideoStream->sample_aspect_ratio;
-
-    outputVideoStream->disposition =
-        inputVideoStream->disposition;
-
-    av_dict_copy(
-        &outputVideoStream->metadata,
-        inputVideoStream->metadata,
-        0);
-
-    // ------------------------------------------------------------------------
-    // Create ALL output audio streams
-    // ------------------------------------------------------------------------
-
-    for (auto& binding : audioBindings)
-    {
-        AVStream* outStream =
+        outputVideoStream =
             avformat_new_stream(output, nullptr);
 
-        if (!outStream)
+        if (!outputVideoStream)
         {
             avio_context_free(&outputIo);
             avformat_free_context(output);
 
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
+            //for (auto& a : audioBindings)
+            //    av_packet_free(&a.pendingPacket);
 
             finishWorker();
 
             notifyError(
                 utilities::ErrorCode::eDOWLDUNKWNFILERR,
                 QStringLiteral(
-                    "Could not create output audio stream."));
+                    "Could not create output video stream."));
 
-            return;
+            return false;
         }
 
         ret =
             avcodec_parameters_copy(
-                outStream->codecpar,
-                binding.inputStream->codecpar);
+                outputVideoStream->codecpar,
+                inputVideoStream->codecpar);
 
         if (ret < 0)
         {
@@ -1640,74 +1559,159 @@ void FFmpegMergeDownloader::mergeWorker(
             notifyError(
                 utilities::ErrorCode::eDOWLDUNKWNFILERR,
                 QStringLiteral(
-                    "Could not copy audio codec parameters: %1")
+                    "Could not copy video codec parameters: %1")
                 .arg(ffmpegErrorString(ret)));
 
-            return;
+            return false;
         }
 
-        // Same Matroska requirement as for video.
-        outStream->codecpar->codec_tag = 0;
+        /*
+         * IMPORTANT:
+         *
+         * codec_tag values such as:
+         *
+         *   avc1
+         *   hvc1
+         *   hev1
+         *   av01
+         *
+         * belong to formats such as MP4/MOV.
+         *
+         * They must not simply be copied into Matroska.
+         *
+         * Let the Matroska muxer choose the appropriate mapping.
+         */
+        outputVideoStream->codecpar->codec_tag = 0;
 
-        outStream->time_base =
-            binding.inputStream->time_base;
+        outputVideoStream->time_base =
+            inputVideoStream->time_base;
 
-        outStream->sample_aspect_ratio =
-            binding.inputStream->sample_aspect_ratio;
+        outputVideoStream->sample_aspect_ratio =
+            inputVideoStream->sample_aspect_ratio;
 
-        outStream->disposition =
-            binding.inputStream->disposition;
+        outputVideoStream->disposition =
+            inputVideoStream->disposition;
 
         av_dict_copy(
-            &outStream->metadata,
-            binding.inputStream->metadata,
+            &outputVideoStream->metadata,
+            inputVideoStream->metadata,
             0);
 
-        binding.outputStream = outStream;
-    }
+        // ------------------------------------------------------------------------
+        // Create ALL output audio streams
+        // ------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------
-    // Preserve container metadata
-    // ------------------------------------------------------------------------
+        for (auto& binding : audioBindings)
+        {
+            AVStream* outStream =
+                avformat_new_stream(output, nullptr);
 
-    av_dict_copy(
-        &output->metadata,
-        videoInput->metadata,
-        0);
+            if (!outStream)
+            {
+                avio_context_free(&outputIo);
+                avformat_free_context(output);
 
-    // Do not shift timestamps to zero.
-    output->avoid_negative_ts =
-        AVFMT_AVOID_NEG_TS_DISABLED;
+                for (auto& a : audioBindings)
+                    av_packet_free(&a.pendingPacket);
 
-    // ------------------------------------------------------------------------
-    // Write Matroska header
-    // ------------------------------------------------------------------------
+                finishWorker();
 
-    ret =
-        avformat_write_header(
-            output,
-            nullptr);
+                notifyError(
+                    utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                    QStringLiteral(
+                        "Could not create output audio stream."));
 
-    if (ret < 0)
-    {
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
+                return false;
+            }
 
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
+            ret =
+                avcodec_parameters_copy(
+                    outStream->codecpar,
+                    binding.inputStream->codecpar);
 
-        finishWorker();
+            if (ret < 0)
+            {
+                avio_context_free(&outputIo);
+                avformat_free_context(output);
 
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral(
-                "Could not write Matroska header: %1")
-            .arg(ffmpegErrorString(ret)));
+                for (auto& a : audioBindings)
+                    av_packet_free(&a.pendingPacket);
 
-        return;
-    }
+                finishWorker();
 
+                notifyError(
+                    utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                    QStringLiteral(
+                        "Could not copy audio codec parameters: %1")
+                    .arg(ffmpegErrorString(ret)));
 
+                return false;
+            }
+
+            // Same Matroska requirement as for video.
+            outStream->codecpar->codec_tag = 0;
+
+            outStream->time_base =
+                binding.inputStream->time_base;
+
+            outStream->sample_aspect_ratio =
+                binding.inputStream->sample_aspect_ratio;
+
+            outStream->disposition =
+                binding.inputStream->disposition;
+
+            av_dict_copy(
+                &outStream->metadata,
+                binding.inputStream->metadata,
+                0);
+
+            binding.outputStream = outStream;
+        }
+
+        // ------------------------------------------------------------------------
+        // Preserve container metadata
+        // ------------------------------------------------------------------------
+
+        av_dict_copy(
+            &output->metadata,
+            videoInput->metadata,
+            0);
+
+        // Do not shift timestamps to zero.
+        output->avoid_negative_ts =
+            AVFMT_AVOID_NEG_TS_DISABLED;
+
+        // ------------------------------------------------------------------------
+        // Write Matroska header
+        // ------------------------------------------------------------------------
+
+        ret =
+            avformat_write_header(
+                output,
+                nullptr);
+
+        if (ret < 0)
+        {
+            avio_context_free(&outputIo);
+            avformat_free_context(output);
+
+            for (auto& a : audioBindings)
+                av_packet_free(&a.pendingPacket);
+
+            finishWorker();
+
+            notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral(
+                    "Could not write Matroska header: %1")
+                .arg(ffmpegErrorString(ret)));
+
+            return false;
+        }
+
+        return true;
+
+        };
 
      //////////////////////////////////////////////////////////////////////////
 
@@ -1797,6 +1801,10 @@ void FFmpegMergeDownloader::mergeWorker(
 
          return;
      }
+
+
+     if (!setup())
+         return;
 
 
     ///////////////////////////////////////////////////////////////////////////
