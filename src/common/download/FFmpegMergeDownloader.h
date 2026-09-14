@@ -91,7 +91,7 @@ private:
 
     QString makeOutputFilename(
         const QList<QUrl>& urls,
-        const QString& filename) const;
+        const QString& filename, bool resume) const;
 
     void run(
         const QList<QUrl>& urls,

@@ -25,6 +25,8 @@ extern "C"
 #include <libavutil/timestamp.h>
 }
 
+#pragma optimize( "", off )
+
 namespace
 {
 
@@ -76,6 +78,7 @@ namespace
         return ptr && static_cast<std::atomic<bool>*>(ptr)->load();
     }
 
+#if 0 
     static bool readEbmlVint(
         QFile& file,
         quint64& value,
@@ -233,6 +236,7 @@ namespace
 
         return lastClusterEnd;
     }
+#endif
 
 } // namespace
 
@@ -541,7 +545,7 @@ void FFmpegMergeDownloader::setObserver(
 
 QString FFmpegMergeDownloader::makeOutputFilename(
     const QList<QUrl>& urls,
-    const QString& filename) const
+    const QString& filename, bool resume) const
 {
     QString result = filename;
 
@@ -575,7 +579,7 @@ QString FFmpegMergeDownloader::makeOutputFilename(
             QDir(m_destinationPath).filePath(result);
     }
 
-    if (m_downloadNamePolicy == kReplaceFile)
+    if (resume || (m_downloadNamePolicy == kReplaceFile))
         return result;
 
     QFileInfo original(result);
@@ -763,8 +767,7 @@ void FFmpegMergeDownloader::run(
     m_totalFileSize.store(-1);
     m_expectedFileSize.store(-1);
 
-    const QString outputFilename = resume? filename
-        : makeOutputFilename(urls, filename);
+    const QString outputFilename = makeOutputFilename(urls, filename, resume);
 
     if (outputFilename.isEmpty())
     {
@@ -1331,14 +1334,14 @@ void FFmpegMergeDownloader::mergeWorker(
 
     bool videoEof = false;
     bool audioEof = false;
-    bool replayMode = resume;
+    //bool replayMode = resume;
     bool headerWritten = false;
 
     std::vector<qint64> lastAudioTimestampUs(
         audioBindings.size(),
         std::numeric_limits<qint64>::min());
-    qint64 lastVideoTimestampUs =
-        std::numeric_limits<qint64>::min();
+    //qint64 lastVideoTimestampUs =
+    //    std::numeric_limits<qint64>::min();
 
     auto freeAudioQueue =
         [&]()
@@ -1550,22 +1553,25 @@ void FFmpegMergeDownloader::mergeWorker(
                 AVPacket* packet = pendingVideoPacket;
                 const qint64 ts = videoTimestamp;
 
-                if (replayMode)
+                //if (replayMode)
+                //{
+                //    if (ts != std::numeric_limits<qint64>::max())
+                //        lastVideoTimestampUs =
+                //            std::max(lastVideoTimestampUs, ts);
+                //    av_packet_unref(packet);
+                //}
+                //else
                 {
-                    if (ts != std::numeric_limits<qint64>::max())
-                        lastVideoTimestampUs =
-                            std::max(lastVideoTimestampUs, ts);
-                    av_packet_unref(packet);
-                }
-                else
-                {
-                    if (ts != std::numeric_limits<qint64>::max() &&
-                        ts <= lastVideoTimestampUs)
+                    //if (ts != std::numeric_limits<qint64>::max() &&
+                    //    ts <= lastVideoTimestampUs)
+                    //{
+                    //    av_packet_unref(packet);
+                    //}
+                    //else
                     {
-                        av_packet_unref(packet);
-                    }
-                    else
-                    {
+                        //if (ts != std::numeric_limits<qint64>::max())
+                        //    lastVideoTimestampUs = ts;
+
                         packet->stream_index = outputVideoStream->index;
                         av_packet_rescale_ts(
                             packet,
@@ -1599,16 +1605,16 @@ void FFmpegMergeDownloader::mergeWorker(
                     static_cast<size_t>(&binding - audioBindings.data());
                 const qint64 ts = selectedAudioTimestamp;
 
-                if (replayMode)
-                {
-                    if (ts != std::numeric_limits<qint64>::max())
-                        lastAudioTimestampUs[audioIndex] =
-                            std::max(lastAudioTimestampUs[audioIndex], ts);
+                //if (replayMode)
+                //{
+                //    if (ts != std::numeric_limits<qint64>::max())
+                //        lastAudioTimestampUs[audioIndex] =
+                //            std::max(lastAudioTimestampUs[audioIndex], ts);
 
-                    av_packet_unref(packet);
-                    promoteQueuedAudioPacket(binding);
-                }
-                else
+                //    av_packet_unref(packet);
+                //    promoteQueuedAudioPacket(binding);
+                //}
+                //else
                 {
                     if (ts != std::numeric_limits<qint64>::max() &&
                         ts <= lastAudioTimestampUs[audioIndex])
@@ -1618,6 +1624,9 @@ void FFmpegMergeDownloader::mergeWorker(
                     }
                     else
                     {
+                        if (ts != std::numeric_limits<qint64>::max())
+                            lastAudioTimestampUs[audioIndex] = ts;
+
                         packet->stream_index = binding.outputStream->index;
                         av_packet_rescale_ts(
                             packet,
@@ -1642,7 +1651,7 @@ void FFmpegMergeDownloader::mergeWorker(
                 }
             }
 
-            if (!replayMode)
+            //if (!replayMode)
             {
                 m_totalFileSize.store(
                     std::max<qint64>(
@@ -1714,6 +1723,7 @@ void FFmpegMergeDownloader::mergeWorker(
         // has been completely replayed. Thus resume performs no physical
         // output write while it is replaying the old content.
         // --------------------------------------------------------------------
+#if 0
         const qint64 appendPosition =
             findMatroskaAppendPosition(outputContext.file);
 
@@ -1738,6 +1748,7 @@ void FFmpegMergeDownloader::mergeWorker(
                     "Could not remove the incomplete Matroska tail before resume."));
             return;
         }
+#endif
 
         // --------------------------------------------------------------------
         // Return to network inputs and seek back slightly. We intentionally
@@ -1745,7 +1756,7 @@ void FFmpegMergeDownloader::mergeWorker(
         // old file. A two-second overlap is small but gives HTTP seeks room to
         // land on a useful video keyframe.
         // --------------------------------------------------------------------
-        constexpr qint64 kResumeOverlapUs = 2 * 1000 * 1000;
+        constexpr qint64 kResumeOverlapUs = 0; // 2 * 1000 * 1000;
 
         activeVideoInput = videoInput.get();
         activeAudioInput = audioInput.get();
@@ -1809,10 +1820,10 @@ void FFmpegMergeDownloader::mergeWorker(
         // its existing end and switch the AVIO into real-write mode.
         avio_flush(output->pb);
         outputContext.suppressWrites = false;
-        outputContext.virtualPosition = appendPosition;
-        outputContext.virtualSize = appendPosition;
+        //outputContext.virtualPosition = appendPosition;
+        //outputContext.virtualSize = appendPosition;
 
-        if (!outputContext.file.seek(appendPosition))
+        if (!outputContext.file.seek(outputContext.virtualPosition))//appendPosition))
         {
             cleanup();
             finishWorker();
@@ -1822,12 +1833,12 @@ void FFmpegMergeDownloader::mergeWorker(
             return;
         }
 
-        outputIo->pos = appendPosition;
+        outputIo->pos = outputContext.virtualPosition;//appendPosition;
         outputIo->buf_ptr = outputIo->buffer;
         outputIo->buf_end = outputIo->buffer;
         outputIo->eof_reached = 0;
 
-        replayMode = false;
+        //replayMode = false;
 
         if (!transfer())
             return;
@@ -1835,7 +1846,7 @@ void FFmpegMergeDownloader::mergeWorker(
     else
     {
         outputContext.suppressWrites = false;
-        replayMode = false;
+        //replayMode = false;
 
         if (!transfer())
             return;
