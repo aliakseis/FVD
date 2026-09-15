@@ -1334,14 +1334,14 @@ void FFmpegMergeDownloader::mergeWorker(
 
     bool videoEof = false;
     bool audioEof = false;
-    //bool replayMode = resume;
+    bool replayMode = resume;
     bool headerWritten = false;
 
     std::vector<qint64> lastAudioTimestampUs(
         audioBindings.size(),
         std::numeric_limits<qint64>::min());
-    //qint64 lastVideoTimestampUs =
-    //    std::numeric_limits<qint64>::min();
+    qint64 lastVideoTimestampUs =
+        std::numeric_limits<qint64>::min();
 
     auto freeAudioQueue =
         [&]()
@@ -1398,8 +1398,15 @@ void FFmpegMergeDownloader::mergeWorker(
                 }
 
                 if (pendingVideoPacket->stream_index == activeVideoStreamIndex)
-                    return true;
+                {
+                    if (replayMode)
+                        return true;
 
+                    const qint64 videoTimestamp = packetTimestampUs(pendingVideoPacket, activeVideoStream);
+                    if (videoTimestamp == std::numeric_limits<qint64>::max()
+                            || videoTimestamp > lastVideoTimestampUs)
+                        return true;
+                }
                 av_packet_unref(pendingVideoPacket);
             }
 
@@ -1455,6 +1462,21 @@ void FFmpegMergeDownloader::mergeWorker(
                 {
                     av_packet_free(&packet);
                     continue;
+                }
+
+                if (!replayMode)
+                {
+                    const qint64 timestamp = packetTimestampUs(packet, binding->activeStream);
+                    if (timestamp != std::numeric_limits<qint64>::max())
+                    {
+                        const size_t audioIndex =
+                            static_cast<size_t>(binding - audioBindings.data());
+                        if (timestamp <= lastAudioTimestampUs[audioIndex])
+                        {
+                            av_packet_free(&packet);
+                            continue;
+                        }
+                    }
                 }
 
                 if (binding->pendingPacket && binding->pendingPacket->size > 0)
@@ -1553,45 +1575,30 @@ void FFmpegMergeDownloader::mergeWorker(
                 AVPacket* packet = pendingVideoPacket;
                 const qint64 ts = videoTimestamp;
 
-                //if (replayMode)
-                //{
-                //    if (ts != std::numeric_limits<qint64>::max())
-                //        lastVideoTimestampUs =
-                //            std::max(lastVideoTimestampUs, ts);
-                //    av_packet_unref(packet);
-                //}
-                //else
+                if (replayMode || ts > lastVideoTimestampUs)
                 {
-                    //if (ts != std::numeric_limits<qint64>::max() &&
-                    //    ts <= lastVideoTimestampUs)
-                    //{
-                    //    av_packet_unref(packet);
-                    //}
-                    //else
+                    if (ts != std::numeric_limits<qint64>::max())
+                        lastVideoTimestampUs = ts;
+
+                    packet->stream_index = outputVideoStream->index;
+                    av_packet_rescale_ts(
+                        packet,
+                        activeVideoStream->time_base,
+                        outputVideoStream->time_base);
+
+                    ret = av_interleaved_write_frame(output, packet);
+                    if (ret < 0)
                     {
-                        //if (ts != std::numeric_limits<qint64>::max())
-                        //    lastVideoTimestampUs = ts;
-
-                        packet->stream_index = outputVideoStream->index;
-                        av_packet_rescale_ts(
-                            packet,
-                            activeVideoStream->time_base,
-                            outputVideoStream->time_base);
-
-                        ret = av_interleaved_write_frame(output, packet);
-                        if (ret < 0)
-                        {
-                            cleanup();
-                            finishWorker();
-                            notifyError(
-                                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                                QStringLiteral("Could not write video packet: %1")
-                                    .arg(ffmpegErrorString(ret)));
-                            return false;
-                        }
-
-                        av_packet_unref(packet);
+                        cleanup();
+                        finishWorker();
+                        notifyError(
+                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                            QStringLiteral("Could not write video packet: %1")
+                                .arg(ffmpegErrorString(ret)));
+                        return false;
                     }
+
+                    av_packet_unref(packet);
                 }
 
                 if (!readNextVideoPacket())
@@ -1605,53 +1612,35 @@ void FFmpegMergeDownloader::mergeWorker(
                     static_cast<size_t>(&binding - audioBindings.data());
                 const qint64 ts = selectedAudioTimestamp;
 
-                //if (replayMode)
-                //{
-                //    if (ts != std::numeric_limits<qint64>::max())
-                //        lastAudioTimestampUs[audioIndex] =
-                //            std::max(lastAudioTimestampUs[audioIndex], ts);
-
-                //    av_packet_unref(packet);
-                //    promoteQueuedAudioPacket(binding);
-                //}
-                //else
+                if (replayMode || ts > lastAudioTimestampUs[audioIndex])
                 {
-                    if (ts != std::numeric_limits<qint64>::max() &&
-                        ts <= lastAudioTimestampUs[audioIndex])
+                    if (ts != std::numeric_limits<qint64>::max())
+                        lastAudioTimestampUs[audioIndex] = ts;
+
+                    packet->stream_index = binding.outputStream->index;
+                    av_packet_rescale_ts(
+                        packet,
+                        binding.activeStream->time_base,
+                        binding.outputStream->time_base);
+
+                    ret = av_interleaved_write_frame(output, packet);
+                    if (ret < 0)
                     {
-                        av_packet_unref(packet);
-                        promoteQueuedAudioPacket(binding);
+                        cleanup();
+                        finishWorker();
+                        notifyError(
+                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                            QStringLiteral("Could not write audio packet: %1")
+                                .arg(ffmpegErrorString(ret)));
+                        return false;
                     }
-                    else
-                    {
-                        if (ts != std::numeric_limits<qint64>::max())
-                            lastAudioTimestampUs[audioIndex] = ts;
 
-                        packet->stream_index = binding.outputStream->index;
-                        av_packet_rescale_ts(
-                            packet,
-                            binding.activeStream->time_base,
-                            binding.outputStream->time_base);
-
-                        ret = av_interleaved_write_frame(output, packet);
-                        if (ret < 0)
-                        {
-                            cleanup();
-                            finishWorker();
-                            notifyError(
-                                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                                QStringLiteral("Could not write audio packet: %1")
-                                    .arg(ffmpegErrorString(ret)));
-                            return false;
-                        }
-
-                        av_packet_unref(packet);
-                        promoteQueuedAudioPacket(binding);
-                    }
+                    av_packet_unref(packet);
+                    promoteQueuedAudioPacket(binding);
                 }
             }
 
-            //if (!replayMode)
+            if (!replayMode)
             {
                 m_totalFileSize.store(
                     std::max<qint64>(
@@ -1756,7 +1745,7 @@ void FFmpegMergeDownloader::mergeWorker(
         // old file. A two-second overlap is small but gives HTTP seeks room to
         // land on a useful video keyframe.
         // --------------------------------------------------------------------
-        constexpr qint64 kResumeOverlapUs = 0; // 2 * 1000 * 1000;
+        constexpr qint64 kResumeOverlapUs = 2 * 1000 * 1000;
 
         activeVideoInput = videoInput.get();
         activeAudioInput = audioInput.get();
@@ -1818,7 +1807,7 @@ void FFmpegMergeDownloader::mergeWorker(
 
         // Nothing has been physically written so far. Now move the QFile to
         // its existing end and switch the AVIO into real-write mode.
-        avio_flush(output->pb);
+        //avio_flush(output->pb);
         outputContext.suppressWrites = false;
         //outputContext.virtualPosition = appendPosition;
         //outputContext.virtualSize = appendPosition;
@@ -1834,11 +1823,11 @@ void FFmpegMergeDownloader::mergeWorker(
         }
 
         outputIo->pos = outputContext.virtualPosition;//appendPosition;
-        outputIo->buf_ptr = outputIo->buffer;
-        outputIo->buf_end = outputIo->buffer;
+        //outputIo->buf_ptr = outputIo->buffer;
+        //outputIo->buf_end = outputIo->buffer;
         outputIo->eof_reached = 0;
 
-        //replayMode = false;
+        replayMode = false;
 
         if (!transfer())
             return;
@@ -1846,7 +1835,7 @@ void FFmpegMergeDownloader::mergeWorker(
     else
     {
         outputContext.suppressWrites = false;
-        //replayMode = false;
+        replayMode = false;
 
         if (!transfer())
             return;
