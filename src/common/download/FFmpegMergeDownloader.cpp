@@ -1023,6 +1023,30 @@ void FFmpegMergeDownloader::mergeWorker(
         return;
     }
 
+    // The progress numerator is the actual number of bytes written to the
+    // output file. Keep the denominator independent from it: for a merged
+    // download it is the sum of the sizes of the video and audio inputs.
+    // avio_size() uses the protocol's AVSEEK_SIZE support and does not consume
+    // the input stream. If a server does not provide a size, leave an already
+    // supplied expected size untouched.
+    auto inputContentLength =
+        [](const InputFormatPtr& input) -> qint64
+        {
+            if (!input || !input->pb)
+                return -1;
+
+            const int64_t size = avio_size(input->pb);
+            return size > 0 ? static_cast<qint64>(size) : -1;
+        };
+
+    const qint64 videoSize = inputContentLength(videoInput);
+    const qint64 audioSize = inputContentLength(audioInput);
+
+    if (videoSize > 0 && audioSize > 0)
+    {
+        m_totalFileSize.store(videoSize + audioSize);
+    }
+
     // ------------------------------------------------------------------------
     // Output file. Resume deliberately opens the existing file read/write;
     // nothing is written to it until the old content has been replayed.
@@ -1754,13 +1778,6 @@ void FFmpegMergeDownloader::mergeWorker(
                 }
             }
 
-            if (!replayMode)
-            {
-                m_totalFileSize.store(
-                    std::max<qint64>(
-                        outputContext.bytesWritten,
-                        outputContext.file.size()));
-            }
         }
 
         return true;
