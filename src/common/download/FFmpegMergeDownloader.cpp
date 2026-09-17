@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -261,6 +262,7 @@ struct FFmpegMergeDownloader::OutputContext
 
     bool writeError = false;
     bool suppressWrites = false;
+    bool startNotified = false;
     qint64 virtualPosition = 0;
     qint64 virtualSize = 0;
 
@@ -359,6 +361,14 @@ struct FFmpegMergeDownloader::OutputContext
             ctx->virtualSize = std::max(ctx->virtualSize, ctx->virtualPosition);
             ptr += written;
             remaining -= written;
+        }
+
+        if (!ctx->suppressWrites && !ctx->startNotified && ctx->owner)
+        {
+            const int notifySize = std::min(size, 64 * 1024);
+            ctx->startNotified = true;
+            ctx->owner->notifyStart(
+                QByteArray(reinterpret_cast<const char*>(buffer), notifySize));
         }
 
         ctx->reportProgress();
@@ -549,7 +559,14 @@ bool FFmpegMergeDownloader::setDestinationPath(
     if (m_running)
         return false;
 
-    m_destinationPath = destination_path;
+    if (destination_path.isEmpty())
+        return false;
+
+    QDir path(destination_path);
+    if (!path.exists() && !path.mkpath(QStringLiteral(".")))
+        return false;
+
+    m_destinationPath = path.absolutePath();
     return true;
 }
 
@@ -567,7 +584,8 @@ void FFmpegMergeDownloader::setExpectedFileSize(
     qint64 expected_size)
 {
     m_expectedFileSize.store(expected_size);
-    m_totalFileSize.store(expected_size);
+    if (expected_size > 0)
+        m_totalFileSize.store(expected_size);
 }
 
 int FFmpegMergeDownloader::speedLimit() const
@@ -743,6 +761,24 @@ void FFmpegMergeDownloader::notifyFileCreated(
         Qt::QueuedConnection);
 }
 
+void FFmpegMergeDownloader::notifyFileToBeReleased(
+    const QString& filename)
+{
+    DownloaderObserverInterface* const observer = m_observer.load();
+
+    if (!observer)
+        return;
+
+    QMetaObject::invokeMethod(
+        this,
+        [observer, filename]()
+        {
+            observer->onFileToBeReleased(filename);
+        },
+        Qt::QueuedConnection);
+}
+
+
 void FFmpegMergeDownloader::notifyFinished()
 {
     DownloaderObserverInterface* const observer = m_observer.load();
@@ -786,7 +822,6 @@ void FFmpegMergeDownloader::run(
     bool resume)
 {
     Q_UNUSED(network_manager);
-    Q_UNUSED(httpHeaders);
 
     if (m_running)
         return;
@@ -818,9 +853,6 @@ void FFmpegMergeDownloader::run(
     m_pauseRequested.store(false);
     m_running.store(true);
 
-    m_totalFileSize.store(-1);
-    m_expectedFileSize.store(-1);
-
     const QString outputFilename = makeOutputFilename(urls, filename, resume);
 
     if (outputFilename.isEmpty())
@@ -837,9 +869,9 @@ void FFmpegMergeDownloader::run(
 
     m_worker =
         std::thread(
-            [this, urls, outputFilename, resume]()
+            [this, urls, outputFilename, resume, httpHeaders]()
             {
-                mergeWorker(urls, outputFilename, resume);
+                mergeWorker(urls, outputFilename, resume, httpHeaders);
             });
 }
 
@@ -876,11 +908,19 @@ void FFmpegMergeDownloader::Resume(
 
 void FFmpegMergeDownloader::Pause()
 {
+    if (!m_running.load())
+        return;
+
+    // Interrupt FFmpeg's blocking network read just like Stop(), but keep
+    // the distinction so the worker leaves the partial output in place.
     m_pauseRequested.store(true);
+    m_stopRequested.store(true);
 }
 
 void FFmpegMergeDownloader::Stop()
 {
+    // Stop wins over a pending pause request.
+    m_pauseRequested.store(false);
     m_stopRequested.store(true);
 }
 
@@ -892,15 +932,14 @@ void FFmpegMergeDownloader::Stop()
 void FFmpegMergeDownloader::mergeWorker(
     QList<QUrl> urls,
     QString outputFilename,
-    bool resume)
+    bool resume,
+    const QStringList& httpHeaders)
 {
     auto finishWorker =
         [this]()
         {
             m_running.store(false);
         };
-
-    notifyStart(QByteArray());
 
     auto openNetworkInput =
         [&](const QUrl& url, InputFormatPtr& result) -> int
@@ -918,6 +957,27 @@ void FFmpegMergeDownloader::mergeWorker(
             av_dict_set(&opts, "reconnect_delay_max", "10", 0);
             av_dict_set(&opts, "respect_retry_after", "1", 0);
             av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
+
+            QByteArray headerBlock;
+            if (httpHeaders.isEmpty())
+            {
+                headerBlock =
+                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0.0.0 Safari/537.36\r\n";
+            }
+            else
+            {
+                for (int i = 0; i + 1 < httpHeaders.size(); i += 2)
+                {
+                    headerBlock += httpHeaders[i].toUtf8();
+                    headerBlock += ": ";
+                    headerBlock += httpHeaders[i + 1].toUtf8();
+                    headerBlock += "\r\n";
+                }
+            }
+            if (!headerBlock.isEmpty())
+                av_dict_set(&opts, "headers", headerBlock.constData(), 0);
 
             const QByteArray urlBytes = url.toString().toUtf8();
             const int r = avformat_open_input(
@@ -1895,13 +1955,26 @@ void FFmpegMergeDownloader::mergeWorker(
             return;
     }
 
-    if (m_stopRequested.load())
+    if (m_pauseRequested.load())
     {
-        if (headerWritten)
-            av_write_trailer(output);
+        // Do not write a Matroska trailer: the partial file is deliberately
+        // left in the same resumable form as a paused plain Downloader.
         avio_flush(output->pb);
         outputContext.file.flush();
         cleanup();
+        finishWorker();
+        return;
+    }
+
+    if (m_stopRequested.load())
+    {
+        const QString filename = outputContext.file.fileName();
+        cleanup();
+        if (QFile::exists(filename))
+        {
+            notifyFileToBeReleased(filename);
+            QFile::remove(filename);
+        }
         finishWorker();
         return;
     }

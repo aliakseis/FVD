@@ -83,7 +83,8 @@ private:
     void mergeWorker(
         QList<QUrl> urls,
         QString outputFilename,
-        bool resume);
+        bool resume,
+        const QStringList& httpHeaders);
 
     // ---------------------------------------------------------------------
     // Filename handling
@@ -119,6 +120,9 @@ private:
 
     void notifyFinished();
 
+    void notifyFileToBeReleased(
+        const QString& filename);
+
     void notifyError(
         utilities::ErrorCode::ERROR_CODES code,
         const QString& description);
@@ -149,7 +153,7 @@ private:
 
     std::atomic<bool> m_stopRequested{ false };
 
-    std::atomic<bool> m_pauseRequested{ false };
+    std::atomic<bool> m_pauseRequested{ false }; // stop but can resume
 
     // ---------------------------------------------------------------------
     // Observer
