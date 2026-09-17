@@ -279,19 +279,74 @@ struct FFmpegMergeDownloader::OutputContext
 
         if (ctx->suppressWrites)
         {
+            bool match = true;
+
+            if (ctx->file.isOpen())
+            {
+                const qint64 pos = ctx->virtualPosition;
+                const qint64 fileSize = ctx->file.size();
+
+                if (pos < fileSize)
+                {
+                    const qint64 toRead = std::min<qint64>(size, fileSize - pos);
+                    QByteArray realData(toRead, Qt::Uninitialized);
+
+                    if (ctx->file.seek(pos))
+                    {
+                        const qint64 read = ctx->file.read(realData.data(), toRead);
+
+                        if (read == toRead)
+                        {
+                            match = (memcmp(realData.data(), buffer, toRead) == 0);
+                        }
+                        else
+                        {
+                            match = false;
+                        }
+                    }
+                    else
+                    {
+                        match = false;
+                    }
+                }
+                else
+                {
+                    match = false;
+                }
+            }
+            else
+            {
+                match = false;
+            }
+
+            // --- Qt logging of comparison result ---
+            if (!match)
+            {
+                qWarning() << "writePacket: MISMATCH at offset"
+                    << ctx->virtualPosition
+                    << "size" << size;
+            }
+            //else
+            //{
+            //    qDebug() << "writePacket: match at offset"
+            //        << ctx->virtualPosition
+            //        << "size" << size;
+            //}
+
+            // Maintain virtual write semantics
             ctx->virtualPosition += size;
             ctx->virtualSize = std::max(ctx->virtualSize, ctx->virtualPosition);
+
             return size;
         }
 
+        // --- Normal write path ---
         qint64 remaining = size;
-        const char* ptr =
-            reinterpret_cast<const char*>(buffer);
+        const char* ptr = reinterpret_cast<const char*>(buffer);
 
         while (remaining > 0)
         {
-            const qint64 written =
-                ctx->file.write(ptr, remaining);
+            const qint64 written = ctx->file.write(ptr, remaining);
 
             if (written <= 0)
             {
@@ -307,7 +362,6 @@ struct FFmpegMergeDownloader::OutputContext
         }
 
         ctx->reportProgress();
-
         return size;
     }
 
