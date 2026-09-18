@@ -266,9 +266,15 @@ struct FFmpegMergeDownloader::OutputContext
     qint64 virtualPosition = 0;
     qint64 virtualSize = 0;
 
+#if LIBAVFORMAT_VERSION_MAJOR < 61
+#define FFMPEG_AVIO_WRITE_BUFFER uint8_t*
+#else
+#define FFMPEG_AVIO_WRITE_BUFFER const uint8_t*
+#endif
+
     static int writePacket(
         void* opaque,
-        uint8_t* buffer,
+        FFMPEG_AVIO_WRITE_BUFFER buffer,
         int size)
     {
         auto* ctx = static_cast<OutputContext*>(opaque);
