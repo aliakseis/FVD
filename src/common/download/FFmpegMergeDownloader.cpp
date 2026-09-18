@@ -26,7 +26,7 @@ extern "C"
 #include <libavutil/timestamp.h>
 }
 
-#pragma optimize( "", off )
+//#pragma optimize( "", off )
 
 namespace
 {
@@ -1894,8 +1894,14 @@ void FFmpegMergeDownloader::mergeWorker(
 
         if (lastVideoTimestampUs != std::numeric_limits<qint64>::min())
         {
-            const int64_t target =
+            const qint64 target =
                 std::max<qint64>(0, lastVideoTimestampUs - kResumeOverlapUs);
+
+            qDebug().noquote()
+                << "Video resume seek:"
+                << "last=" << lastVideoTimestampUs / 1000000.0 << "s"
+                << "target=" << target / 1000000.0 << "s"
+                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
 
             const int seekRet = avformat_seek_file(
                 videoInput.get(),
@@ -1905,11 +1911,14 @@ void FFmpegMergeDownloader::mergeWorker(
                 std::numeric_limits<int64_t>::max(),
                 AVSEEK_FLAG_BACKWARD);
 
-            Q_UNUSED(seekRet);
+            qDebug().noquote()
+                << "Video resume seek result:"
+                << seekRet
+                << (seekRet < 0
+                    ? ffmpegErrorString(seekRet)
+                    : QStringLiteral("OK"));
         }
 
-        // One audio seek is enough because the audio input contains all audio
-        // streams. Use the earliest selected-stream endpoint as the target.
         qint64 audioResumeTimestamp =
             std::numeric_limits<qint64>::max();
 
@@ -1917,13 +1926,19 @@ void FFmpegMergeDownloader::mergeWorker(
         {
             if (ts != std::numeric_limits<qint64>::min())
                 audioResumeTimestamp =
-                    std::min(audioResumeTimestamp, ts);
+                std::min(audioResumeTimestamp, ts);
         }
 
         if (audioResumeTimestamp != std::numeric_limits<qint64>::max())
         {
-            const int64_t target =
+            const qint64 target =
                 std::max<qint64>(0, audioResumeTimestamp - kResumeOverlapUs);
+
+            qDebug().noquote()
+                << "Audio resume seek:"
+                << "last=" << audioResumeTimestamp / 1000000.0 << "s"
+                << "target=" << target / 1000000.0 << "s"
+                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
 
             const int seekRet = avformat_seek_file(
                 audioInput.get(),
@@ -1933,7 +1948,12 @@ void FFmpegMergeDownloader::mergeWorker(
                 std::numeric_limits<int64_t>::max(),
                 AVSEEK_FLAG_BACKWARD);
 
-            Q_UNUSED(seekRet);
+            qDebug().noquote()
+                << "Audio resume seek result:"
+                << seekRet
+                << (seekRet < 0
+                    ? ffmpegErrorString(seekRet)
+                    : QStringLiteral("OK"));
         }
 
         // Nothing has been physically written so far. Now move the QFile to
