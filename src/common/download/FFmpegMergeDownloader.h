@@ -75,16 +75,11 @@ public:
 
 private:
     struct OutputContext;
+    class MergeWorker;
 
     // ---------------------------------------------------------------------
     // Worker
     // ---------------------------------------------------------------------
-
-    void mergeWorker(
-        QList<QUrl> urls,
-        QString outputFilename,
-        bool resume,
-        const QStringList& httpHeaders);
 
     // ---------------------------------------------------------------------
     // Filename handling

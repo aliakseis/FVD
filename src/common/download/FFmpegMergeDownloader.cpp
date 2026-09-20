@@ -1,6 +1,7 @@
 #include "FFmpegMergeDownloader.h"
 
 #include <QDir>
+#include <QDebug>
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QMetaObject>
@@ -78,14 +79,6 @@ namespace
     {
         return ptr && static_cast<std::atomic<bool>*>(ptr)->load();
     }
-
-    enum class PacketReadResult
-    {
-        Packet,
-        Eof,
-        Interrupted,
-        Error
-    };
 
 #if 0 
     static bool readEbmlVint(
@@ -827,6 +820,1483 @@ void FFmpegMergeDownloader::notifyError(
         Qt::QueuedConnection);
 }
 
+// ============================================================================
+// Start / Resume / Pause / Stop
+// ============================================================================
+
+void FFmpegMergeDownloader::Start(
+    const QList<QUrl>& urls,
+    QNetworkAccessManager* network_manager,
+    const QString& filename,
+    const QStringList& httpHeaders)
+{
+    run(urls,
+        network_manager,
+        filename,
+        httpHeaders,
+        false);
+}
+
+void FFmpegMergeDownloader::Resume(
+    const QList<QUrl>& urls,
+    QNetworkAccessManager* network_manager,
+    const QString& filename,
+    const QStringList& httpHeaders)
+{
+    // Resume support is intentionally not implemented yet.
+    run(urls,
+        network_manager,
+        filename,
+        httpHeaders,
+        true);
+}
+
+void FFmpegMergeDownloader::Pause()
+{
+    if (!m_running.load())
+        return;
+
+    // Interrupt FFmpeg's blocking network read just like Stop(), but keep
+    // the distinction so the worker leaves the partial output in place.
+    m_pauseRequested.store(true);
+    m_stopRequested.store(true);
+}
+
+void FFmpegMergeDownloader::Stop()
+{
+    // Stop wins over a pending pause request.
+    m_pauseRequested.store(false);
+    m_stopRequested.store(true);
+}
+
+
+// ============================================================================
+// Merge worker
+// ============================================================================
+
+
+
+// ============================================================================
+// Internal merge worker
+// ============================================================================
+
+class FFmpegMergeDownloader::MergeWorker
+{
+public:
+    MergeWorker(
+        FFmpegMergeDownloader& owner,
+        QList<QUrl> urls,
+        QString outputFilename,
+        bool resume,
+        QStringList httpHeaders)
+        : m_owner(owner)
+        , m_urls(std::move(urls))
+        , m_outputFilename(std::move(outputFilename))
+        , m_resume(resume)
+        , m_httpHeaders(std::move(httpHeaders))
+    {
+        m_outputContext.owner = &m_owner;
+    }
+
+    void run();
+
+private:
+    struct AudioBinding
+    {
+        int inputIndex = -1;
+        int activeInputIndex = -1;
+        AVStream* inputStream = nullptr;
+        AVStream* activeStream = nullptr;
+        AVStream* outputStream = nullptr;
+        AVPacket* pendingPacket = nullptr;
+        bool eof = false;
+    };
+
+    struct QueuedAudioPacket
+    {
+        AVPacket* packet = nullptr;
+        int streamIndex = -1;
+    };
+
+    void finishWorker();
+    int openNetworkInput(const QUrl& url, InputFormatPtr& result);
+    qint64 inputContentLength(const InputFormatPtr& input) const;
+    int openResumeInput(InputFormatPtr& result);
+    void freeAudioQueue();
+    void cleanup();
+    AudioBinding* selectedAudioStream(int streamIndex);
+    bool readNextVideoPacket();
+    bool fillAudioPending();
+    bool waitForRetry(int attempt, const char* kind, int error);
+    void promoteQueuedAudioPacket(AudioBinding& binding);
+    bool transfer();
+
+    FFmpegMergeDownloader& m_owner;
+    QList<QUrl> m_urls;
+    QString m_outputFilename;
+    bool m_resume = false;
+    QStringList m_httpHeaders;
+
+    InputFormatPtr m_videoInput;
+    InputFormatPtr m_audioInput;
+    InputFormatPtr m_resumeVideoInput;
+    InputFormatPtr m_resumeAudioInput;
+
+    AVFormatContext* m_output = nullptr;
+    AVIOContext* m_outputIo = nullptr;
+    FFmpegMergeDownloader::OutputContext m_outputContext;
+
+    std::vector<AudioBinding> m_audioBindings;
+    std::vector<QueuedAudioPacket> m_audioQueue;
+
+    int m_networkVideoStreamIndex = -1;
+    AVStream* m_inputVideoStream = nullptr;
+    AVStream* m_outputVideoStream = nullptr;
+
+    int m_resumeVideoStreamIndex = -1;
+    std::vector<int> m_resumeAudioStreamIndices;
+
+    AVFormatContext* m_activeVideoInput = nullptr;
+    AVFormatContext* m_activeAudioInput = nullptr;
+    int m_activeVideoStreamIndex = -1;
+    AVStream* m_activeVideoStream = nullptr;
+
+    AVPacket* m_pendingVideoPacket = nullptr;
+
+    bool m_videoEof = false;
+    bool m_audioEof = false;
+    bool m_replayMode = false;
+    bool m_headerWritten = false;
+
+    std::vector<qint64> m_lastAudioTimestampUs;
+    qint64 m_lastVideoTimestampUs =
+        std::numeric_limits<qint64>::min();
+
+    int m_readError = 0;
+    QString m_readErrorText;
+};
+
+void FFmpegMergeDownloader::MergeWorker::finishWorker()
+{
+            m_owner.m_running.store(false);
+        
+}
+
+int FFmpegMergeDownloader::MergeWorker::openNetworkInput(const QUrl& url, InputFormatPtr& result)
+{
+            AVFormatContext* raw = avformat_alloc_context();
+            if (!raw)
+                return AVERROR(ENOMEM);
+
+            raw->interrupt_callback.opaque = &m_owner.m_stopRequested;
+            raw->interrupt_callback.callback = InterruptionRequested;
+
+            AVDictionary* opts = nullptr;
+            // Let FFmpeg itself recover ordinary HTTP disconnects first.
+            // The worker-level retry below handles errors that still escape
+            // from av_read_frame().
+            av_dict_set(&opts, "reconnect", "1", 0);
+            av_dict_set(&opts, "reconnect_streamed", "1", 0);
+            av_dict_set(&opts, "reconnect_delay_max", "10", 0);
+            av_dict_set(&opts, "respect_retry_after", "1", 0);
+            av_dict_set(&opts, "reconnect_on_network_error", "1", 0);
+            av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
+            av_dict_set(&opts, "rw_timeout", "30000000", 0);
+
+            QByteArray headerBlock;
+            if (m_httpHeaders.isEmpty())
+            {
+                headerBlock =
+                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0.0.0 Safari/537.36\r\n";
+            }
+            else
+            {
+                for (int i = 0; i + 1 < m_httpHeaders.size(); i += 2)
+                {
+                    headerBlock += m_httpHeaders[i].toUtf8();
+                    headerBlock += ": ";
+                    headerBlock += m_httpHeaders[i + 1].toUtf8();
+                    headerBlock += "\r\n";
+                }
+            }
+            if (!headerBlock.isEmpty())
+                av_dict_set(&opts, "headers", headerBlock.constData(), 0);
+
+            const QByteArray urlBytes = url.toString().toUtf8();
+            const int r = avformat_open_input(
+                &raw,
+                urlBytes.constData(),
+                nullptr,
+                &opts);
+            av_dict_free(&opts);
+
+            if (r < 0)
+            {
+                if (raw)
+                    avformat_close_input(&raw);
+                return r;
+            }
+
+            result.reset(raw);
+            return avformat_find_stream_info(result.get(), nullptr);
+        
+}
+
+qint64 FFmpegMergeDownloader::MergeWorker::inputContentLength(const InputFormatPtr& input) const
+{
+            if (!input || !input->pb)
+                return -1;
+
+            const int64_t size = avio_size(input->pb);
+            return size > 0 ? static_cast<qint64>(size) : -1;
+        
+}
+
+int FFmpegMergeDownloader::MergeWorker::openResumeInput(InputFormatPtr& result)
+{
+                AVFormatContext* raw = avformat_alloc_context();
+                if (!raw)
+                    return AVERROR(ENOMEM);
+
+                raw->interrupt_callback.opaque = &m_owner.m_stopRequested;
+                raw->interrupt_callback.callback = InterruptionRequested;
+
+                const QByteArray filenameBytes =
+                    QFileInfo(m_outputFilename).absoluteFilePath().toUtf8();
+
+                int r = avformat_open_input(
+                    &raw,
+                    filenameBytes.constData(),
+                    nullptr,
+                    nullptr);
+
+                if (r < 0)
+                {
+                    if (raw)
+                        avformat_close_input(&raw);
+                    return r;
+                }
+
+                result.reset(raw);
+                return avformat_find_stream_info(result.get(), nullptr);
+            
+}
+
+void FFmpegMergeDownloader::MergeWorker::freeAudioQueue()
+{
+            for (auto& item : m_audioQueue)
+                av_packet_free(&item.packet);
+            m_audioQueue.clear();
+        
+}
+
+void FFmpegMergeDownloader::MergeWorker::cleanup()
+{
+            av_packet_free(&m_pendingVideoPacket);
+            freeAudioQueue();
+            for (auto& binding : m_audioBindings)
+                av_packet_free(&binding.pendingPacket);
+            if (m_outputIo)
+                avio_context_free(&m_outputIo);
+            if (m_output)
+            {
+                avformat_free_context(m_output);
+                m_output = nullptr;
+            }
+            m_outputContext.file.close();
+        
+}
+
+FFmpegMergeDownloader::MergeWorker::AudioBinding* FFmpegMergeDownloader::MergeWorker::selectedAudioStream(int streamIndex)
+{
+            for (auto& binding : m_audioBindings)
+            {
+                if (binding.activeInputIndex == streamIndex)
+                    return &binding;
+            }
+            return nullptr;
+        
+}
+
+bool FFmpegMergeDownloader::MergeWorker::waitForRetry(
+    int attempt,
+    const char* kind,
+    int error)
+{
+    constexpr int kMaxRetries = 8;
+    constexpr int kRetryDelaysMs[] =
+    {
+        1000, 2000, 4000, 5000, 5000, 5000, 5000, 5000
+    };
+
+    if (attempt >= kMaxRetries || m_owner.m_stopRequested.load())
+        return false;
+
+    const int delayMs = kRetryDelaysMs[attempt];
+
+    qDebug().noquote()
+        << "FFmpegMergeDownloader:"
+        << kind
+        << "read failed (attempt"
+        << (attempt + 1)
+        << "of"
+        << kMaxRetries
+        << ")"
+        << ":"
+        << ffmpegErrorString(error)
+        << "; retrying in"
+        << delayMs
+        << "ms";
+
+    int remaining = delayMs;
+    while (remaining > 0 && !m_owner.m_stopRequested.load())
+    {
+        const int slice = std::min(remaining, 100);
+        QThread::msleep(static_cast<unsigned long>(slice));
+        remaining -= slice;
+    }
+
+    return !m_owner.m_stopRequested.load();
+}
+
+bool FFmpegMergeDownloader::MergeWorker::readNextVideoPacket()
+{
+    av_packet_unref(m_pendingVideoPacket);
+
+    while (!m_videoEof)
+    {
+        if (m_owner.m_stopRequested.load())
+            return false;
+
+        const int ret = av_read_frame(
+            m_activeVideoInput,
+            m_pendingVideoPacket);
+
+        if (ret == 0)
+        {
+            if (m_pendingVideoPacket->stream_index == m_activeVideoStreamIndex)
+            {
+                if (m_replayMode)
+                    return true;
+
+                const qint64 videoTimestamp =
+                    packetTimestampUs(
+                        m_pendingVideoPacket,
+                        m_activeVideoStream);
+
+                if (videoTimestamp == std::numeric_limits<qint64>::max() ||
+                    videoTimestamp > m_lastVideoTimestampUs)
+                    return true;
+            }
+
+            av_packet_unref(m_pendingVideoPacket);
+            continue;
+        }
+
+        if (ret == AVERROR_EOF)
+        {
+            m_videoEof = true;
+            av_packet_unref(m_pendingVideoPacket);
+            return false;
+        }
+
+        // A negative return other than AVERROR_EOF is an actual I/O/protocol
+        // error, not end-of-file. FFmpeg's reconnect options normally recover
+        // this internally; if the error escapes, give the same input a few
+        // more chances before declaring the download failed.
+        int error = ret;
+        bool recovered = false;
+
+        for (int attempt = 0; attempt < 8; ++attempt)
+        {
+            if (!waitForRetry(attempt, "video", error))
+                return false;
+
+            av_packet_unref(m_pendingVideoPacket);
+            const int retryRet = av_read_frame(
+                m_activeVideoInput,
+                m_pendingVideoPacket);
+
+            if (retryRet == 0)
+            {
+                recovered = true;
+                break;
+            }
+
+            if (retryRet == AVERROR_EOF)
+            {
+                m_videoEof = true;
+                av_packet_unref(m_pendingVideoPacket);
+                return false;
+            }
+
+            error = retryRet;
+        }
+
+        if (!recovered)
+        {
+            m_readError = error;
+            m_readErrorText =
+                QStringLiteral("Video input read failed: %1")
+                    .arg(ffmpegErrorString(error));
+            av_packet_unref(m_pendingVideoPacket);
+            return false;
+        }
+
+        if (m_pendingVideoPacket->stream_index == m_activeVideoStreamIndex)
+        {
+            if (m_replayMode)
+                return true;
+
+            const qint64 videoTimestamp =
+                packetTimestampUs(
+                    m_pendingVideoPacket,
+                    m_activeVideoStream);
+
+            if (videoTimestamp == std::numeric_limits<qint64>::max() ||
+                videoTimestamp > m_lastVideoTimestampUs)
+                return true;
+        }
+
+        av_packet_unref(m_pendingVideoPacket);
+    }
+
+    return false;
+}
+
+bool FFmpegMergeDownloader::MergeWorker::fillAudioPending()
+{
+    if (m_audioEof)
+        return true;
+
+    for (;;)
+    {
+        bool allHavePacket = true;
+        for (const auto& binding : m_audioBindings)
+        {
+            if (binding.eof)
+                continue;
+            if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
+            {
+                allHavePacket = false;
+                break;
+            }
+        }
+
+        if (allHavePacket)
+            return true;
+
+        AVPacket* packet = av_packet_alloc();
+        if (!packet)
+        {
+            m_readError = AVERROR(ENOMEM);
+            m_readErrorText = QStringLiteral("Could not allocate audio packet.");
+            return false;
+        }
+
+        int readRet = av_read_frame(m_activeAudioInput, packet);
+
+        if (readRet < 0 && readRet != AVERROR_EOF)
+        {
+            int error = readRet;
+            bool recovered = false;
+
+            for (int attempt = 0; attempt < 8; ++attempt)
+            {
+                if (!waitForRetry(attempt, "audio", error))
+                {
+                    av_packet_free(&packet);
+                    return false;
+                }
+
+                av_packet_unref(packet);
+                readRet = av_read_frame(m_activeAudioInput, packet);
+
+                if (readRet == 0)
+                {
+                    recovered = true;
+                    break;
+                }
+
+                if (readRet == AVERROR_EOF)
+                {
+                    av_packet_free(&packet);
+                    m_audioEof = true;
+                    for (auto& binding : m_audioBindings)
+                    {
+                        if (!binding.pendingPacket ||
+                            binding.pendingPacket->size <= 0)
+                            binding.eof = true;
+                    }
+                    return true;
+                }
+
+                error = readRet;
+            }
+
+            if (!recovered)
+            {
+                m_readError = error;
+                m_readErrorText =
+                    QStringLiteral("Audio input read failed: %1")
+                        .arg(ffmpegErrorString(error));
+                av_packet_free(&packet);
+                return false;
+            }
+        }
+
+        if (readRet == AVERROR_EOF)
+        {
+            av_packet_free(&packet);
+            m_audioEof = true;
+            for (auto& binding : m_audioBindings)
+            {
+                if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
+                    binding.eof = true;
+            }
+            return true;
+        }
+
+        AudioBinding* binding = selectedAudioStream(packet->stream_index);
+        if (!binding)
+        {
+            av_packet_free(&packet);
+            continue;
+        }
+
+        if (!m_replayMode)
+        {
+            const qint64 timestamp =
+                packetTimestampUs(packet, binding->activeStream);
+            if (timestamp != std::numeric_limits<qint64>::max())
+            {
+                const size_t audioIndex =
+                    static_cast<size_t>(binding - m_audioBindings.data());
+                if (timestamp <= m_lastAudioTimestampUs[audioIndex])
+                {
+                    av_packet_free(&packet);
+                    continue;
+                }
+            }
+        }
+
+        if (binding->pendingPacket && binding->pendingPacket->size > 0)
+        {
+            m_audioQueue.push_back({ packet, packet->stream_index });
+            continue;
+        }
+
+        av_packet_ref(binding->pendingPacket, packet);
+        av_packet_free(&packet);
+    }
+}
+
+void FFmpegMergeDownloader::MergeWorker::promoteQueuedAudioPacket(AudioBinding& binding)
+{
+            if (binding.pendingPacket && binding.pendingPacket->size > 0)
+                return;
+
+            for (auto it = m_audioQueue.begin(); it != m_audioQueue.end(); ++it)
+            {
+                if (it->streamIndex != binding.activeInputIndex)
+                    continue;
+
+                av_packet_ref(binding.pendingPacket, it->packet);
+                av_packet_free(&it->packet);
+                m_audioQueue.erase(it);
+                return;
+            }
+
+            if (m_audioEof)
+                binding.eof = true;
+        
+}
+
+bool FFmpegMergeDownloader::MergeWorker::transfer()
+{
+        int ret = 0;
+        readNextVideoPacket();
+        if (m_readError != 0)
+            return false;
+
+        if (!fillAudioPending())
+            return false;
+        for (auto& binding : m_audioBindings)
+            promoteQueuedAudioPacket(binding);
+
+        while (!m_owner.m_stopRequested.load())
+        {
+            if (!m_videoEof &&
+                (!m_pendingVideoPacket || m_pendingVideoPacket->size <= 0))
+                readNextVideoPacket();
+
+            if (m_readError != 0)
+                return false;
+
+            if (!fillAudioPending())
+                return false;
+            for (auto& binding : m_audioBindings)
+                promoteQueuedAudioPacket(binding);
+
+            AudioBinding* selectedAudio = nullptr;
+            qint64 selectedAudioTimestamp =
+                std::numeric_limits<qint64>::max();
+
+            for (auto& binding : m_audioBindings)
+            {
+                if (binding.eof ||
+                    !binding.pendingPacket ||
+                    binding.pendingPacket->size <= 0)
+                    continue;
+
+                const qint64 ts =
+                    packetTimestampUs(
+                        binding.pendingPacket,
+                        binding.activeStream);
+
+                if (ts < selectedAudioTimestamp)
+                {
+                    selectedAudioTimestamp = ts;
+                    selectedAudio = &binding;
+                }
+            }
+
+            const bool haveVideoPacket =
+                !m_videoEof && m_pendingVideoPacket && m_pendingVideoPacket->size > 0;
+
+            const qint64 videoTimestamp =
+                haveVideoPacket
+                ? packetTimestampUs(m_pendingVideoPacket, m_activeVideoStream)
+                : std::numeric_limits<qint64>::max();
+
+            if (!haveVideoPacket && !selectedAudio)
+                break;
+
+            const bool writeVideo =
+                haveVideoPacket &&
+                (!selectedAudio || videoTimestamp <= selectedAudioTimestamp);
+
+            if (writeVideo)
+            {
+                AVPacket* packet = m_pendingVideoPacket;
+                const qint64 ts = videoTimestamp;
+
+                if (m_replayMode || ts > m_lastVideoTimestampUs)
+                {
+                    if (ts != std::numeric_limits<qint64>::max())
+                        m_lastVideoTimestampUs = ts;
+
+                    packet->stream_index = m_outputVideoStream->index;
+                    av_packet_rescale_ts(
+                        packet,
+                        m_activeVideoStream->time_base,
+                        m_outputVideoStream->time_base);
+
+                    ret = av_interleaved_write_frame(m_output, packet);
+                    if (ret < 0)
+                    {
+                        cleanup();
+                        finishWorker();
+                        m_owner.notifyError(
+                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                            QStringLiteral("Could not write video packet: %1")
+                                .arg(ffmpegErrorString(ret)));
+                        return false;
+                    }
+
+                    av_packet_unref(packet);
+                }
+
+                if (!readNextVideoPacket())
+                {
+                    if (m_readError != 0)
+                        return false;
+                    m_videoEof = true;
+                }
+            }
+            else
+            {
+                AudioBinding& binding = *selectedAudio;
+                AVPacket* packet = binding.pendingPacket;
+                const size_t audioIndex =
+                    static_cast<size_t>(&binding - m_audioBindings.data());
+                const qint64 ts = selectedAudioTimestamp;
+
+                if (m_replayMode || ts > m_lastAudioTimestampUs[audioIndex])
+                {
+                    if (ts != std::numeric_limits<qint64>::max())
+                        m_lastAudioTimestampUs[audioIndex] = ts;
+
+                    packet->stream_index = binding.outputStream->index;
+                    av_packet_rescale_ts(
+                        packet,
+                        binding.activeStream->time_base,
+                        binding.outputStream->time_base);
+
+                    ret = av_interleaved_write_frame(m_output, packet);
+                    if (ret < 0)
+                    {
+                        cleanup();
+                        finishWorker();
+                        m_owner.notifyError(
+                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                            QStringLiteral("Could not write audio packet: %1")
+                                .arg(ffmpegErrorString(ret)));
+                        return false;
+                    }
+
+                    av_packet_unref(packet);
+                    promoteQueuedAudioPacket(binding);
+                }
+            }
+
+        }
+
+        return true;
+    
+}
+
+void FFmpegMergeDownloader::MergeWorker::run()
+{
+    
+
+    
+
+
+    int ret = openNetworkInput(m_urls[0], m_videoInput);
+    if (ret < 0)
+    {
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDNETWORKERR,
+            QStringLiteral("Could not open video input: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    ret = openNetworkInput(m_urls[1], m_audioInput);
+    if (ret < 0)
+    {
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDNETWORKERR,
+            QStringLiteral("Could not open audio input: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    // The progress numerator is the actual number of bytes written to the
+    // output file. Keep the denominator independent from it: for a merged
+    // download it is the sum of the sizes of the video and audio inputs.
+    // avio_size() uses the protocol's AVSEEK_SIZE support and does not consume
+    // the input stream. If a server does not provide a size, leave an already
+    // supplied expected size untouched.
+    
+
+    const qint64 videoSize = inputContentLength(m_videoInput);
+    const qint64 audioSize = inputContentLength(m_audioInput);
+
+    if (videoSize > 0 && audioSize > 0)
+    {
+        m_owner.m_totalFileSize.store(videoSize + audioSize);
+    }
+
+    // ------------------------------------------------------------------------
+    // Output file. Resume deliberately opens the existing file read/write;
+    // nothing is written to it until the old content has been replayed.
+    // ------------------------------------------------------------------------
+    m_outputContext.owner = &m_owner;
+
+    const auto openMode =
+        m_resume
+        ? QIODevice::ReadWrite
+        : ((m_owner.m_downloadNamePolicy == kReplaceFile)
+            ? QIODevice::ReadWrite | QIODevice::Truncate
+            : QIODevice::ReadWrite | QIODevice::NewOnly);
+
+    m_outputContext.file.setFileName(m_outputFilename);
+
+    if (!m_outputContext.file.open(openMode))
+    {
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDOPENFILERR,
+            QStringLiteral("Could not create output file '%1': %2")
+                .arg(m_outputFilename, m_outputContext.file.errorString()));
+        return;
+    }
+
+    const qint64 existingFileSize =
+        m_resume ? m_outputContext.file.size() : 0;
+
+    if (m_resume && existingFileSize <= 0)
+    {
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Cannot resume an empty output file."));
+        return;
+    }
+
+    if (!m_resume)
+        m_owner.notifyFileCreated(m_outputFilename);
+
+    m_outputContext.timer.start();
+    m_outputContext.bytesWritten = existingFileSize;
+    m_outputContext.virtualPosition = 0;
+    m_outputContext.virtualSize = 0;
+
+    // ------------------------------------------------------------------------
+    // Output format.
+    // ------------------------------------------------------------------------
+
+    ret = avformat_alloc_output_context2(
+        &m_output,
+        nullptr,
+        "matroska",
+        nullptr);
+
+    if (ret < 0 || !m_output)
+    {
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not create Matroska output context: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    const int ioBufferSize = 32 * 1024;
+    unsigned char* ioBuffer =
+        static_cast<unsigned char*>(av_malloc(ioBufferSize));
+
+    if (!ioBuffer)
+    {
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not allocate output IO buffer."));
+        return;
+    }
+
+    m_outputIo =
+        avio_alloc_context(
+            ioBuffer,
+            ioBufferSize,
+            1,
+            &m_outputContext,
+            nullptr,
+            &OutputContext::writePacket,
+            &OutputContext::seek);
+
+    if (!m_outputIo)
+    {
+        av_free(ioBuffer);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not create output AVIO context."));
+        return;
+    }
+
+    m_output->pb = m_outputIo;
+    m_output->flags |= AVFMT_FLAG_CUSTOM_IO;
+
+    // ------------------------------------------------------------------------
+    // Transfer state.
+    // ------------------------------------------------------------------------
+
+    m_networkVideoStreamIndex =
+        av_find_best_stream(
+            m_videoInput.get(),
+            AVMEDIA_TYPE_VIDEO,
+            -1,
+            -1,
+            nullptr,
+            0);
+
+    if (m_networkVideoStreamIndex < 0)
+    {
+        avio_context_free(&m_outputIo);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not find a video stream: %1")
+                .arg(ffmpegErrorString(m_networkVideoStreamIndex)));
+        return;
+    }
+
+    m_inputVideoStream =
+        m_videoInput->streams[m_networkVideoStreamIndex];
+
+    for (unsigned int i = 0; i < m_audioInput->nb_streams; ++i)
+    {
+        AVStream* stream = m_audioInput->streams[i];
+        if (!isAudioStream(stream))
+            continue;
+
+        AudioBinding binding;
+        binding.inputIndex = static_cast<int>(i);
+        binding.activeInputIndex = static_cast<int>(i);
+        binding.inputStream = stream;
+        binding.activeStream = stream;
+        binding.pendingPacket = av_packet_alloc();
+
+        if (!binding.pendingPacket)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not allocate audio packet."));
+            return;
+        }
+
+        m_audioBindings.push_back(binding);
+    }
+
+    if (m_audioBindings.empty())
+    {
+        avio_context_free(&m_outputIo);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("The audio input contains no audio streams."));
+        return;
+    }
+
+    m_outputVideoStream = avformat_new_stream(m_output, nullptr);
+    if (!m_outputVideoStream)
+    {
+        for (auto& a : m_audioBindings)
+            av_packet_free(&a.pendingPacket);
+        avio_context_free(&m_outputIo);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not create m_output video stream."));
+        return;
+    }
+
+    ret = avcodec_parameters_copy(
+        m_outputVideoStream->codecpar,
+        m_inputVideoStream->codecpar);
+
+    if (ret < 0)
+    {
+        for (auto& a : m_audioBindings)
+            av_packet_free(&a.pendingPacket);
+        avio_context_free(&m_outputIo);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not copy video codec parameters: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    m_outputVideoStream->codecpar->codec_tag = 0;
+    m_outputVideoStream->time_base = m_inputVideoStream->time_base;
+    m_outputVideoStream->sample_aspect_ratio = m_inputVideoStream->sample_aspect_ratio;
+    m_outputVideoStream->disposition = m_inputVideoStream->disposition;
+    av_dict_copy(&m_outputVideoStream->metadata, m_inputVideoStream->metadata, 0);
+
+    for (auto& binding : m_audioBindings)
+    {
+        AVStream* outStream = avformat_new_stream(m_output, nullptr);
+        if (!outStream)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not create m_output audio stream."));
+            return;
+        }
+
+        ret = avcodec_parameters_copy(
+            outStream->codecpar,
+            binding.inputStream->codecpar);
+
+        if (ret < 0)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not copy audio codec parameters: %1")
+                    .arg(ffmpegErrorString(ret)));
+            return;
+        }
+
+        outStream->codecpar->codec_tag = 0;
+        outStream->time_base = binding.inputStream->time_base;
+        outStream->sample_aspect_ratio = binding.inputStream->sample_aspect_ratio;
+        outStream->disposition = binding.inputStream->disposition;
+        av_dict_copy(&outStream->metadata, binding.inputStream->metadata, 0);
+        binding.outputStream = outStream;
+    }
+
+    av_dict_copy(&m_output->metadata, m_videoInput->metadata, 0);
+    m_output->avoid_negative_ts = AVFMT_AVOID_NEG_TS_DISABLED;
+
+    // ------------------------------------------------------------------------
+    // Resume inputs: two independent readers of the same old MKV. Keeping the
+    // video and audio readers separate allows the same transfer logic to be reused.
+    // ------------------------------------------------------------------------
+
+    if (m_resume)
+    {
+        ret = openResumeInput(m_resumeVideoInput);
+        if (ret < 0)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not open existing output for resume: %1")
+                    .arg(ffmpegErrorString(ret)));
+            return;
+        }
+
+        ret = openResumeInput(m_resumeAudioInput);
+        if (ret < 0)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not open existing audio data for resume: %1")
+                    .arg(ffmpegErrorString(ret)));
+            return;
+        }
+
+        m_resumeVideoStreamIndex =
+            av_find_best_stream(
+                m_resumeVideoInput.get(),
+                AVMEDIA_TYPE_VIDEO,
+                -1,
+                -1,
+                nullptr,
+                0);
+
+        if (m_resumeVideoStreamIndex < 0)
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not find video stream in existing output."));
+            return;
+        }
+
+        for (unsigned int i = 0; i < m_resumeAudioInput->nb_streams; ++i)
+        {
+            if (isAudioStream(m_resumeAudioInput->streams[i]))
+                m_resumeAudioStreamIndices.push_back(static_cast<int>(i));
+        }
+
+        if (m_resumeAudioStreamIndices.size() < m_audioBindings.size())
+        {
+            for (auto& a : m_audioBindings)
+                av_packet_free(&a.pendingPacket);
+            avio_context_free(&m_outputIo);
+            avformat_free_context(m_output);
+            m_outputContext.file.close();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Existing output does not contain all required audio streams."));
+            return;
+        }
+    }
+
+    m_activeVideoInput = m_videoInput.get();
+    m_activeAudioInput = m_audioInput.get();
+    m_activeVideoStreamIndex = m_networkVideoStreamIndex;
+    m_activeVideoStream = m_inputVideoStream;
+
+    m_pendingVideoPacket = av_packet_alloc();
+    if (!m_pendingVideoPacket)
+    {
+        for (auto& a : m_audioBindings)
+            av_packet_free(&a.pendingPacket);
+        avio_context_free(&m_outputIo);
+        avformat_free_context(m_output);
+        m_outputContext.file.close();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not allocate video packet."));
+        return;
+    }
+
+    m_videoEof = false;
+    m_audioEof = false;
+    m_replayMode = m_resume;
+    m_headerWritten = false;
+
+    m_lastAudioTimestampUs.assign(
+        m_audioBindings.size(),
+        std::numeric_limits<qint64>::min());
+    m_lastVideoTimestampUs =
+        std::numeric_limits<qint64>::min();
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    // ------------------------------------------------------------------------
+    // Same merge loop for both phases. In replay mode it consumes old packets
+    // and records their timestamps but does not write a single output byte.
+    // ------------------------------------------------------------------------
+    
+
+    // ------------------------------------------------------------------------
+    // Header. Resume suppresses the physical header bytes because the old
+    // Matroska header is already in the existing file.
+    // ------------------------------------------------------------------------
+    m_outputContext.suppressWrites = m_resume;
+    m_outputContext.virtualPosition = 0;
+    m_outputContext.virtualSize = 0;
+
+    ret = avformat_write_header(m_output, nullptr);
+    if (ret < 0)
+    {
+        cleanup();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not initialize Matroska output: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    m_headerWritten = true;
+
+    // ------------------------------------------------------------------------
+    // Replay the old file before allowing any output write.
+    // ------------------------------------------------------------------------
+    if (m_resume)
+    {
+        m_activeVideoInput = m_resumeVideoInput.get();
+        m_activeAudioInput = m_resumeAudioInput.get();
+        m_activeVideoStreamIndex = m_resumeVideoStreamIndex;
+        m_activeVideoStream = m_resumeVideoInput->streams[m_resumeVideoStreamIndex];
+
+        for (size_t i = 0; i < m_audioBindings.size(); ++i)
+        {
+            m_audioBindings[i].activeInputIndex = m_resumeAudioStreamIndices[i];
+            m_audioBindings[i].activeStream =
+                m_resumeAudioInput->streams[m_resumeAudioStreamIndices[i]];
+            m_audioBindings[i].eof = false;
+            av_packet_unref(m_audioBindings[i].pendingPacket);
+        }
+
+        m_videoEof = false;
+        m_audioEof = false;
+
+        if (!transfer())
+        {
+            if (m_readError != 0)
+            {
+                cleanup();
+                finishWorker();
+                m_owner.notifyError(
+                    utilities::ErrorCode::eDOWLDNETWORKERR,
+                    m_readErrorText);
+            }
+            return;
+        }
+
+        av_packet_unref(m_pendingVideoPacket);
+        freeAudioQueue();
+        for (auto& binding : m_audioBindings)
+        {
+            av_packet_unref(binding.pendingPacket);
+            binding.eof = false;
+        }
+
+        // --------------------------------------------------------------------
+        // Remove the old trailer/incomplete tail only now, after the old data
+        // has been completely replayed. Thus resume performs no physical
+        // output write while it is replaying the old content.
+        // --------------------------------------------------------------------
+#if 0
+        const qint64 appendPosition =
+            findMatroskaAppendPosition(m_outputContext.file);
+
+        if (appendPosition <= 0)
+        {
+            cleanup();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral(
+                    "Could not find a complete Matroska Cluster in the existing output."));
+            return;
+        }
+
+        if (!m_outputContext.file.resize(appendPosition))
+        {
+            cleanup();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral(
+                    "Could not remove the incomplete Matroska tail before m_resume."));
+            return;
+        }
+#endif
+
+        // --------------------------------------------------------------------
+        // Return to network inputs and seek back slightly. We intentionally
+        // re-download this overlap and discard packets already present in the
+        // old file. A two-second overlap is small but gives HTTP seeks room to
+        // land on a useful video keyframe.
+        // --------------------------------------------------------------------
+        constexpr qint64 kResumeOverlapUs = 2 * 1000 * 1000;
+
+        m_activeVideoInput = m_videoInput.get();
+        m_activeAudioInput = m_audioInput.get();
+        m_activeVideoStreamIndex = m_networkVideoStreamIndex;
+        m_activeVideoStream = m_inputVideoStream;
+
+        for (auto& binding : m_audioBindings)
+        {
+            binding.activeInputIndex = binding.inputIndex;
+            binding.activeStream = binding.inputStream;
+        }
+
+        m_videoEof = false;
+        m_audioEof = false;
+
+        if (m_lastVideoTimestampUs != std::numeric_limits<qint64>::min())
+        {
+            const qint64 target =
+                std::max<qint64>(0, m_lastVideoTimestampUs - kResumeOverlapUs);
+
+            qDebug().noquote()
+                << "Video resume seek:"
+                << "last=" << m_lastVideoTimestampUs / 1000000.0 << "s"
+                << "target=" << target / 1000000.0 << "s"
+                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
+
+            const int seekRet = avformat_seek_file(
+                m_videoInput.get(),
+                -1,
+                std::numeric_limits<int64_t>::min(),
+                target,
+                std::numeric_limits<int64_t>::max(),
+                AVSEEK_FLAG_BACKWARD);
+
+            qDebug().noquote()
+                << "Video resume seek result:"
+                << seekRet
+                << (seekRet < 0
+                    ? ffmpegErrorString(seekRet)
+                    : QStringLiteral("OK"));
+        }
+
+        qint64 audioResumeTimestamp =
+            std::numeric_limits<qint64>::max();
+
+        for (const qint64 ts : m_lastAudioTimestampUs)
+        {
+            if (ts != std::numeric_limits<qint64>::min())
+                audioResumeTimestamp =
+                std::min(audioResumeTimestamp, ts);
+        }
+
+        if (audioResumeTimestamp != std::numeric_limits<qint64>::max())
+        {
+            const qint64 target =
+                std::max<qint64>(0, audioResumeTimestamp - kResumeOverlapUs);
+
+            qDebug().noquote()
+                << "Audio resume seek:"
+                << "last=" << audioResumeTimestamp / 1000000.0 << "s"
+                << "target=" << target / 1000000.0 << "s"
+                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
+
+            const int seekRet = avformat_seek_file(
+                m_audioInput.get(),
+                -1,
+                std::numeric_limits<int64_t>::min(),
+                target,
+                std::numeric_limits<int64_t>::max(),
+                AVSEEK_FLAG_BACKWARD);
+
+            qDebug().noquote()
+                << "Audio resume seek result:"
+                << seekRet
+                << (seekRet < 0
+                    ? ffmpegErrorString(seekRet)
+                    : QStringLiteral("OK"));
+        }
+
+        // Nothing has been physically written so far. Now move the QFile to
+        // its existing end and switch the AVIO into real-write mode.
+        //avio_flush(m_output->pb);
+        m_outputContext.suppressWrites = false;
+        //m_outputContext.virtualPosition = appendPosition;
+        //m_outputContext.virtualSize = appendPosition;
+
+        if (!m_outputContext.file.seek(m_outputContext.virtualPosition))//appendPosition))
+        {
+            cleanup();
+            finishWorker();
+            m_owner.notifyError(
+                utilities::ErrorCode::eDOWLDUNKWNFILERR,
+                QStringLiteral("Could not seek output to the end for resume."));
+            return;
+        }
+
+        m_outputIo->pos = m_outputContext.virtualPosition;//appendPosition;
+        //m_outputIo->buf_ptr = m_outputIo->buffer;
+        //m_outputIo->buf_end = m_outputIo->buffer;
+        m_outputIo->eof_reached = 0;
+
+        m_replayMode = false;
+
+        if (!transfer())
+        {
+            if (m_readError != 0)
+            {
+                cleanup();
+                finishWorker();
+                m_owner.notifyError(
+                    utilities::ErrorCode::eDOWLDNETWORKERR,
+                    m_readErrorText);
+            }
+            return;
+        }
+    }
+    else
+    {
+        m_outputContext.suppressWrites = false;
+        m_replayMode = false;
+
+        if (!transfer())
+        {
+            if (m_readError != 0)
+            {
+                cleanup();
+                finishWorker();
+                m_owner.notifyError(
+                    utilities::ErrorCode::eDOWLDNETWORKERR,
+                    m_readErrorText);
+            }
+            return;
+        }
+    }
+
+    if (m_owner.m_pauseRequested.load())
+    {
+        // Do not write a Matroska trailer: the partial file is deliberately
+        // left in the same resumable form as a paused plain Downloader.
+        avio_flush(m_output->pb);
+        m_outputContext.file.flush();
+        cleanup();
+        finishWorker();
+        return;
+    }
+
+    if (m_owner.m_stopRequested.load())
+    {
+        const QString filename = m_outputContext.file.fileName();
+        cleanup();
+        if (QFile::exists(filename))
+        {
+            m_owner.notifyFileToBeReleased(filename);
+            QFile::remove(filename);
+        }
+        finishWorker();
+        return;
+    }
+
+    ret = m_headerWritten ? av_write_trailer(m_output) : 0;
+    if (ret < 0)
+    {
+        cleanup();
+        finishWorker();
+        m_owner.notifyError(
+            utilities::ErrorCode::eDOWLDUNKWNFILERR,
+            QStringLiteral("Could not finalize Matroska file: %1")
+                .arg(ffmpegErrorString(ret)));
+        return;
+    }
+
+    avio_flush(m_output->pb);
+    m_outputContext.file.flush();
+
+    const qint64 finalSize = m_outputContext.file.size();
+    m_owner.m_totalFileSize.store(finalSize);
+    m_owner.notifyProgress(finalSize);
+
+    if (m_outputContext.timer.elapsed() > 0)
+    {
+        const qint64 speed =
+            static_cast<qint64>(
+                (static_cast<double>(finalSize) * 1000.0) /
+                static_cast<double>(m_outputContext.timer.elapsed()));
+        m_owner.notifySpeed(speed);
+    }
+
+    cleanup();
+    finishWorker();
+    m_owner.notifyFinished();
+
+}
+
 
 void FFmpegMergeDownloader::run(
     const QList<QUrl>& urls,
@@ -885,1390 +2355,14 @@ void FFmpegMergeDownloader::run(
         std::thread(
             [this, urls, outputFilename, resume, httpHeaders]()
             {
-                mergeWorker(urls, outputFilename, resume, httpHeaders);
+                MergeWorker worker(
+                    *this,
+                    urls,
+                    outputFilename,
+                    resume,
+                    httpHeaders);
+                worker.run();
             });
 }
 
-// ============================================================================
-// Start / Resume / Pause / Stop
-// ============================================================================
 
-void FFmpegMergeDownloader::Start(
-    const QList<QUrl>& urls,
-    QNetworkAccessManager* network_manager,
-    const QString& filename,
-    const QStringList& httpHeaders)
-{
-    run(urls,
-        network_manager,
-        filename,
-        httpHeaders,
-        false);
-}
-
-void FFmpegMergeDownloader::Resume(
-    const QList<QUrl>& urls,
-    QNetworkAccessManager* network_manager,
-    const QString& filename,
-    const QStringList& httpHeaders)
-{
-    // Resume support is intentionally not implemented yet.
-    run(urls,
-        network_manager,
-        filename,
-        httpHeaders,
-        true);
-}
-
-void FFmpegMergeDownloader::Pause()
-{
-    if (!m_running.load())
-        return;
-
-    // Interrupt FFmpeg's blocking network read just like Stop(), but keep
-    // the distinction so the worker leaves the partial output in place.
-    m_pauseRequested.store(true);
-    m_stopRequested.store(true);
-}
-
-void FFmpegMergeDownloader::Stop()
-{
-    // Stop wins over a pending pause request.
-    m_pauseRequested.store(false);
-    m_stopRequested.store(true);
-}
-
-
-// ============================================================================
-// Merge worker
-// ============================================================================
-
-void FFmpegMergeDownloader::mergeWorker(
-    QList<QUrl> urls,
-    QString outputFilename,
-    bool resume,
-    const QStringList& httpHeaders)
-{
-    auto finishWorker =
-        [this]()
-        {
-            m_running.store(false);
-        };
-
-    auto openNetworkInput =
-        [&](const QUrl& url, InputFormatPtr& result) -> int
-        {
-            AVFormatContext* raw = avformat_alloc_context();
-            if (!raw)
-                return AVERROR(ENOMEM);
-
-            raw->interrupt_callback.opaque = &m_stopRequested;
-            raw->interrupt_callback.callback = InterruptionRequested;
-
-            AVDictionary* opts = nullptr;
-            av_dict_set(&opts, "reconnect", "1", 0);
-            av_dict_set(&opts, "reconnect_streamed", "1", 0);
-            av_dict_set(&opts, "reconnect_on_network_error", "1", 0);
-            av_dict_set(&opts, "reconnect_delay_max", "10", 0);
-            av_dict_set(&opts, "respect_retry_after", "1", 0);
-            av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
-            // Do not allow a network read to remain blocked indefinitely.
-            // The application-level retry below handles transient read errors;
-            // this timeout also covers a connection which simply stops making
-            // progress without closing.
-            av_dict_set(&opts, "rw_timeout", "30000000", 0); // 30 seconds
-
-            QByteArray headerBlock;
-            if (httpHeaders.isEmpty())
-            {
-                headerBlock =
-                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/126.0.0.0 Safari/537.36\r\n";
-            }
-            else
-            {
-                for (int i = 0; i + 1 < httpHeaders.size(); i += 2)
-                {
-                    headerBlock += httpHeaders[i].toUtf8();
-                    headerBlock += ": ";
-                    headerBlock += httpHeaders[i + 1].toUtf8();
-                    headerBlock += "\r\n";
-                }
-            }
-            if (!headerBlock.isEmpty())
-                av_dict_set(&opts, "headers", headerBlock.constData(), 0);
-
-            const QByteArray urlBytes = url.toString().toUtf8();
-            const int r = avformat_open_input(
-                &raw,
-                urlBytes.constData(),
-                nullptr,
-                &opts);
-            av_dict_free(&opts);
-
-            if (r < 0)
-            {
-                if (raw)
-                    avformat_close_input(&raw);
-                return r;
-            }
-
-            result.reset(raw);
-            return avformat_find_stream_info(result.get(), nullptr);
-        };
-
-    InputFormatPtr videoInput;
-    InputFormatPtr audioInput;
-
-    int ret = openNetworkInput(urls[0], videoInput);
-    if (ret < 0)
-    {
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDNETWORKERR,
-            QStringLiteral("Could not open video input: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    ret = openNetworkInput(urls[1], audioInput);
-    if (ret < 0)
-    {
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDNETWORKERR,
-            QStringLiteral("Could not open audio input: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    // The progress numerator is the actual number of bytes written to the
-    // output file. Keep the denominator independent from it: for a merged
-    // download it is the sum of the sizes of the video and audio inputs.
-    // avio_size() uses the protocol's AVSEEK_SIZE support and does not consume
-    // the input stream. If a server does not provide a size, leave an already
-    // supplied expected size untouched.
-    auto inputContentLength =
-        [](const InputFormatPtr& input) -> qint64
-        {
-            if (!input || !input->pb)
-                return -1;
-
-            const int64_t size = avio_size(input->pb);
-            return size > 0 ? static_cast<qint64>(size) : -1;
-        };
-
-    const qint64 videoSize = inputContentLength(videoInput);
-    const qint64 audioSize = inputContentLength(audioInput);
-
-    if (videoSize > 0 && audioSize > 0)
-    {
-        m_totalFileSize.store(videoSize + audioSize);
-    }
-
-    // ------------------------------------------------------------------------
-    // Output file. Resume deliberately opens the existing file read/write;
-    // nothing is written to it until the old content has been replayed.
-    // ------------------------------------------------------------------------
-    OutputContext outputContext;
-    outputContext.owner = this;
-
-    const auto openMode =
-        resume
-        ? QIODevice::ReadWrite
-        : ((m_downloadNamePolicy == kReplaceFile)
-            ? QIODevice::ReadWrite | QIODevice::Truncate
-            : QIODevice::ReadWrite | QIODevice::NewOnly);
-
-    outputContext.file.setFileName(outputFilename);
-
-    if (!outputContext.file.open(openMode))
-    {
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDOPENFILERR,
-            QStringLiteral("Could not create output file '%1': %2")
-                .arg(outputFilename, outputContext.file.errorString()));
-        return;
-    }
-
-    const qint64 existingFileSize =
-        resume ? outputContext.file.size() : 0;
-
-    if (resume && existingFileSize <= 0)
-    {
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Cannot resume an empty output file."));
-        return;
-    }
-
-    if (!resume)
-        notifyFileCreated(outputFilename);
-
-    outputContext.timer.start();
-    outputContext.bytesWritten = existingFileSize;
-    outputContext.virtualPosition = 0;
-    outputContext.virtualSize = 0;
-
-    // ------------------------------------------------------------------------
-    // Output format.
-    // ------------------------------------------------------------------------
-    AVFormatContext* output = nullptr;
-
-    ret = avformat_alloc_output_context2(
-        &output,
-        nullptr,
-        "matroska",
-        nullptr);
-
-    if (ret < 0 || !output)
-    {
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not create Matroska output context: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    const int ioBufferSize = 32 * 1024;
-    unsigned char* ioBuffer =
-        static_cast<unsigned char*>(av_malloc(ioBufferSize));
-
-    if (!ioBuffer)
-    {
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not allocate output IO buffer."));
-        return;
-    }
-
-    AVIOContext* outputIo =
-        avio_alloc_context(
-            ioBuffer,
-            ioBufferSize,
-            1,
-            &outputContext,
-            nullptr,
-            &OutputContext::writePacket,
-            &OutputContext::seek);
-
-    if (!outputIo)
-    {
-        av_free(ioBuffer);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not create output AVIO context."));
-        return;
-    }
-
-    output->pb = outputIo;
-    output->flags |= AVFMT_FLAG_CUSTOM_IO;
-
-    // ------------------------------------------------------------------------
-    // Transfer state.
-    // ------------------------------------------------------------------------
-    struct AudioBinding
-    {
-        int inputIndex = -1;
-        int activeInputIndex = -1;
-        AVStream* inputStream = nullptr;
-        AVStream* activeStream = nullptr;
-        AVStream* outputStream = nullptr;
-        AVPacket* pendingPacket = nullptr;
-        bool eof = false;
-    };
-
-    struct QueuedAudioPacket
-    {
-        AVPacket* packet = nullptr;
-        int streamIndex = -1;
-    };
-
-    std::vector<AudioBinding> audioBindings;
-    std::vector<QueuedAudioPacket> audioQueue;
-
-    const int networkVideoStreamIndex =
-        av_find_best_stream(
-            videoInput.get(),
-            AVMEDIA_TYPE_VIDEO,
-            -1,
-            -1,
-            nullptr,
-            0);
-
-    if (networkVideoStreamIndex < 0)
-    {
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not find a video stream: %1")
-                .arg(ffmpegErrorString(networkVideoStreamIndex)));
-        return;
-    }
-
-    AVStream* inputVideoStream =
-        videoInput->streams[networkVideoStreamIndex];
-
-    for (unsigned int i = 0; i < audioInput->nb_streams; ++i)
-    {
-        AVStream* stream = audioInput->streams[i];
-        if (!isAudioStream(stream))
-            continue;
-
-        AudioBinding binding;
-        binding.inputIndex = static_cast<int>(i);
-        binding.activeInputIndex = static_cast<int>(i);
-        binding.inputStream = stream;
-        binding.activeStream = stream;
-        binding.pendingPacket = av_packet_alloc();
-
-        if (!binding.pendingPacket)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not allocate audio packet."));
-            return;
-        }
-
-        audioBindings.push_back(binding);
-    }
-
-    if (audioBindings.empty())
-    {
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("The audio input contains no audio streams."));
-        return;
-    }
-
-    AVStream* outputVideoStream = avformat_new_stream(output, nullptr);
-    if (!outputVideoStream)
-    {
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not create output video stream."));
-        return;
-    }
-
-    ret = avcodec_parameters_copy(
-        outputVideoStream->codecpar,
-        inputVideoStream->codecpar);
-
-    if (ret < 0)
-    {
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not copy video codec parameters: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    outputVideoStream->codecpar->codec_tag = 0;
-    outputVideoStream->time_base = inputVideoStream->time_base;
-    outputVideoStream->sample_aspect_ratio = inputVideoStream->sample_aspect_ratio;
-    outputVideoStream->disposition = inputVideoStream->disposition;
-    av_dict_copy(&outputVideoStream->metadata, inputVideoStream->metadata, 0);
-
-    for (auto& binding : audioBindings)
-    {
-        AVStream* outStream = avformat_new_stream(output, nullptr);
-        if (!outStream)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not create output audio stream."));
-            return;
-        }
-
-        ret = avcodec_parameters_copy(
-            outStream->codecpar,
-            binding.inputStream->codecpar);
-
-        if (ret < 0)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not copy audio codec parameters: %1")
-                    .arg(ffmpegErrorString(ret)));
-            return;
-        }
-
-        outStream->codecpar->codec_tag = 0;
-        outStream->time_base = binding.inputStream->time_base;
-        outStream->sample_aspect_ratio = binding.inputStream->sample_aspect_ratio;
-        outStream->disposition = binding.inputStream->disposition;
-        av_dict_copy(&outStream->metadata, binding.inputStream->metadata, 0);
-        binding.outputStream = outStream;
-    }
-
-    av_dict_copy(&output->metadata, videoInput->metadata, 0);
-    output->avoid_negative_ts = AVFMT_AVOID_NEG_TS_DISABLED;
-
-    // ------------------------------------------------------------------------
-    // Resume inputs: two independent readers of the same old MKV. Keeping the
-    // video and audio readers separate allows the normal lambdas to be reused.
-    // ------------------------------------------------------------------------
-    InputFormatPtr resumeVideoInput;
-    InputFormatPtr resumeAudioInput;
-    int resumeVideoStreamIndex = -1;
-    std::vector<int> resumeAudioStreamIndices;
-
-    if (resume)
-    {
-        const QByteArray filenameBytes =
-            QFileInfo(outputFilename).absoluteFilePath().toUtf8();
-
-        auto openResumeInput =
-            [&](InputFormatPtr& result) -> int
-            {
-                AVFormatContext* raw = avformat_alloc_context();
-                if (!raw)
-                    return AVERROR(ENOMEM);
-
-                raw->interrupt_callback.opaque = &m_stopRequested;
-                raw->interrupt_callback.callback = InterruptionRequested;
-
-                int r = avformat_open_input(
-                    &raw,
-                    filenameBytes.constData(),
-                    nullptr,
-                    nullptr);
-
-                if (r < 0)
-                {
-                    if (raw)
-                        avformat_close_input(&raw);
-                    return r;
-                }
-
-                result.reset(raw);
-                return avformat_find_stream_info(result.get(), nullptr);
-            };
-
-        ret = openResumeInput(resumeVideoInput);
-        if (ret < 0)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not open existing output for resume: %1")
-                    .arg(ffmpegErrorString(ret)));
-            return;
-        }
-
-        ret = openResumeInput(resumeAudioInput);
-        if (ret < 0)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not open existing audio data for resume: %1")
-                    .arg(ffmpegErrorString(ret)));
-            return;
-        }
-
-        resumeVideoStreamIndex =
-            av_find_best_stream(
-                resumeVideoInput.get(),
-                AVMEDIA_TYPE_VIDEO,
-                -1,
-                -1,
-                nullptr,
-                0);
-
-        if (resumeVideoStreamIndex < 0)
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not find video stream in existing output."));
-            return;
-        }
-
-        for (unsigned int i = 0; i < resumeAudioInput->nb_streams; ++i)
-        {
-            if (isAudioStream(resumeAudioInput->streams[i]))
-                resumeAudioStreamIndices.push_back(static_cast<int>(i));
-        }
-
-        if (resumeAudioStreamIndices.size() < audioBindings.size())
-        {
-            for (auto& a : audioBindings)
-                av_packet_free(&a.pendingPacket);
-            avio_context_free(&outputIo);
-            avformat_free_context(output);
-            outputContext.file.close();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Existing output does not contain all required audio streams."));
-            return;
-        }
-    }
-
-    AVFormatContext* activeVideoInput = videoInput.get();
-    AVFormatContext* activeAudioInput = audioInput.get();
-    int activeVideoStreamIndex = networkVideoStreamIndex;
-    AVStream* activeVideoStream = inputVideoStream;
-
-    AVPacket* pendingVideoPacket = av_packet_alloc();
-    if (!pendingVideoPacket)
-    {
-        for (auto& a : audioBindings)
-            av_packet_free(&a.pendingPacket);
-        avio_context_free(&outputIo);
-        avformat_free_context(output);
-        outputContext.file.close();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not allocate video packet."));
-        return;
-    }
-
-    bool videoEof = false;
-    bool audioEof = false;
-    bool replayMode = resume;
-    bool headerWritten = false;
-
-    std::vector<qint64> lastAudioTimestampUs(
-        audioBindings.size(),
-        std::numeric_limits<qint64>::min());
-    qint64 lastVideoTimestampUs =
-        std::numeric_limits<qint64>::min();
-
-    auto freeAudioQueue =
-        [&]()
-        {
-            for (auto& item : audioQueue)
-                av_packet_free(&item.packet);
-            audioQueue.clear();
-        };
-
-    auto cleanup =
-        [&]()
-        {
-            av_packet_free(&pendingVideoPacket);
-            freeAudioQueue();
-            for (auto& binding : audioBindings)
-                av_packet_free(&binding.pendingPacket);
-            if (outputIo)
-                avio_context_free(&outputIo);
-            if (output)
-                avformat_free_context(output);
-            outputContext.file.close();
-        };
-
-    auto selectedAudioStream =
-        [&](int streamIndex) -> AudioBinding*
-        {
-            for (auto& binding : audioBindings)
-            {
-                if (binding.activeInputIndex == streamIndex)
-                    return &binding;
-            }
-            return nullptr;
-        };
-
-    // Network reads need to distinguish genuine EOF from transient I/O
-    // failures.  Previously every negative av_read_frame() result was treated
-    // as EOF, which could make a live HTTP input look finished and let the
-    // transfer loop terminate successfully.  That is especially visible as a
-    // download which silently stops until Pause/Resume reopens the inputs.
-    //
-    // Keep the existing FFmpeg reconnect options, but also retry a failed read
-    // at this level.  The retry wait is interruptible so Pause/Stop remains
-    // responsive.
-    constexpr int kReadRetryCount = 8;
-    constexpr int kReadRetryInitialDelayMs = 1000;
-    constexpr int kReadRetryMaxDelayMs = 5000;
-
-    auto waitForReadRetry =
-        [&](int retryNumber) -> bool
-        {
-            int delayMs = kReadRetryInitialDelayMs;
-            for (int i = 1; i < retryNumber; ++i)
-                delayMs = std::min(delayMs * 2, kReadRetryMaxDelayMs);
-
-            qDebug().noquote()
-                << "FFmpeg network read retry in"
-                << delayMs << "ms (attempt"
-                << retryNumber << "of" << kReadRetryCount << ")";
-
-            constexpr int kSleepQuantumMs = 100;
-            int remaining = delayMs;
-            while (remaining > 0)
-            {
-                if (m_stopRequested.load())
-                    return false;
-
-                const int step = std::min(remaining, kSleepQuantumMs);
-                QThread::msleep(static_cast<unsigned long>(step));
-                remaining -= step;
-            }
-
-            return !m_stopRequested.load();
-        };
-
-    auto reportNetworkReadError =
-        [&](const char* inputName, int error) -> PacketReadResult
-        {
-            const QString message =
-                QStringLiteral("%1 network read failed after %2 retries: %3")
-                    .arg(QString::fromLatin1(inputName))
-                    .arg(kReadRetryCount)
-                    .arg(ffmpegErrorString(error));
-
-            qDebug().noquote()
-                << "FFmpeg" << inputName
-                << "network read failed after"
-                << kReadRetryCount << "retries:"
-                << error << ffmpegErrorString(error);
-
-            ret = error;
-
-            // transfer() is also used during resume replay.  A persistent
-            // network error must terminate the worker as an error, not look
-            // like EOF and not fall through to av_write_trailer().
-            cleanup();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDNETWORKERR,
-                message);
-
-            return PacketReadResult::Error;
-        };
-
-    auto readNextVideoPacket =
-        [&]() -> PacketReadResult
-        {
-            av_packet_unref(pendingVideoPacket);
-
-            while (!videoEof)
-            {
-                if (m_stopRequested.load())
-                    return PacketReadResult::Interrupted;
-
-                int lastReadError = 0;
-
-                for (int attempt = 0; attempt <= kReadRetryCount; ++attempt)
-                {
-                    if (m_stopRequested.load())
-                        return PacketReadResult::Interrupted;
-
-                    ret = av_read_frame(activeVideoInput, pendingVideoPacket);
-
-                    if (ret >= 0)
-                    {
-                        if (attempt > 0)
-                        {
-                            qDebug().noquote()
-                                << "FFmpeg video network read recovered after"
-                                << attempt << "retry attempt(s)";
-                        }
-
-                        lastReadError = 0;
-                        break;
-                    }
-
-                    if (ret == AVERROR_EOF)
-                    {
-                        videoEof = true;
-                        return PacketReadResult::Eof;
-                    }
-
-                    // AVERROR_EXIT is what FFmpeg normally returns when the
-                    // interrupt callback aborts an operation.  In our case it
-                    // means Pause/Stop, not a network failure.
-                    if (ret == AVERROR_EXIT || m_stopRequested.load())
-                        return PacketReadResult::Interrupted;
-
-                    lastReadError = ret;
-                    av_packet_unref(pendingVideoPacket);
-
-                    qDebug().noquote()
-                        << "FFmpeg video av_read_frame failed:"
-                        << ret << ffmpegErrorString(ret)
-                        << "attempt" << (attempt + 1)
-                        << "of" << (kReadRetryCount + 1);
-
-                    if (attempt == kReadRetryCount)
-                        return reportNetworkReadError("video", lastReadError);
-
-                    if (!waitForReadRetry(attempt + 1))
-                        return PacketReadResult::Interrupted;
-                }
-
-                if (lastReadError != 0)
-                    return reportNetworkReadError("video", lastReadError);
-
-                if (pendingVideoPacket->stream_index == activeVideoStreamIndex)
-                {
-                    if (replayMode)
-                        return PacketReadResult::Packet;
-
-                    const qint64 videoTimestamp =
-                        packetTimestampUs(pendingVideoPacket, activeVideoStream);
-
-                    if (videoTimestamp == std::numeric_limits<qint64>::max()
-                            || videoTimestamp > lastVideoTimestampUs)
-                        return PacketReadResult::Packet;
-                }
-
-                av_packet_unref(pendingVideoPacket);
-            }
-
-            return PacketReadResult::Eof;
-        };
-
-    auto fillAudioPending =
-        [&]() -> PacketReadResult
-        {
-            if (audioEof)
-                return PacketReadResult::Eof;
-
-            for (;;)
-            {
-                bool allHavePacket = true;
-                for (const auto& binding : audioBindings)
-                {
-                    if (binding.eof)
-                        continue;
-                    if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
-                    {
-                        allHavePacket = false;
-                        break;
-                    }
-                }
-
-                if (allHavePacket)
-                    return PacketReadResult::Packet;
-
-                AVPacket* packet = av_packet_alloc();
-                if (!packet)
-                {
-                    ret = AVERROR(ENOMEM);
-                    return reportNetworkReadError("audio", ret);
-                }
-
-                int lastReadError = 0;
-                bool gotPacket = false;
-
-                for (int attempt = 0; attempt <= kReadRetryCount; ++attempt)
-                {
-                    if (m_stopRequested.load())
-                    {
-                        av_packet_free(&packet);
-                        return PacketReadResult::Interrupted;
-                    }
-
-                    av_packet_unref(packet);
-                    const int readRet = av_read_frame(activeAudioInput, packet);
-
-                    if (readRet >= 0)
-                    {
-                        if (attempt > 0)
-                        {
-                            qDebug().noquote()
-                                << "FFmpeg audio network read recovered after"
-                                << attempt << "retry attempt(s)";
-                        }
-                        gotPacket = true;
-                        lastReadError = 0;
-                        break;
-                    }
-
-                    if (readRet == AVERROR_EOF)
-                    {
-                        av_packet_free(&packet);
-                        audioEof = true;
-                        for (auto& binding : audioBindings)
-                        {
-                            if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
-                                binding.eof = true;
-                        }
-                        return PacketReadResult::Eof;
-                    }
-
-                    if (readRet == AVERROR_EXIT || m_stopRequested.load())
-                    {
-                        av_packet_free(&packet);
-                        return PacketReadResult::Interrupted;
-                    }
-
-                    lastReadError = readRet;
-
-                    qDebug().noquote()
-                        << "FFmpeg audio av_read_frame failed:"
-                        << readRet << ffmpegErrorString(readRet)
-                        << "attempt" << (attempt + 1)
-                        << "of" << (kReadRetryCount + 1);
-
-                    if (attempt == kReadRetryCount)
-                        break;
-
-                    if (!waitForReadRetry(attempt + 1))
-                    {
-                        av_packet_free(&packet);
-                        return PacketReadResult::Interrupted;
-                    }
-                }
-
-                if (!gotPacket)
-                {
-                    av_packet_free(&packet);
-                    return reportNetworkReadError("audio", lastReadError);
-                }
-
-                AudioBinding* binding = selectedAudioStream(packet->stream_index);
-                if (!binding)
-                {
-                    av_packet_free(&packet);
-                    continue;
-                }
-
-                if (!replayMode)
-                {
-                    const qint64 timestamp =
-                        packetTimestampUs(packet, binding->activeStream);
-                    if (timestamp != std::numeric_limits<qint64>::max())
-                    {
-                        const size_t audioIndex =
-                            static_cast<size_t>(binding - audioBindings.data());
-                        if (timestamp <= lastAudioTimestampUs[audioIndex])
-                        {
-                            av_packet_free(&packet);
-                            continue;
-                        }
-                    }
-                }
-
-                if (binding->pendingPacket && binding->pendingPacket->size > 0)
-                {
-                    audioQueue.push_back({ packet, packet->stream_index });
-                    continue;
-                }
-
-                av_packet_ref(binding->pendingPacket, packet);
-                av_packet_free(&packet);
-            }
-        };
-
-    auto promoteQueuedAudioPacket =
-        [&](AudioBinding& binding)
-        {
-            if (binding.pendingPacket && binding.pendingPacket->size > 0)
-                return;
-
-            for (auto it = audioQueue.begin(); it != audioQueue.end(); ++it)
-            {
-                if (it->streamIndex != binding.activeInputIndex)
-                    continue;
-
-                av_packet_ref(binding.pendingPacket, it->packet);
-                av_packet_free(&it->packet);
-                audioQueue.erase(it);
-                return;
-            }
-
-            if (audioEof)
-                binding.eof = true;
-        };
-
-    // ------------------------------------------------------------------------
-    // Same merge loop for both phases. In replayMode it consumes old packets
-    // and records their timestamps but does not write a single output byte.
-    // ------------------------------------------------------------------------
-    auto transfer = [&]() -> bool
-    {
-        PacketReadResult readResult = readNextVideoPacket();
-        if (readResult == PacketReadResult::Error)
-            return false;
-        if (readResult == PacketReadResult::Interrupted)
-            return true;
-
-        readResult = fillAudioPending();
-        if (readResult == PacketReadResult::Error)
-            return false;
-        if (readResult == PacketReadResult::Interrupted)
-            return true;
-
-        for (auto& binding : audioBindings)
-            promoteQueuedAudioPacket(binding);
-
-        while (!m_stopRequested.load())
-        {
-            if (!videoEof &&
-                (!pendingVideoPacket || pendingVideoPacket->size <= 0))
-            {
-                const PacketReadResult videoReadResult =
-                    readNextVideoPacket();
-
-                if (videoReadResult == PacketReadResult::Error)
-                    return false;
-
-                if (videoReadResult == PacketReadResult::Interrupted)
-                    return true;
-            }
-
-            const PacketReadResult audioReadResult = fillAudioPending();
-            if (audioReadResult == PacketReadResult::Error)
-                return false;
-
-            if (audioReadResult == PacketReadResult::Interrupted)
-                return true;
-
-            for (auto& binding : audioBindings)
-                promoteQueuedAudioPacket(binding);
-
-            AudioBinding* selectedAudio = nullptr;
-            qint64 selectedAudioTimestamp =
-                std::numeric_limits<qint64>::max();
-
-            for (auto& binding : audioBindings)
-            {
-                if (binding.eof ||
-                    !binding.pendingPacket ||
-                    binding.pendingPacket->size <= 0)
-                    continue;
-
-                const qint64 ts =
-                    packetTimestampUs(
-                        binding.pendingPacket,
-                        binding.activeStream);
-
-                if (ts < selectedAudioTimestamp)
-                {
-                    selectedAudioTimestamp = ts;
-                    selectedAudio = &binding;
-                }
-            }
-
-            const bool haveVideoPacket =
-                !videoEof && pendingVideoPacket && pendingVideoPacket->size > 0;
-
-            const qint64 videoTimestamp =
-                haveVideoPacket
-                ? packetTimestampUs(pendingVideoPacket, activeVideoStream)
-                : std::numeric_limits<qint64>::max();
-
-            if (!haveVideoPacket && !selectedAudio)
-                break;
-
-            const bool writeVideo =
-                haveVideoPacket &&
-                (!selectedAudio || videoTimestamp <= selectedAudioTimestamp);
-
-            if (writeVideo)
-            {
-                AVPacket* packet = pendingVideoPacket;
-                const qint64 ts = videoTimestamp;
-
-                if (replayMode || ts > lastVideoTimestampUs)
-                {
-                    if (ts != std::numeric_limits<qint64>::max())
-                        lastVideoTimestampUs = ts;
-
-                    packet->stream_index = outputVideoStream->index;
-                    av_packet_rescale_ts(
-                        packet,
-                        activeVideoStream->time_base,
-                        outputVideoStream->time_base);
-
-                    ret = av_interleaved_write_frame(output, packet);
-                    if (ret < 0)
-                    {
-                        cleanup();
-                        finishWorker();
-                        notifyError(
-                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                            QStringLiteral("Could not write video packet: %1")
-                                .arg(ffmpegErrorString(ret)));
-                        return false;
-                    }
-
-                    av_packet_unref(packet);
-                }
-
-                const PacketReadResult nextVideoResult =
-                    readNextVideoPacket();
-
-                if (nextVideoResult == PacketReadResult::Error)
-                    return false;
-
-                if (nextVideoResult == PacketReadResult::Eof)
-                    videoEof = true;
-
-                if (nextVideoResult == PacketReadResult::Interrupted)
-                    return true;
-            }
-            else
-            {
-                AudioBinding& binding = *selectedAudio;
-                AVPacket* packet = binding.pendingPacket;
-                const size_t audioIndex =
-                    static_cast<size_t>(&binding - audioBindings.data());
-                const qint64 ts = selectedAudioTimestamp;
-
-                if (replayMode || ts > lastAudioTimestampUs[audioIndex])
-                {
-                    if (ts != std::numeric_limits<qint64>::max())
-                        lastAudioTimestampUs[audioIndex] = ts;
-
-                    packet->stream_index = binding.outputStream->index;
-                    av_packet_rescale_ts(
-                        packet,
-                        binding.activeStream->time_base,
-                        binding.outputStream->time_base);
-
-                    ret = av_interleaved_write_frame(output, packet);
-                    if (ret < 0)
-                    {
-                        cleanup();
-                        finishWorker();
-                        notifyError(
-                            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                            QStringLiteral("Could not write audio packet: %1")
-                                .arg(ffmpegErrorString(ret)));
-                        return false;
-                    }
-
-                    av_packet_unref(packet);
-                    promoteQueuedAudioPacket(binding);
-                }
-            }
-
-        }
-
-        return true;
-    };
-
-    // ------------------------------------------------------------------------
-    // Header. Resume suppresses the physical header bytes because the old
-    // Matroska header is already in the existing file.
-    // ------------------------------------------------------------------------
-    outputContext.suppressWrites = resume;
-    outputContext.virtualPosition = 0;
-    outputContext.virtualSize = 0;
-
-    ret = avformat_write_header(output, nullptr);
-    if (ret < 0)
-    {
-        cleanup();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not initialize Matroska output: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    headerWritten = true;
-
-    // ------------------------------------------------------------------------
-    // Replay the old file before allowing any output write.
-    // ------------------------------------------------------------------------
-    if (resume)
-    {
-        activeVideoInput = resumeVideoInput.get();
-        activeAudioInput = resumeAudioInput.get();
-        activeVideoStreamIndex = resumeVideoStreamIndex;
-        activeVideoStream = resumeVideoInput->streams[resumeVideoStreamIndex];
-
-        for (size_t i = 0; i < audioBindings.size(); ++i)
-        {
-            audioBindings[i].activeInputIndex = resumeAudioStreamIndices[i];
-            audioBindings[i].activeStream =
-                resumeAudioInput->streams[resumeAudioStreamIndices[i]];
-            audioBindings[i].eof = false;
-            av_packet_unref(audioBindings[i].pendingPacket);
-        }
-
-        videoEof = false;
-        audioEof = false;
-
-        if (!transfer())
-            return;
-
-        av_packet_unref(pendingVideoPacket);
-        freeAudioQueue();
-        for (auto& binding : audioBindings)
-        {
-            av_packet_unref(binding.pendingPacket);
-            binding.eof = false;
-        }
-
-        // --------------------------------------------------------------------
-        // Remove the old trailer/incomplete tail only now, after the old data
-        // has been completely replayed. Thus resume performs no physical
-        // output write while it is replaying the old content.
-        // --------------------------------------------------------------------
-#if 0
-        const qint64 appendPosition =
-            findMatroskaAppendPosition(outputContext.file);
-
-        if (appendPosition <= 0)
-        {
-            cleanup();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral(
-                    "Could not find a complete Matroska Cluster in the existing output."));
-            return;
-        }
-
-        if (!outputContext.file.resize(appendPosition))
-        {
-            cleanup();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral(
-                    "Could not remove the incomplete Matroska tail before resume."));
-            return;
-        }
-#endif
-
-        // --------------------------------------------------------------------
-        // Return to network inputs and seek back slightly. We intentionally
-        // re-download this overlap and discard packets already present in the
-        // old file. A two-second overlap is small but gives HTTP seeks room to
-        // land on a useful video keyframe.
-        // --------------------------------------------------------------------
-        constexpr qint64 kResumeOverlapUs = 2 * 1000 * 1000;
-
-        activeVideoInput = videoInput.get();
-        activeAudioInput = audioInput.get();
-        activeVideoStreamIndex = networkVideoStreamIndex;
-        activeVideoStream = inputVideoStream;
-
-        for (auto& binding : audioBindings)
-        {
-            binding.activeInputIndex = binding.inputIndex;
-            binding.activeStream = binding.inputStream;
-        }
-
-        videoEof = false;
-        audioEof = false;
-
-        if (lastVideoTimestampUs != std::numeric_limits<qint64>::min())
-        {
-            const qint64 target =
-                std::max<qint64>(0, lastVideoTimestampUs - kResumeOverlapUs);
-
-            qDebug().noquote()
-                << "Video resume seek:"
-                << "last=" << lastVideoTimestampUs / 1000000.0 << "s"
-                << "target=" << target / 1000000.0 << "s"
-                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
-
-            const int seekRet = avformat_seek_file(
-                videoInput.get(),
-                -1,
-                std::numeric_limits<int64_t>::min(),
-                target,
-                std::numeric_limits<int64_t>::max(),
-                AVSEEK_FLAG_BACKWARD);
-
-            qDebug().noquote()
-                << "Video resume seek result:"
-                << seekRet
-                << (seekRet < 0
-                    ? ffmpegErrorString(seekRet)
-                    : QStringLiteral("OK"));
-        }
-
-        qint64 audioResumeTimestamp =
-            std::numeric_limits<qint64>::max();
-
-        for (const qint64 ts : lastAudioTimestampUs)
-        {
-            if (ts != std::numeric_limits<qint64>::min())
-                audioResumeTimestamp =
-                std::min(audioResumeTimestamp, ts);
-        }
-
-        if (audioResumeTimestamp != std::numeric_limits<qint64>::max())
-        {
-            const qint64 target =
-                std::max<qint64>(0, audioResumeTimestamp - kResumeOverlapUs);
-
-            qDebug().noquote()
-                << "Audio resume seek:"
-                << "last=" << audioResumeTimestamp / 1000000.0 << "s"
-                << "target=" << target / 1000000.0 << "s"
-                << "overlap=" << kResumeOverlapUs / 1000000.0 << "s";
-
-            const int seekRet = avformat_seek_file(
-                audioInput.get(),
-                -1,
-                std::numeric_limits<int64_t>::min(),
-                target,
-                std::numeric_limits<int64_t>::max(),
-                AVSEEK_FLAG_BACKWARD);
-
-            qDebug().noquote()
-                << "Audio resume seek result:"
-                << seekRet
-                << (seekRet < 0
-                    ? ffmpegErrorString(seekRet)
-                    : QStringLiteral("OK"));
-        }
-
-        // Nothing has been physically written so far. Now move the QFile to
-        // its existing end and switch the AVIO into real-write mode.
-        //avio_flush(output->pb);
-        outputContext.suppressWrites = false;
-        //outputContext.virtualPosition = appendPosition;
-        //outputContext.virtualSize = appendPosition;
-
-        if (!outputContext.file.seek(outputContext.virtualPosition))//appendPosition))
-        {
-            cleanup();
-            finishWorker();
-            notifyError(
-                utilities::ErrorCode::eDOWLDUNKWNFILERR,
-                QStringLiteral("Could not seek output to the end for resume."));
-            return;
-        }
-
-        outputIo->pos = outputContext.virtualPosition;//appendPosition;
-        //outputIo->buf_ptr = outputIo->buffer;
-        //outputIo->buf_end = outputIo->buffer;
-        outputIo->eof_reached = 0;
-
-        replayMode = false;
-
-        if (!transfer())
-            return;
-    }
-    else
-    {
-        outputContext.suppressWrites = false;
-        replayMode = false;
-
-        if (!transfer())
-            return;
-    }
-
-    if (m_pauseRequested.load())
-    {
-        // Do not write a Matroska trailer: the partial file is deliberately
-        // left in the same resumable form as a paused plain Downloader.
-        avio_flush(output->pb);
-        outputContext.file.flush();
-        cleanup();
-        finishWorker();
-        return;
-    }
-
-    if (m_stopRequested.load())
-    {
-        const QString filename = outputContext.file.fileName();
-        cleanup();
-        if (QFile::exists(filename))
-        {
-            notifyFileToBeReleased(filename);
-            QFile::remove(filename);
-        }
-        finishWorker();
-        return;
-    }
-
-    ret = headerWritten ? av_write_trailer(output) : 0;
-    if (ret < 0)
-    {
-        cleanup();
-        finishWorker();
-        notifyError(
-            utilities::ErrorCode::eDOWLDUNKWNFILERR,
-            QStringLiteral("Could not finalize Matroska file: %1")
-                .arg(ffmpegErrorString(ret)));
-        return;
-    }
-
-    avio_flush(output->pb);
-    outputContext.file.flush();
-
-    const qint64 finalSize = outputContext.file.size();
-    m_totalFileSize.store(finalSize);
-    notifyProgress(finalSize);
-
-    if (outputContext.timer.elapsed() > 0)
-    {
-        const qint64 speed =
-            static_cast<qint64>(
-                (static_cast<double>(finalSize) * 1000.0) /
-                static_cast<double>(outputContext.timer.elapsed()));
-        notifySpeed(speed);
-    }
-
-    cleanup();
-    finishWorker();
-    notifyFinished();
-}
