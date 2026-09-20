@@ -79,6 +79,14 @@ namespace
         return ptr && static_cast<std::atomic<bool>*>(ptr)->load();
     }
 
+    enum class PacketReadResult
+    {
+        Packet,
+        Eof,
+        Interrupted,
+        Error
+    };
+
 #if 0 
     static bool readEbmlVint(
         QFile& file,
@@ -960,9 +968,15 @@ void FFmpegMergeDownloader::mergeWorker(
             AVDictionary* opts = nullptr;
             av_dict_set(&opts, "reconnect", "1", 0);
             av_dict_set(&opts, "reconnect_streamed", "1", 0);
+            av_dict_set(&opts, "reconnect_on_network_error", "1", 0);
             av_dict_set(&opts, "reconnect_delay_max", "10", 0);
             av_dict_set(&opts, "respect_retry_after", "1", 0);
             av_dict_set(&opts, "reconnect_on_http_error", "404,429,500,503", 0);
+            // Do not allow a network read to remain blocked indefinitely.
+            // The application-level retry below handles transient read errors;
+            // this timeout also covers a connection which simply stops making
+            // progress without closing.
+            av_dict_set(&opts, "rw_timeout", "30000000", 0); // 30 seconds
 
             QByteArray headerBlock;
             if (httpHeaders.isEmpty())
@@ -1520,48 +1534,162 @@ void FFmpegMergeDownloader::mergeWorker(
             return nullptr;
         };
 
+    // Network reads need to distinguish genuine EOF from transient I/O
+    // failures.  Previously every negative av_read_frame() result was treated
+    // as EOF, which could make a live HTTP input look finished and let the
+    // transfer loop terminate successfully.  That is especially visible as a
+    // download which silently stops until Pause/Resume reopens the inputs.
+    //
+    // Keep the existing FFmpeg reconnect options, but also retry a failed read
+    // at this level.  The retry wait is interruptible so Pause/Stop remains
+    // responsive.
+    constexpr int kReadRetryCount = 8;
+    constexpr int kReadRetryInitialDelayMs = 1000;
+    constexpr int kReadRetryMaxDelayMs = 5000;
+
+    auto waitForReadRetry =
+        [&](int retryNumber) -> bool
+        {
+            int delayMs = kReadRetryInitialDelayMs;
+            for (int i = 1; i < retryNumber; ++i)
+                delayMs = std::min(delayMs * 2, kReadRetryMaxDelayMs);
+
+            qDebug().noquote()
+                << "FFmpeg network read retry in"
+                << delayMs << "ms (attempt"
+                << retryNumber << "of" << kReadRetryCount << ")";
+
+            constexpr int kSleepQuantumMs = 100;
+            int remaining = delayMs;
+            while (remaining > 0)
+            {
+                if (m_stopRequested.load())
+                    return false;
+
+                const int step = std::min(remaining, kSleepQuantumMs);
+                QThread::msleep(static_cast<unsigned long>(step));
+                remaining -= step;
+            }
+
+            return !m_stopRequested.load();
+        };
+
+    auto reportNetworkReadError =
+        [&](const char* inputName, int error) -> PacketReadResult
+        {
+            const QString message =
+                QStringLiteral("%1 network read failed after %2 retries: %3")
+                    .arg(QString::fromLatin1(inputName))
+                    .arg(kReadRetryCount)
+                    .arg(ffmpegErrorString(error));
+
+            qDebug().noquote()
+                << "FFmpeg" << inputName
+                << "network read failed after"
+                << kReadRetryCount << "retries:"
+                << error << ffmpegErrorString(error);
+
+            ret = error;
+
+            // transfer() is also used during resume replay.  A persistent
+            // network error must terminate the worker as an error, not look
+            // like EOF and not fall through to av_write_trailer().
+            cleanup();
+            finishWorker();
+            notifyError(
+                utilities::ErrorCode::eDOWLDNETWORKERR,
+                message);
+
+            return PacketReadResult::Error;
+        };
+
     auto readNextVideoPacket =
-        [&]() -> bool
+        [&]() -> PacketReadResult
         {
             av_packet_unref(pendingVideoPacket);
 
             while (!videoEof)
             {
                 if (m_stopRequested.load())
-                    return false;
+                    return PacketReadResult::Interrupted;
 
-                ret = av_read_frame(activeVideoInput, pendingVideoPacket);
+                int lastReadError = 0;
 
-                if (ret == AVERROR_EOF || ret < 0)
+                for (int attempt = 0; attempt <= kReadRetryCount; ++attempt)
                 {
-                    // In resume mode an error after successfully readable data
-                    // is intentionally treated as EOF: the old tail may be
-                    // incomplete/corrupt.
-                    videoEof = true;
-                    return false;
+                    if (m_stopRequested.load())
+                        return PacketReadResult::Interrupted;
+
+                    ret = av_read_frame(activeVideoInput, pendingVideoPacket);
+
+                    if (ret >= 0)
+                    {
+                        if (attempt > 0)
+                        {
+                            qDebug().noquote()
+                                << "FFmpeg video network read recovered after"
+                                << attempt << "retry attempt(s)";
+                        }
+
+                        lastReadError = 0;
+                        break;
+                    }
+
+                    if (ret == AVERROR_EOF)
+                    {
+                        videoEof = true;
+                        return PacketReadResult::Eof;
+                    }
+
+                    // AVERROR_EXIT is what FFmpeg normally returns when the
+                    // interrupt callback aborts an operation.  In our case it
+                    // means Pause/Stop, not a network failure.
+                    if (ret == AVERROR_EXIT || m_stopRequested.load())
+                        return PacketReadResult::Interrupted;
+
+                    lastReadError = ret;
+                    av_packet_unref(pendingVideoPacket);
+
+                    qDebug().noquote()
+                        << "FFmpeg video av_read_frame failed:"
+                        << ret << ffmpegErrorString(ret)
+                        << "attempt" << (attempt + 1)
+                        << "of" << (kReadRetryCount + 1);
+
+                    if (attempt == kReadRetryCount)
+                        return reportNetworkReadError("video", lastReadError);
+
+                    if (!waitForReadRetry(attempt + 1))
+                        return PacketReadResult::Interrupted;
                 }
+
+                if (lastReadError != 0)
+                    return reportNetworkReadError("video", lastReadError);
 
                 if (pendingVideoPacket->stream_index == activeVideoStreamIndex)
                 {
                     if (replayMode)
-                        return true;
+                        return PacketReadResult::Packet;
 
-                    const qint64 videoTimestamp = packetTimestampUs(pendingVideoPacket, activeVideoStream);
+                    const qint64 videoTimestamp =
+                        packetTimestampUs(pendingVideoPacket, activeVideoStream);
+
                     if (videoTimestamp == std::numeric_limits<qint64>::max()
                             || videoTimestamp > lastVideoTimestampUs)
-                        return true;
+                        return PacketReadResult::Packet;
                 }
+
                 av_packet_unref(pendingVideoPacket);
             }
 
-            return false;
+            return PacketReadResult::Eof;
         };
 
     auto fillAudioPending =
-        [&]()
+        [&]() -> PacketReadResult
         {
             if (audioEof)
-                return;
+                return PacketReadResult::Eof;
 
             for (;;)
             {
@@ -1578,27 +1706,82 @@ void FFmpegMergeDownloader::mergeWorker(
                 }
 
                 if (allHavePacket)
-                    return;
+                    return PacketReadResult::Packet;
 
                 AVPacket* packet = av_packet_alloc();
                 if (!packet)
                 {
-                    audioEof = true;
-                    return;
+                    ret = AVERROR(ENOMEM);
+                    return reportNetworkReadError("audio", ret);
                 }
 
-                const int readRet = av_read_frame(activeAudioInput, packet);
+                int lastReadError = 0;
+                bool gotPacket = false;
 
-                if (readRet == AVERROR_EOF || readRet < 0)
+                for (int attempt = 0; attempt <= kReadRetryCount; ++attempt)
+                {
+                    if (m_stopRequested.load())
+                    {
+                        av_packet_free(&packet);
+                        return PacketReadResult::Interrupted;
+                    }
+
+                    av_packet_unref(packet);
+                    const int readRet = av_read_frame(activeAudioInput, packet);
+
+                    if (readRet >= 0)
+                    {
+                        if (attempt > 0)
+                        {
+                            qDebug().noquote()
+                                << "FFmpeg audio network read recovered after"
+                                << attempt << "retry attempt(s)";
+                        }
+                        gotPacket = true;
+                        lastReadError = 0;
+                        break;
+                    }
+
+                    if (readRet == AVERROR_EOF)
+                    {
+                        av_packet_free(&packet);
+                        audioEof = true;
+                        for (auto& binding : audioBindings)
+                        {
+                            if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
+                                binding.eof = true;
+                        }
+                        return PacketReadResult::Eof;
+                    }
+
+                    if (readRet == AVERROR_EXIT || m_stopRequested.load())
+                    {
+                        av_packet_free(&packet);
+                        return PacketReadResult::Interrupted;
+                    }
+
+                    lastReadError = readRet;
+
+                    qDebug().noquote()
+                        << "FFmpeg audio av_read_frame failed:"
+                        << readRet << ffmpegErrorString(readRet)
+                        << "attempt" << (attempt + 1)
+                        << "of" << (kReadRetryCount + 1);
+
+                    if (attempt == kReadRetryCount)
+                        break;
+
+                    if (!waitForReadRetry(attempt + 1))
+                    {
+                        av_packet_free(&packet);
+                        return PacketReadResult::Interrupted;
+                    }
+                }
+
+                if (!gotPacket)
                 {
                     av_packet_free(&packet);
-                    audioEof = true;
-                    for (auto& binding : audioBindings)
-                    {
-                        if (!binding.pendingPacket || binding.pendingPacket->size <= 0)
-                            binding.eof = true;
-                    }
-                    return;
+                    return reportNetworkReadError("audio", lastReadError);
                 }
 
                 AudioBinding* binding = selectedAudioStream(packet->stream_index);
@@ -1610,7 +1793,8 @@ void FFmpegMergeDownloader::mergeWorker(
 
                 if (!replayMode)
                 {
-                    const qint64 timestamp = packetTimestampUs(packet, binding->activeStream);
+                    const qint64 timestamp =
+                        packetTimestampUs(packet, binding->activeStream);
                     if (timestamp != std::numeric_limits<qint64>::max())
                     {
                         const size_t audioIndex =
@@ -1661,8 +1845,18 @@ void FFmpegMergeDownloader::mergeWorker(
     // ------------------------------------------------------------------------
     auto transfer = [&]() -> bool
     {
-        readNextVideoPacket();
-        fillAudioPending();
+        PacketReadResult readResult = readNextVideoPacket();
+        if (readResult == PacketReadResult::Error)
+            return false;
+        if (readResult == PacketReadResult::Interrupted)
+            return true;
+
+        readResult = fillAudioPending();
+        if (readResult == PacketReadResult::Error)
+            return false;
+        if (readResult == PacketReadResult::Interrupted)
+            return true;
+
         for (auto& binding : audioBindings)
             promoteQueuedAudioPacket(binding);
 
@@ -1670,9 +1864,24 @@ void FFmpegMergeDownloader::mergeWorker(
         {
             if (!videoEof &&
                 (!pendingVideoPacket || pendingVideoPacket->size <= 0))
-                readNextVideoPacket();
+            {
+                const PacketReadResult videoReadResult =
+                    readNextVideoPacket();
 
-            fillAudioPending();
+                if (videoReadResult == PacketReadResult::Error)
+                    return false;
+
+                if (videoReadResult == PacketReadResult::Interrupted)
+                    return true;
+            }
+
+            const PacketReadResult audioReadResult = fillAudioPending();
+            if (audioReadResult == PacketReadResult::Error)
+                return false;
+
+            if (audioReadResult == PacketReadResult::Interrupted)
+                return true;
+
             for (auto& binding : audioBindings)
                 promoteQueuedAudioPacket(binding);
 
@@ -1745,8 +1954,17 @@ void FFmpegMergeDownloader::mergeWorker(
                     av_packet_unref(packet);
                 }
 
-                if (!readNextVideoPacket())
+                const PacketReadResult nextVideoResult =
+                    readNextVideoPacket();
+
+                if (nextVideoResult == PacketReadResult::Error)
+                    return false;
+
+                if (nextVideoResult == PacketReadResult::Eof)
                     videoEof = true;
+
+                if (nextVideoResult == PacketReadResult::Interrupted)
+                    return true;
             }
             else
             {
