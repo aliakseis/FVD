@@ -248,7 +248,7 @@ def YT_DLP_old_search(query, order, searchLimit, page, strategy):
     strategy.onSearchFinished(entities)
 
 
-def YT_DLP_old_extractDirectLinks(link, receiver) :
+def YT_DLP_old_extractDirectLinks(link, preferred_height, receiver) :
     socket.setdefaulttimeout(30)
 
     ydl_opts = {

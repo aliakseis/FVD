@@ -136,6 +136,13 @@ Preferences::Preferences(QWidget* parent)
     ui->labelTrafficLimit->hide();
 #endif  // ALLOW_TRAFFIC_CONTROL
 
+    ui->cbPreferredHeight->setChecked(
+        settings.value(app_settings::IsPreferredHeight, app_settings::IsPreferredHeight_Default).toBool());
+    ui->sbPreferredHeight->setValue(
+        settings.value(app_settings::PreferredHeight, app_settings::PreferredHeight_Default).toInt());
+
+    ui->cbPreferredHeight->setStyleSheet("QCheckBox { padding-right: -1px; }");
+
     setPrefStyleSheet();
 
     ui->listSites->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -424,6 +431,9 @@ bool Preferences::apply()
     settings.setValue(IsTrafficLimited, ui->cbTrafficLimit->isChecked());
     settings.setValue(TrafficLimitKbs, ui->sbTrafficLimit->value());
 #endif  // ALLOW_TRAFFIC_CONTROL
+    
+    settings.setValue(IsPreferredHeight, ui->cbPreferredHeight->isChecked());
+    settings.setValue(PreferredHeight, ui->sbPreferredHeight->value());
 
 #ifdef DEVELOPER_FEATURES
     updateDebugFilter();
@@ -445,7 +455,7 @@ void Preferences::onCurrItemLangChanged(QListWidgetItem* item)
 
 void Preferences::onCurrTabChanged(int index)
 {
-    QSize size(440, 488);
+    QSize size(440, 540);
     if (1 == index)
     {
         size.setHeight(360);

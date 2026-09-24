@@ -223,6 +223,7 @@
               </item>
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_1">
+
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_1">
                   <item>
@@ -284,6 +285,49 @@
                   </item>
                  </layout>
                 </item>
+
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_111">
+                  <item>
+                   <widget class="QCheckBox" name="cbPreferredHeight">
+                    <property name="text">
+                     <string>Preferred height</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="sbPreferredHeight">
+                    <property name="minimum">
+                     <number>120</number>
+                    </property>
+                    <property name="maximum">
+                     <number>10000</number>
+                    </property>
+                   </widget>
+                  </item>
+
+                  <item>
+                   <spacer name="horizontalSpacer_33">
+                    <property name="font">
+                     <font>
+                      <family>Segoe UI</family>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+
                 <item>
                  <widget class="QCheckBox" name="chbClearDownl">
                   <property name="text">
@@ -291,6 +335,7 @@
                   </property>
                  </widget>
                 </item>
+
                </layout>
               </item>
              </layout>

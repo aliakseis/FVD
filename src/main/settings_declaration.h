@@ -18,6 +18,12 @@ const bool IsTrafficLimited_Default = false;
 const char TrafficLimitKbs[] = "TrafficLimitKbs";
 const int TrafficLimitKbs_Default = 1000;
 
+const char IsPreferredHeight[] = "IsPreferredHeight";
+const bool IsPreferredHeight_Default = false;
+
+const char PreferredHeight[] = "PreferredHeight";
+const int PreferredHeight_Default = 480;
+
 const char VideoFolder[] = "VideoFolder";
 
 const char Sites[] = "Sites";

@@ -105,7 +105,7 @@ def Dailymotion_search(query, order, search_limit, page, strategy):
 
     strategy.onSearchFinished(entities)
 
-def Dailymotion_extractDirectLinks(link, receiver) :
+def Dailymotion_extractDirectLinks(link, preferred_height, receiver) :
     socket.setdefaulttimeout(30)
 
     ydl_opts = {

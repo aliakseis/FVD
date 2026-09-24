@@ -126,7 +126,7 @@ def YouTube_search(query, order, searchLimit, page, strategy) :
     strategy.onSearchFinished(entities)
 
 
-def YouTube_extractDirectLinks(link, receiver) :
+def YouTube_extractDirectLinks(link, preferred_height, receiver) :
     socket.setdefaulttimeout(30)
 
     s=YouTube(link, 'WEB').streams.filter(progressive=True).order_by('resolution').desc()

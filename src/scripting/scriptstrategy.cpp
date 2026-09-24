@@ -3,6 +3,7 @@
 #include "searchmanager.h"
 
 #include "utilities/utils.h"
+#include "settings_declaration.h"
 
 #include <QDebug>
 #include <QtConcurrent>
@@ -108,8 +109,12 @@ void ScriptStrategy::searchAsync(const QString& query, int order, int searchLimi
 
 void ScriptStrategy::extractDirectLinksAsync(const QString& videoUrl, QObject* resultReceiver)
 {
+    QSettings settings;
+    const int preferredHeight = settings.value(app_settings::IsPreferredHeight, app_settings::IsPreferredHeight_Default).toBool()
+        ? settings.value(app_settings::PreferredHeight, app_settings::PreferredHeight_Default).toInt() : 0;
+
     m_scriptProvider.invokeFunction(toIdentifier(m_strategyName) + QStringLiteral("_extractDirectLinks"),
-                                    QVariantList() << videoUrl << QVariant::fromValue<QObject*>(resultReceiver));
+                                    QVariantList() << videoUrl << preferredHeight << QVariant::fromValue<QObject*>(resultReceiver));
     // Signal that the extraction is finished
     VERIFY(QMetaObject::invokeMethod(resultReceiver, "onlinksExtractionFinished", Qt::QueuedConnection));
 }

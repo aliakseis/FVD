@@ -142,7 +142,7 @@ def Vimeo_search(query, order, searchLimit, page, strategy):
     strategy.onSearchFinished(entities)
 
 
-def Vimeo_extractDirectLinks(link, receiver) :
+def Vimeo_extractDirectLinks(link, preferred_height, receiver) :
     socket.setdefaulttimeout(30)
 
     v = Vimeo(link)

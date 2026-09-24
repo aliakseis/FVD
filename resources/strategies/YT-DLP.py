@@ -248,7 +248,7 @@ def YT_DLP_search(query, order, searchLimit, page, strategy):
     strategy.onSearchFinished(entities)
 
 
-def YT_DLP_extractDirectLinks(link, receiver):
+def YT_DLP_extractDirectLinks(link, preferred_height, receiver):
     socket.setdefaulttimeout(30)
 
     ydl_opts = {
@@ -272,8 +272,15 @@ def YT_DLP_extractDirectLinks(link, receiver):
 
     entities = {}
     i = 0
-    height = 0
-    best = 0
+
+    # Normalize preferred height.
+    #
+    # None / <= 0 means "no preference", preserving the old behavior
+    # of selecting the highest available video format.
+    try:
+        preferred_height = int(preferred_height or 0)
+    except (TypeError, ValueError):
+        preferred_height = 0
 
     # Find the best available audio-only format first.
     best_audio = None
@@ -364,12 +371,10 @@ def YT_DLP_extractDirectLinks(link, receiver):
 
                 entity["http_headers"] = headers
 
-            # Preserve the original best-video selection logic.
+            # Store height internally for selecting the preferred format.
             current_height = x.get('height') or 0
 
-            if current_height > height:
-                height = current_height
-                best = i
+            entity["_height"] = current_height
 
             entities[i] = entity
             i += 1
@@ -379,5 +384,87 @@ def YT_DLP_extractDirectLinks(link, receiver):
                 'Item adding skipped.\n' +
                 traceback.format_exc()
             )
+
+    # ------------------------------------------------------------------
+    # Select the preferred video format.
+    #
+    # preferred_height <= 0:
+    #     Preserve the old behavior: highest available height.
+    #
+    # preferred_height > 0:
+    #     1. Exact match if available.
+    #     2. Otherwise highest format below preferred height.
+    #     3. If nothing is below it, use the lowest format above it.
+    #
+    # This avoids accidentally selecting 1440p/2160p when, for example,
+    # the caller requested 1080p.
+    # ------------------------------------------------------------------
+
+    best = 0
+
+    if entities:
+        candidates = list(entities.items())
+
+        if preferred_height > 0:
+            # Exact height first.
+            exact = [
+                (index, entity)
+                for index, entity in candidates
+                if entity.get("_height", 0) == preferred_height
+            ]
+
+            if exact:
+                best = exact[0][0]
+            else:
+                # Highest height below the preferred height.
+                below = [
+                    (index, entity)
+                    for index, entity in candidates
+                    if 0 < entity.get("_height", 0) < preferred_height
+                ]
+
+                if below:
+                    best = max(
+                        below,
+                        key=lambda item: (
+                            item[1].get("_height", 0),
+                            item[0]
+                        )
+                    )[0]
+                else:
+                    # Nothing below the requested height:
+                    # choose the smallest available height above it.
+                    above = [
+                        (index, entity)
+                        for index, entity in candidates
+                        if entity.get("_height", 0) > 0
+                    ]
+
+                    if above:
+                        best = min(
+                            above,
+                            key=lambda item: (
+                                item[1].get("_height", 0),
+                                item[0]
+                            )
+                        )[0]
+                    else:
+                        # No usable height information at all.
+                        best = candidates[0][0]
+
+        else:
+            # Original behavior: select the highest available height.
+            best = max(
+                candidates,
+                key=lambda item: (
+                    item[1].get("_height", 0),
+                    item[0]
+                )
+            )[0]
+
+        # _height is only an implementation detail and should not be
+        # exposed to the C++ receiver.
+        for entity in entities.values():
+            entity.pop("_height", None)
 
     receiver.onlinksExtracted(entities, best)
