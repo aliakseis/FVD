@@ -38,7 +38,6 @@ def install_and_import(package, url=None):
         globals()[package] = importlib.import_module(package)
 
 install_and_import("yt_dlp", "yt-dlp") # whichever good
-install_and_import("requests")
 
 import logging
 import traceback
@@ -46,7 +45,8 @@ import traceback
 import re
 import json
 from typing import Optional, Dict
-#import requests
+import urllib.request
+import urllib.error
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -57,13 +57,20 @@ HEADERS = {
     "Connection": "keep-alive",
 }
 
-def fetch_html(url: str, timeout: int = 10) -> Optional[str]:
+def fetch_html(url: str, timeout: int = 10) -> str | None:
+    req = urllib.request.Request(
+        url,
+        headers=HEADERS,
+        method="GET",
+    )
+
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=timeout)
-        if resp.status_code == 200:
-            return resp.text
-    except requests.RequestException:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            if resp.status == 200:
+                return resp.read().decode(resp.headers.get_content_charset() or "utf-8")
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError):
         return None
+
     return None
 
 def regex_extract_from_html(html: str) -> Dict[str, Optional[str]]:
@@ -184,9 +191,6 @@ def YT_DLP_old_search(query, order, searchLimit, page, strategy):
             }
         }
         ydl_opts["remote_components"] = ["ejs:github"]
-
-    session = requests.Session()
-    session.headers.update(HEADERS)
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
