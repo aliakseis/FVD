@@ -38,6 +38,7 @@ def install_and_import(package, url=None):
         globals()[package] = importlib.import_module(package)
 
 install_and_import("yt_dlp", "yt-dlp") # whichever good
+install_and_import("requests")
 
 import logging
 import traceback
@@ -45,7 +46,7 @@ import traceback
 import re
 import json
 from typing import Optional, Dict
-import requests
+#import requests
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
