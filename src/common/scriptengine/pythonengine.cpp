@@ -48,6 +48,8 @@ auto pythonQtInstance() {
     static bool succeeded = false;
     static std::once_flag flag{};
 
+    static PyThreadState* mainThreadState = nullptr;
+
     std::call_once(flag,  []{
         if (!isPythonInstalled()) {
             showPythonNotInstalledMessageBox();
@@ -67,7 +69,6 @@ auto pythonQtInstance() {
 #endif
 
         PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
-        atexit(PythonQt::cleanup);
 
         PythonQt::self()->setEnableThreadSupport(true);
 
@@ -85,6 +86,14 @@ auto pythonQtInstance() {
                 PythonQt::self()->addSysPath(sitePackages);
             }
         }
+
+        mainThreadState = PyEval_SaveThread();
+
+        atexit([] {
+            PyEval_RestoreThread(mainThreadState);
+            PythonQt::cleanup();
+            }
+        );
 
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut, [](const QString& str) { if (str.length() > 1) qInfo() << str; });
         QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr, [](const QString& str) { if (str.length() > 1) qCritical() << str; });
@@ -130,6 +139,7 @@ bool PythonEngine::loadFile(const QString& filename)
     if (auto inst = pythonQtInstance())
     {
         std::lock_guard<std::mutex> guard(pythonMonitor);
+        PYTHONQT_GIL_SCOPE;
         inst->getMainModule().evalFile(filename);
         return true;
     }
@@ -159,6 +169,7 @@ QVariant PythonEngine::invokeFunction(const QString& object, const QString& meth
         }
         //*/
         std::lock_guard<std::mutex> guard(pythonMonitor);
+        PYTHONQT_GIL_SCOPE;
         return inst->getMainModule().call(callable, arguments);
     }
     return false;
@@ -170,6 +181,7 @@ void PythonEngine::exportVariable(const QString& name, const QVariant& value)
     {
         auto* qobject = qvariant_cast<QObject*>(value);
         std::lock_guard<std::mutex> guard(pythonMonitor);
+        PYTHONQT_GIL_SCOPE;
         if (qobject != nullptr)
         {
             inst->registerClass(qobject->metaObject());
