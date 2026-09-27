@@ -56,9 +56,12 @@ add_library(Download STATIC
 	${SOURCES}
 )	
 
-add_dependencies(Download
-	Traffic_Limitation
-	Utilities
-)
+set(PROJECT_LIBRARIES Utilities)
+
+if(DEVELOPER_TRAFFIC_CONTROL)
+	set(PROJECT_LIBRARIES ${PROJECT_LIBRARIES} Traffic_Limitation)
+endif(DEVELOPER_TRAFFIC_CONTROL)
+
+add_dependencies(Download ${PROJECT_LIBRARIES})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "common")

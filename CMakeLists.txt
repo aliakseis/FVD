@@ -49,7 +49,7 @@ option(DEVELOPER_BUILD_TESTS "Use Qt unit tests" OFF)
 option(DEVELOPER_FEATURES "use some debug tricks for developers" OFF)
 option(DEVELOPER_GENERATE_TRANSLATIONS "Generate ts-files for ${PROJECT_NAME}" OFF)
 
-option(DEVELOPER_TRAFFIC_CONTROL "allow traffic control functionality" ON)
+option(DEVELOPER_TRAFFIC_CONTROL "allow traffic control functionality" OFF)
 option(DEVELOPER_OPENGL "Enables opengl display" ON)
 
 
