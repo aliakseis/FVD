@@ -35,13 +35,13 @@ message ("    *** Python: (${Python3_INCLUDE_DIRS})")
 
 file(GLOB PYTHONQT_SRCS 
 	./3rdparty/pythonqt/src/*.cpp 
-	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_core_builtin/*.cpp
-	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_gui_builtin/*.cpp
+	./3rdparty/pythonqt/generated_cpp_515/com_trolltech_qt_core_builtin/*.cpp
+	./3rdparty/pythonqt/generated_cpp_515/com_trolltech_qt_gui_builtin/*.cpp
 )
 file(GLOB PYTHONQT_HDRS 
 	./3rdparty/pythonqt/src/*.h
-	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_core_builtin/*.h
-	./3rdparty/pythonqt/generated_cpp_56/com_trolltech_qt_gui_builtin/*.h
+	./3rdparty/pythonqt/generated_cpp_515/com_trolltech_qt_core_builtin/*.h
+	./3rdparty/pythonqt/generated_cpp_515/com_trolltech_qt_gui_builtin/*.h
 )
 QTX_WRAP_CPP(PYTHONQT_MOC_FILES ${PYTHONQT_HDRS})              
 add_library(pythonqt SHARED

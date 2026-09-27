@@ -69,6 +69,8 @@ auto pythonQtInstance() {
         PythonQt::init(/*PythonQt::IgnoreSiteModule |*/ PythonQt::RedirectStdOut);
         atexit(PythonQt::cleanup);
 
+        PythonQt::self()->setEnableThreadSupport(true);
+
         auto sys = PythonQt::self()->importModule("sys");
         auto paths = PythonQt::self()->getVariable(sys, "path");
 

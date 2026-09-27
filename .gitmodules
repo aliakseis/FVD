@@ -1,3 +1,4 @@
 [submodule "src/3rdparty/pythonqt"]
 	path = src/3rdparty/pythonqt
 	url = https://github.com/MeVisLab/pythonqt.git
+	branch = main
