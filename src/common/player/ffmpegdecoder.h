@@ -153,8 +153,6 @@ private:
     int64_t m_duration;
     bool m_streamDurationDetection;
 
-    // Closing loop
-    QEventLoop m_closingEventLoop;
     QEventLoop m_loadedEventLoop;
 
     // Basic file path

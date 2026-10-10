@@ -257,8 +257,20 @@ void FFmpegDecoder::close(bool isBlocking)
         {
             if (m_mainDisplayThread->isRunning())
             {
-                VERIFY(connect(m_mainDisplayThread, SIGNAL(finished()), &m_closingEventLoop, SLOT(quit())));
-                m_closingEventLoop.exec();
+                QEventLoop loop;
+
+                QMetaObject::Connection conn =
+                    connect(m_mainDisplayThread,
+                        &QThread::finished,
+                        &loop,
+                        &QEventLoop::quit);
+
+                if (m_mainDisplayThread->isRunning())
+                {
+                    loop.exec();
+                }
+
+                disconnect(conn);
             }
             if (m_mainDisplayThread != nullptr)
             {
