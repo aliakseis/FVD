@@ -174,6 +174,7 @@ set(SOURCES_GUI
 	gui/mainwindow.cpp
 	gui/playerheader.cpp
 	gui/preferences.cpp
+	gui/qmlimageprovider.cpp
 	gui/searchresultform.cpp
 	gui/sitescheckboxdelegate.cpp
 	gui/sitescombo.cpp

@@ -1,40 +1,46 @@
 #pragma once
 
-#include <QtQuick/QQuickImageProvider>
-#define QDeclarativeImageProvider QQuickImageProvider
+#include <QtQuick/QQuickAsyncImageProvider>
+#include <QtQuick/QQuickImageResponse>
+#include <QtQuick/QQuickTextureFactory>
 
-#include <QDebug>
-#include <QLabel>
+#include <QImage>
+#include <QMutex>
+#include <QPointer>
+#include <QRunnable>
+#include <QThreadPool>
 
 #include "imagecache.h"
 
-class QmlImageProvider : public QDeclarativeImageProvider
+// Asynchronous replacement for the former QQuickImageProvider-based provider.
+// Existing imageprovider:<id> URLs remain unchanged.
+class QmlImageResponse final : public QQuickImageResponse
+{
+    //Q_OBJECT
+
+public:
+    explicit QmlImageResponse(const QString& id);
+    ~QmlImageResponse() override = default;
+
+    QQuickTextureFactory* textureFactory() const override;
+    QString errorString() const override { return {}; }
+
+private:
+    friend class QmlImageLoadTask;
+
+    void setImageAndFinish(const QImage& image);
+
+    QImage m_image;
+};
+
+class QmlImageProvider final : public QQuickAsyncImageProvider
 {
 public:
-    QmlImageProvider() : QDeclarativeImageProvider(QDeclarativeImageProvider::Image) {}
-    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize)
-    {
-        Q_UNUSED(size)
-        Q_UNUSED(requestedSize)
-        QImage img;
+    QmlImageProvider();
 
-        if (id.startsWith("http"))
-        {
-            Q_ASSERT(false);  // img = imageCache.getSync("", id, "");
-        }
-        else
-        {
-            QByteArray decoded(QByteArray::fromPercentEncoding(id.toUtf8()));
-            QString id(QString::fromUtf8(decoded));
-            img = imageCache.getSync(id, "", id);
-        }
+    QQuickImageResponse* requestImageResponse(
+        const QString& id, const QSize& requestedSize) override;
 
-        if (img.isNull())
-        {
-            return QImage(":/images/fvd_banner.png");
-        }
-
-        return img;
-    }
-    ImageCache imageCache;
+private:
+    static QThreadPool& imageThreadPool();
 };
