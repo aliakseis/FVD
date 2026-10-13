@@ -8,6 +8,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
+#include <QFile>
 
 #include <algorithm>
 #include <streambuf>
@@ -279,11 +280,15 @@ bool HandleRandomFrame(const QString& filePath, const QString& imageFilePath)
     if (!image.isEmpty())
     {
         QFile imageFile(imageFilePath);
-        if (imageFile.open(QIODevice::WriteOnly))
+        if (imageFile.open(QIODevice::WriteOnly | QIODevice::NewOnly))
         {
-            imageFile.write(image);
+            const bool ok = imageFile.write(image) > 0;
             imageFile.close();
-            return true;
+            if (!ok)
+            {
+                QFile::remove(imageFilePath);
+            }
+            return ok;
         }
     }
     return false;
@@ -436,7 +441,16 @@ void ImageCache::imageReceived(QNetworkReply* reply)
     {
         if (!imageFilePath.isEmpty())
         {
-            m_image.save(imageFilePath, "jpg");
+            QFile saveFile(imageFilePath);
+            if (saveFile.open(QIODevice::WriteOnly | QIODevice::NewOnly))
+            {
+                const bool ok = m_image.save(&saveFile, "jpg");
+                saveFile.close();
+                if (!ok)
+                {
+                    QFile::remove(imageFilePath);
+                }
+            }
         }
     }
     else
