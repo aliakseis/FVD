@@ -12,6 +12,9 @@
 
 #include <algorithm>
 #include <streambuf>
+#include <map>
+#include <mutex>
+#include <optional>
 
 #include "global_functions.h"
 #include "player/ffmpegdecoder.h"
@@ -322,11 +325,38 @@ int doGetRandomFrame(const QString& filePath, const QString& imageFilePath)
     return 1;
 }
 
+QString fileNameFromId(QString id)
+{
+    return id.remove('\"').replace(QRegExp("[/\\\\:*?<>|]"), "_").right(80) + ".jpg";
+}
+
+const auto imagesCacheDir = QStringLiteral("images");
+
+bool clear(const QString& id)
+{
+    return QFile::remove(utilities::PrepareCacheFolder(imagesCacheDir) + fileNameFromId(id));
+}
+
+void clearAll() 
+{ 
+    QDir(utilities::PrepareCacheFolder(imagesCacheDir)).removeRecursively();
+}
+
+std::map<QString, QDateTime> missingLastModified;
+std::mutex mtxMissingLastModified;
+
+std::optional<QDateTime> getLastModified(const QString& key)
+{
+    std::lock_guard<std::mutex> guard(mtxMissingLastModified);
+    auto it = missingLastModified.find(key);
+    if (it != missingLastModified.end())
+        return it->second;
+    return {};
+}
+
 }  // namespace
 
 int getRandomFrame() { return doGetRandomFrame(QApplication::arguments().at(2), QApplication::arguments().at(3)); }
-
-const QString ImageCache::imagesCacheDir = "images";
 
 const char propImageFilePath[] = "imageFilePath";
 
@@ -389,8 +419,8 @@ void ImageCache::get(const QString& id, const QString& url, const QString& fileP
     {
         if (QFile::exists(filePath))
         {
-            auto it = m_missingLastModified.find(id);
-            if (it != m_missingLastModified.end() && it->second <= QFileInfo(filePath).lastModified())
+            auto lastModified = getLastModified(id);
+            if (lastModified && *lastModified <= QFileInfo(filePath).lastModified())
             {
                 QImage().swap(m_image);  // reset
             }
@@ -405,12 +435,19 @@ void ImageCache::get(const QString& id, const QString& url, const QString& fileP
                 if (0 == status)
                 {
                     m_image.load(imageFilePath);
-                    m_missingLastModified.erase(id);
                 }
                 else
                 {
                     QImage().swap(m_image);  // reset
-                    m_missingLastModified.insert({id, QFileInfo(filePath).lastModified()});
+                }
+                std::lock_guard<std::mutex> guard(mtxMissingLastModified);
+                if (0 == status)
+                {
+                    missingLastModified.erase(id);
+                }
+                else
+                {
+                    missingLastModified.insert({ id, QFileInfo(filePath).lastModified() });
                 }
             }
         }
@@ -423,11 +460,6 @@ void ImageCache::get(const QString& id, const QString& url, const QString& fileP
     {
         emit getImageFinished(m_image);
     }
-}
-
-/* static */ QString ImageCache::fileNameFromId(QString id)
-{
-    return id.remove('\"').replace(QRegExp("[/\\\\:*?<>|]"), "_").right(80) + ".jpg";
 }
 
 void ImageCache::imageReceived(QNetworkReply* reply)
@@ -471,10 +503,3 @@ void ImageCache::imageReceived(QNetworkReply* reply)
         m_eventLoop.quit();
     }
 }
-
-/* static */ bool ImageCache::clear(const QString& id)
-{
-    return QFile::remove(utilities::PrepareCacheFolder(imagesCacheDir) + fileNameFromId(id));
-}
-
-/* static */ void ImageCache::clearAll() { QDir(utilities::PrepareCacheFolder(imagesCacheDir)).removeRecursively(); }

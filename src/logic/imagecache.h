@@ -4,7 +4,6 @@
 #include <QImage>
 #include <QNetworkAccessManager>
 #include <QObject>
-#include <map>
 
 #include "utilities/singleton.h"
 
@@ -37,9 +36,6 @@ public:
     void getAsync(const QString& id, const QString& url, const QString& filePath);
     QImage getSync(const QString& id, const QString& url, const QString& filePath);
 
-    static bool clear(const QString& id);
-    static void clearAll();
-
 Q_SIGNALS:
     void getImageFinished(QImage image);
 
@@ -53,11 +49,5 @@ private:
     QNetworkReply* m_lastReply;
     QImage m_image;
 
-    std::map<QString, QDateTime> m_missingLastModified;
-
     void get(const QString& id, const QString& url, const QString& filePath);
-
-    static QString fileNameFromId(QString id);
-
-    static const QString imagesCacheDir;
 };
