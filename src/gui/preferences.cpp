@@ -143,8 +143,6 @@ Preferences::Preferences(QWidget* parent)
 
     ui->cbPreferredHeight->setStyleSheet("QCheckBox { padding-right: -1px; }");
 
-    setPrefStyleSheet();
-
     ui->listSites->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     ui->listLang->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
@@ -171,19 +169,6 @@ Preferences::~Preferences()
 void Preferences::toggleItem(QListWidgetItem* item)
 {
     item->setCheckState(item->checkState() == Qt::Checked ? Qt::Unchecked : Qt::Checked);
-}
-
-void Preferences::setPrefStyleSheet()
-{
-    QFile file(":/images/preferences/style.css");
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QString css = file.readAll();
-        if (!css.isEmpty())
-        {
-            setStyleSheet(css);
-        }
-    }
 }
 
 void Preferences::done(int result)

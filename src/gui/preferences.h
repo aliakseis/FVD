@@ -51,7 +51,6 @@ private slots:
     static void toggleItem(QListWidgetItem* item);
 
 private:
-    void setPrefStyleSheet();
     void initPreferences();
     void fillLanguageComboBox();
 
