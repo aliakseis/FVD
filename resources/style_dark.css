@@ -561,3 +561,450 @@ QLineEdit#leProxyPort {
     min-width: 90px;
     max-width: 90px;
 }
+
+/******************************************************************************
+ * Geometry and application-specific controls
+ *
+ * Keep dimensions, margins, padding, and resource-based icons aligned with
+ * the light stylesheet. Dark-theme changes below are deliberately limited
+ * to colors and borders.
+ ******************************************************************************/
+
+QWidget {
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    font-size: 12px;
+}
+
+QDialog {
+    border: 0px;
+}
+
+QMainWindow::separator {
+    background: #50555a;
+    width: 3px;
+    height: 3px;
+}
+
+QPushButton,
+QDialogButtonBox QPushButton,
+ButtonLabel {
+    min-width: 6em;
+    height: 16px;
+    padding-left: 0px;
+    padding-right: 0px;
+    border: 1px solid #666666;
+    border-radius: 3px;
+    background: #404040;
+    color: #dddddd;
+}
+
+SearchResultForm QPushButton {
+    min-width: 62px;
+}
+
+QPushButton:hover,
+QDialogButtonBox QPushButton:hover,
+ButtonLabel:hover {
+    background: #4c4c4c;
+    border-color: #858585;
+}
+
+QPushButton:pressed,
+QDialogButtonBox QPushButton:pressed,
+ButtonLabel:pressed {
+    background: #3d7eff;
+    padding-top: 2px;
+}
+
+QPushButton:disabled,
+QDialogButtonBox QPushButton:disabled,
+ButtonLabel:disabled {
+    background: #353535;
+    color: #888888;
+    border-color: #505050;
+}
+
+#mainToolBar {
+    border: 0px;
+    border-bottom: 1px solid #505860;
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #292d31, stop:1 #383e44);
+}
+
+MainToolBar QToolButton {
+    border: 0px;
+    padding: 0px;
+    background: transparent;
+}
+
+MainToolBar QLabel {
+    color: #c4c9ce;
+}
+
+MainToolBar #btnDownloads[active="false"] {
+    image: url(:/images/downloads41.png);
+}
+
+MainToolBar #btnDownloads[active="true"] {
+    image: url(:/images/downloads41h.png);
+}
+
+MainToolBar #btnSearch[active="false"] {
+    image: url(:/images/search41.png);
+}
+
+MainToolBar #btnSearch[active="true"] {
+    image: url(:/images/search41h.png);
+}
+
+MainToolBar #btnLibrary[active="false"] {
+    image: url(:/images/library41.png);
+}
+
+MainToolBar #btnLibrary[active="true"] {
+    image: url(:/images/library41h.png);
+}
+
+#topFrame {
+    background-color: #454b51;
+}
+
+QTreeView, #declarativeView, #dockFrame, QTableView {
+    border-top: 1px solid #505860;
+}
+
+#dockFrame {
+    background-color: #2b2b2b;
+}
+
+SearchResultForm #leSearch,
+DownloadsForm #leSearch,
+LibraryForm #cbSearch {
+    background: #232323;
+    color: #eeeeee;
+    border: 0px;
+    height: 22px;
+    font-size: 14px;
+}
+
+DownloadsControl #ctrlFrame {
+    border: 1px inset #555b60;
+    border-radius: 5px;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #45494d, stop:1 #303336);
+}
+
+PlayerHeader QFrame {
+    background-color: #454b51;
+    color: white;
+    font-size: 14px;
+}
+
+QComboBox#cbSites QAbstractItemView::item {
+    margin-top: 5px;
+    color: #c2c7cc;
+}
+
+SearchResultForm QHeaderView::section,
+DownloadsForm QHeaderView::section {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #3b4147, stop:1 #2d3237);
+    color: #dddddd;
+    padding-left: 4px;
+    border: 0px;
+    height: 30px;
+    border-top: 1px solid #505860;
+    border-bottom: 1px solid #505860;
+    font-size: 14px;
+}
+
+QComboBox#cbSites {
+    border: 1px solid #666b70;
+    padding: 1px 22px 1px 3px;
+    min-width: 9em;
+    background: #34383c;
+    color: #dddddd;
+    height: 20px;
+}
+
+QComboBox#cbSites::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 22px;
+    border-left: 1px solid #555b60;
+}
+
+QComboBox#cbSites::down-arrow {
+    image: url(:/images/style/down_arrow_grey.png);
+}
+
+AboutDialog {
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #292929, stop:0.46 #303030, stop:1 #383838);
+}
+
+AboutDialog #aboutHeader {
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #454b51, stop:0.46 #50575d, stop:1 #626a72);
+}
+
+AboutDialog #lbAppName {
+    font-size: 24px;
+    color: white;
+}
+
+AboutDialog #wLine {
+    background: url(:/style/header_line.png);
+}
+
+VideoControl #playerControlFrame {
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #303438, stop:1 #3a3e42);
+    border: 1px outset #555b60;
+    border-radius: 5px;
+}
+
+VideoControl QProgressBar {
+    border: 1px outset #555b60;
+    border-radius: 2px;
+}
+
+VideoControl QProgressBar::chunk {
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #237bb5, stop:1 #45a9d8);
+    border: 1px outset #4b4b4b;
+    border-radius: 5px;
+    margin: 1px;
+}
+
+VideoControl QToolButton {
+    border: 0px;
+    padding: 0px;
+}
+
+DownloadsControl #frame {
+    background-color: qlineargradient(x1:1, y1:1, x2:1, y2:0,
+                                      stop:0 #303438, stop:1 #3a3e42);
+    border: 1px outset #555b60;
+    border-radius: 5px;
+}
+
+DownloadsControl QToolButton {
+    border: 0px;
+    padding: 0px;
+}
+
+DownloadsControl QFrame #line {
+    color: #5a8f65;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+#DescriptionFrame #textEdit {
+    border: 0px;
+    padding: 3px 2px 3px 4px;
+    border-top: 1px solid #505050;
+    background: #2b2b2b;
+    color: #dddddd;
+}
+
+#descriptionSiteLabel {
+    color: #a0a5aa;
+    font: 75 14px "MS Shell Dlg 2";
+    margin-left: 7px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+QScrollBar:vertical,
+QScrollBar:horizontal {
+    border: 0px;
+    background: transparent;
+    width: 13px;
+    height: 13px;
+    margin: 0px;
+}
+
+QScrollBar::handle {
+    background: #666b70;
+    border-radius: 6px;
+    border: none;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    height: 0px;
+    width: 0px;
+    subcontrol-origin: margin;
+}
+
+/* Preferences: retain the light stylesheet's exact dimensions and spacing. */
+
+QDialog#Preferences {
+    min-width: 430px;
+    min-height: 595px;
+    max-width: 430px;
+    max-height: 595px;
+    background: #2b2b2b;
+}
+
+QTabWidget::pane {
+    border: 1px solid #505050;
+    top: -1px;
+    max-height: 537px;
+    background: #2b2b2b;
+}
+
+QTabBar::tab {
+    border: 1px solid #505050;
+    min-height: 24px;
+    min-width: 75px;
+    font-family: "Segoe UI";
+    font-size: 14px;
+    padding: 0px;
+    margin-right: 3px;
+    background: #31363b;
+    color: #dddddd;
+}
+
+QTabBar::tab:selected {
+    background: #3b4147;
+    border: 1px solid #666b70;
+    border-bottom: 1px solid #2b2b2b;
+}
+
+QFrame#frame_OutputPath {
+    border: 1px solid #505050;
+}
+
+QToolButton#btnOutputPath {
+    background: #34383c;
+    border: 1px solid #555b60;
+    padding: 0px;
+}
+
+QLineEdit#lineEditOutputPath {
+    border: 0px;
+    min-height: 19px;
+    max-height: 19px;
+    background: #232323;
+    color: #eeeeee;
+}
+
+QLabel#labelSearch, QLabel#labelDownload, QLabel#labelUpdate,
+QLabel#labelSite, QLabel#labelLang, QLabel#labelProxy {
+    color: #59b8e8;
+    font-size: 15px;
+}
+
+QLabel#labelAdultSites {
+    color: #59b8e8;
+    font-size: 15px;
+    border: 0px;
+    border-top: 1px solid #505050;
+    margin: 0 10px 0 10px;
+    padding: 0px 0 0 0;
+}
+
+QLabel#labelSelectedLang {
+    color: #ff7777;
+}
+
+QLabel#imageLanguage {
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+    background-image: url(:/images/preferences/imgLanguage.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+QLabel#imageProxy {
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+    background-image: url(:/images/preferences/imgProxy.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+QFrame#frame_searc, QFrame#frame_downl, QFrame#frame_update {
+    border: 0px;
+    border-bottom: 1px solid #505050;
+}
+
+QFrame#frameLang, QFrame#frameSites {
+    border: 1px solid #505050;
+    background-color: #303030;
+}
+
+QCheckBox {
+    font-size: 14px;
+}
+
+QListWidget {
+    border: 0px;
+    padding: 0px;
+    font-size: 14px;
+    background: #303030;
+    color: #dddddd;
+}
+
+QListWidget#listLang {
+    max-height: 160px;
+    min-height: 160px;
+}
+
+QListWidget::item {
+    max-width: 110px;
+    min-width: 110px;
+}
+
+QWidget#scrollAreaWidgetContents {
+    background-color: #303030;
+}
+
+QLineEdit#leMaxItemPerSite {
+    min-width: 70px;
+    max-width: 70px;
+}
+
+QLineEdit#leProxyAddress {
+    min-width: 195px;
+    max-width: 195px;
+}
+
+QLineEdit#leProxyPort {
+    min-width: 90px;
+    max-width: 90px;
+}
+
+/* Avoid the global dark background hiding resource-backed labels and custom
+   controls; these widgets keep their original geometry and paint only their
+   own background where needed. */
+QLabel {
+    background-color: transparent;
+}
+
+QToolButton:disabled,
+QPushButton:disabled,
+QCheckBox:disabled,
+QRadioButton:disabled {
+    color: #858585;
+}
+
+QCheckBox::indicator:unchecked,
+QRadioButton::indicator:unchecked {
+    background-color: #3a3a3a;
+    border: 1px solid #777777;
+}
+
+QCheckBox::indicator:checked,
+QRadioButton::indicator:checked {
+    background-color: #3d7eff;
+    border: 1px solid #7aa5ff;
+}
