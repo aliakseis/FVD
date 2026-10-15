@@ -623,11 +623,7 @@ void FFmpegDecoder::play(bool isPaused)
 
 void FFmpegDecoder::setVolume(double volume)
 {
-    if (volume < 0 || volume > 1.)
-    {
-        return;
-    }
-
+    volume = qBound(volume, 0., 1.);
     m_volume = volume;
 
     emit volumeChanged(volume);
