@@ -7,6 +7,8 @@
 #include <QTextEdit>
 #include <QtCore/QDir>
 #include <QtCore/QTranslator>
+#include <QApplication>
+
 #include <algorithm>
 
 #include "branding.hxx"
@@ -333,6 +335,7 @@ void Preferences::initPreferences()
     ui->chbQuitAppWhenClosingWindow->setChecked(
         settings.value(QuitAppWhenClosingWindow, QuitAppWhenClosingWindow_Default).toBool());
     ui->chbOpenInFolder->setChecked(settings.value(OpenInFolder, OpenInFolder_Default).toBool());
+    ui->cbEnableDarkMode->setChecked(settings.value(EnableDarkMode, EnableDarkMode_Default).toBool());
 
     ui->chbUseProxy->setChecked(settings.value(UseProxy, UseProxy_Default).toBool());
     ui->leProxyAddress->setText(settings.value(ProxyAddress).toString());
@@ -406,6 +409,18 @@ bool Preferences::apply()
 
     settings.setValue(QuitAppWhenClosingWindow, ui->chbQuitAppWhenClosingWindow->isChecked());
     settings.setValue(OpenInFolder, ui->chbOpenInFolder->isChecked());
+
+    const bool enableDarkMode = ui->cbEnableDarkMode->isChecked();
+    if (enableDarkMode != settings.value(EnableDarkMode, EnableDarkMode_Default).toBool())
+    {
+        settings.setValue(EnableDarkMode, enableDarkMode);
+        QFile css_data(enableDarkMode ? ":/style_dark.css" : ":/style.css");
+        if (css_data.open(QIODevice::ReadOnly))
+        {
+            qApp->setStyleSheet(css_data.readAll());
+            css_data.close();
+        }
+    }
 
     settings.setValue(SearchSortOrder, static_cast<strategies::SortOrder>(ui->cbSelectVideoBy->currentIndex()));
     settings.setValue(UseProxy, ui->chbUseProxy->isChecked());

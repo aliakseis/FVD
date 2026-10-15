@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>style.css</file>
+        <file>style_dark.css</file>
         <file>strategies/YouTube.js</file>
         <file>strategies/YouTube.py</file>
         <file>strategies/Vimeo.js</file>

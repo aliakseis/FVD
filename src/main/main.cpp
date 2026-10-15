@@ -105,7 +105,8 @@ int main(int argc, char* argv[])
     app.retranslateApp(QSettings().value(app_settings::ln, app_settings::ln_Default).toString());
 
 	/* Apply stylesheet */
-	QFile css_data(":/style.css");
+    const bool enableDarkMode = QSettings().value(app_settings::EnableDarkMode, app_settings::EnableDarkMode_Default).toBool();
+	QFile css_data(enableDarkMode ? ":/style_dark.css" : ":/style.css");
 	if (css_data.open(QIODevice::ReadOnly))
 	{
 		app.setStyleSheet(css_data.readAll());

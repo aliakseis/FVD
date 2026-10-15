@@ -50,6 +50,9 @@ const bool QuitAppWhenClosingWindow_Default = true;
 const char OpenInFolder[] = "OpenInFolder";
 const bool OpenInFolder_Default = true;
 
+const char EnableDarkMode[] = "EnableDarkMode";
+const bool EnableDarkMode_Default = false;
+
 const char PlayerWidgetOnTheLeft[] = "PlayerWidgetOnTheLeft";
 const bool PlayerWidgetOnTheLeft_Default = false;
 

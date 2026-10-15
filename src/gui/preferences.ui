@@ -333,7 +333,7 @@
            <property name="rightMargin">
             <number>0</number>
            </property>
-           <item row="0" column="0">
+           <item row="0" column="0"  colspan="2">
             <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,1">
              <property name="spacing">
               <number>10</number>
@@ -434,7 +434,7 @@
              </item>
             </layout>
            </item>
-           <item row="1" column="0">
+           <item row="1" column="0" colspan="2">
             <widget class="QCheckBox" name="chbQuitAppWhenClosingWindow">
              <property name="text">
               <string>Quit app when closing window</string>
@@ -448,7 +448,14 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="cbEnableDarkMode">
+             <property name="text">
+              <string>Enable dark mode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
             <spacer name="verticalSpacer_3">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
