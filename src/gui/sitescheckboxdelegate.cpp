@@ -1,18 +1,21 @@
 #include "sitescheckboxdelegate.h"
 
+#include "settings_declaration.h"
+
 #include <QApplication>
 #include <QImage>
 #include <QPainter>
 #include <QStyle>
+#include <QPen>
 
 SitesCheckboxDelegate::SitesCheckboxDelegate(QObject* parent)
     : QStyledItemDelegate(parent),
       m_sizeHint(32, 32),
-      m_backBrush(QColor(216, 216, 216)),
-      m_itemBackLightBrush(QColor(246, 246, 246)),
-      m_itemBackDarkBrush(QColor(229, 229, 229)),
-      m_defPen(QColor(202, 204, 206)),
-      m_hoverPen(QBrush(QColor(132, 132, 132)), 1, Qt::DotLine),
+      //m_backBrush(QColor(216, 216, 216)),
+      //m_itemBackLightBrush(QColor(246, 246, 246)),
+      //m_itemBackDarkBrush(QColor(229, 229, 229)),
+      //m_defPen(QColor(202, 204, 206)),
+      //m_hoverPen(QBrush(QColor(132, 132, 132)), 1, Qt::DotLine),
       m_padding(3)
 {
 }
@@ -22,22 +25,22 @@ void SitesCheckboxDelegate::paint(QPainter* painter, const QStyleOptionViewItem&
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    bool isLight = index.model()->data(index, Qt::UserRole).toBool();
-    bool hover = option.state & QStyle::State_MouseOver;
+    const bool enableDarkMode = QSettings().value(app_settings::EnableDarkMode, app_settings::EnableDarkMode_Default).toBool();
+    const bool isLight = index.model()->data(index, Qt::UserRole).toBool();
+    const bool hover = option.state & QStyle::State_MouseOver;
 
     painter->save();
     // *** Draw item background ***
 
-    painter->setPen(m_defPen);
+    painter->setPen(QColor(202, 204, 206)); // default pen
 
-    if (isLight)
-    {
-        painter->setBrush(m_itemBackLightBrush);
-    }
-    else
-    {
-        painter->setBrush(m_itemBackDarkBrush);
-    }
+    const auto itemBackColor{ enableDarkMode
+        ? QColor(0, 0, 0)
+        : (isLight ? QColor(246, 246, 246) : QColor(229, 229, 229))
+    };
+
+    painter->setBrush(itemBackColor);
+
     painter->drawRect(opt.rect);
 
     // *****************************
@@ -68,7 +71,7 @@ void SitesCheckboxDelegate::paint(QPainter* painter, const QStyleOptionViewItem&
     checkboxStyleOption.rect.adjust(m_padding, 0, m_padding, 0);
 
     painter->setPen(Qt::NoPen);
-    painter->setBrush(m_backBrush);
+    painter->setBrush(enableDarkMode? QColor(0, 0, 0) : QColor(216, 216, 216)); // back brush
     int paintAtPos = checkBoxRect.width() + m_padding * 2;
 
     QRect bgr1Rect =
@@ -96,7 +99,7 @@ void SitesCheckboxDelegate::paint(QPainter* painter, const QStyleOptionViewItem&
     if (hover)
     {
         painter->save();
-        painter->setPen(m_hoverPen);
+        painter->setPen(QPen(QBrush(QColor(132, 132, 132)), 1, Qt::DotLine)); // hover pen
         painter->drawRect(opt.rect.adjusted(0, 0, -1, -1));
         painter->restore();
     }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QPen>
 #include <QStyledItemDelegate>
 
 class SitesCheckboxDelegate : public QStyledItemDelegate
@@ -14,9 +13,5 @@ public:
 
 private:
     const QSize m_sizeHint;
-    const QBrush m_backBrush;
-    const QBrush m_itemBackLightBrush, m_itemBackDarkBrush;
-    const QPen m_defPen;
-    const QPen m_hoverPen;
     const int m_padding;
 };
