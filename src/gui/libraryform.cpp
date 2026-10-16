@@ -37,7 +37,7 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
     m_proxyModel->setFilterRole(LibraryModel::RoleFilter);
     m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    auto* qmlListener = new LibraryQmlListener(this, m_model, m_proxyModel);
+    m_qmlListener = new LibraryQmlListener(this, m_model, m_proxyModel);
 
     ui->setupUi(this);
     ui->manageLabel->setVisible(false);
@@ -55,7 +55,7 @@ LibraryForm::LibraryForm(QWidget* parent) : QWidget(parent), ui(new Ui::LibraryF
     m_view = new QQuickView();
     m_view->setResizeMode(QQuickView::SizeRootObjectToView);
     QQmlContext* ctxt = m_view->rootContext();
-    ctxt->setContextProperty("qmllistener", qmlListener);
+    ctxt->setContextProperty("qmllistener", m_qmlListener);
     ctxt->setContextProperty("libraryModel", m_proxyModel);
     ctxt->engine()->addImageProvider(QLatin1String("imageprovider"), new QmlImageProvider());
     m_view->setSource(QUrl("qrc:/qml2/LibraryView.qml"));
@@ -79,6 +79,12 @@ void LibraryForm::onActivated(const DownloadEntity* selEntity)
     }
 
     m_model->synchronize(true);
+}
+
+void LibraryForm::onPreferencesChanged()
+{
+    if (m_qmlListener)
+        emit m_qmlListener->darkThemeChanged();
 }
 
 void LibraryForm::onSearch() 

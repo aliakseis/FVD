@@ -350,6 +350,7 @@ void MainWindow::openPreferences()
 
         VERIFY(connect(pPrefs, SIGNAL(newPreferencesApply()), m_downloadsForm, SLOT(onPreferencesChanged())));
         VERIFY(connect(pPrefs, SIGNAL(newPreferencesApply()), m_searchResultFrom, SLOT(onPreferencesChanged())));
+        VERIFY(connect(pPrefs, SIGNAL(newPreferencesApply()), m_libraryForm, SLOT(onPreferencesChanged())));
         VERIFY(connect(pPrefs, SIGNAL(newPreferencesApply()), SLOT(resetFileSystemWatcher())));
     }
 

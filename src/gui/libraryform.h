@@ -13,6 +13,7 @@ class QSortFilterProxyModel;
 class LibraryModel;
 class QDeclarativeView;
 class QQuickView;
+class LibraryQmlListener;
 
 class LibraryForm : public QWidget
 {
@@ -31,6 +32,7 @@ public:
 
 public slots:
     void onActivated(const DownloadEntity* selEntity);
+    void onPreferencesChanged();
 
 private slots:
     void onSearch();
@@ -41,4 +43,5 @@ private:
     LibraryModel* m_model;
     QSortFilterProxyModel* m_proxyModel;
     QQuickView* m_view;
+    LibraryQmlListener* m_qmlListener = nullptr;
 };
