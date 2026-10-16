@@ -46,6 +46,11 @@ LibraryQmlListener::LibraryQmlListener(QObject* parent, LibraryModel* model, QSo
                    SLOT(onHandleDeleteAsynchronously(const QPointer<DownloadEntity>&)), Qt::QueuedConnection));
 }
 
+bool LibraryQmlListener::darkTheme()
+{
+    return QSettings().value(app_settings::EnableDarkMode, app_settings::EnableDarkMode_Default).toBool();
+}
+
 void LibraryQmlListener::onImageClicked(int index) { qDebug() << __FUNCTION__ << " index = " << index; }
 
 void LibraryQmlListener::onDeleteClicked(int index)

@@ -10,8 +10,10 @@ class DownloadEntity;
 class LibraryQmlListener : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool darkTheme READ darkTheme NOTIFY darkThemeChanged)
 public:
     LibraryQmlListener(QObject* parent, LibraryModel* model, QSortFilterProxyModel* proxyModel);
+    bool darkTheme();
 
 private:
     LibraryModel* m_model;
@@ -28,4 +30,5 @@ private slots:
 
 signals:
     void handleDeleteAsynchronously(const QPointer<DownloadEntity>& entity);
+    void darkThemeChanged();
 };

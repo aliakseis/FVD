@@ -6,7 +6,8 @@ Rectangle {
     width: 100
     height: 100
 
-    color: "#f5f5f5"; smooth: true
+    color: qmllistener.darkTheme  ? "#404040" : "#f5f5f5"
+    smooth: true
 
     //anchors.centerIn: parent
 
