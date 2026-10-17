@@ -24,6 +24,13 @@ Item {
     Menu {
         id: contextMenu
 
+        background: Rectangle {
+            implicitWidth: 200
+            implicitHeight: 40
+            color: qmllistener.darkTheme ? "#2b2b2b" : "white"
+        }
+        palette.text: qmllistener.darkTheme ? "white" : "black"
+
         MenuItem {
             text: qsTr("Play")
 

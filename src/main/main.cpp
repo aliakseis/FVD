@@ -86,6 +86,8 @@ int main(int argc, char* argv[])
 
 	QNetworkProxyFactory::setApplicationProxyFactory(new ConfigurableProxyFactory());
 
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Fusion");
+
 	Application app(argc, argv);
 	if (app.isRunning())
 	{
