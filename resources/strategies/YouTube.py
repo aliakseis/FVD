@@ -24,9 +24,11 @@ def install_and_import(package, url=None):
             "/usr/bin/pip3",
             "/usr/bin/pip3.exe"
         ]
+
         for pip_path in possible_pip_paths:
             if os.path.exists(pip_path):
                 return pip_path
+
         raise FileNotFoundError("pip3 not found in common locations")
 
     try:
@@ -37,110 +39,424 @@ def install_and_import(package, url=None):
     finally:
         globals()[package] = importlib.import_module(package)
 
-install_and_import("pytubefix", "https://github.com/JuanBindez/pytubefix/archive/refs/heads/main.zip") # whichever good
+
+install_and_import(
+    "pytubefix"
+    #"https://github.com/JuanBindez/pytubefix/archive/refs/heads/main.zip"
+)
 
 from pytubefix import Search, YouTube
 
-try:
-    import os
-    import subprocess
-    from pytubefix.botGuard.bot_guard import NODE_PATH, VM_PATH
+# generate_po_token_substitute
 
-    def generate_po_token_substitute(visitor_data: str) -> str:
-        """
-        Run nodejs to generate poToken through botGuard.
-        Requires nodejs installed.
-        """
-        startupinfo = subprocess.STARTUPINFO()
-        if os.name == 'nt':  # For Windows
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            startupinfo.wShowWindow = 6 # SW_MINIMIZE
-        result = subprocess.check_output(
-            [NODE_PATH, VM_PATH, visitor_data],
-            startupinfo=startupinfo
-        ).decode()
-        return result.replace("\n", "")
+from pytubefix.botGuard.bot_guard import NODE_PATH, VM_PATH
 
-    import pytubefix
-    pytubefix.botGuard.bot_guard.generate_po_token = generate_po_token_substitute
-except BaseException as e:
-    print(f"Failed to substitute generate_po_token: {e}")
+print("NODE_PATH =", NODE_PATH)
+print("VM_PATH   =", VM_PATH)
 
 import logging
 import traceback
 
-def YouTube_search(query, order, searchLimit, page, strategy) :
+
+def YouTube_search(
+    query,
+    order,
+    searchLimit,
+    page,
+    strategy
+):
     socket.setdefaulttimeout(30)
 
     yt_watch = "https://www.youtube.com/watch?v="
 
-    search = Search(query, 'WEB')
+    try:
+        search = Search(query) #, 'WEB')
+        yt_videos = search.results
+    except Exception:
+        logging.warning(
+            'Search failed.\n' +
+            traceback.format_exc()
+        )
+        strategy.onSearchFinished([])
+        return
 
     entities = []
 
-    yt_videos= search.results
     if yt_videos is None:
+        strategy.onSearchFinished([])
         return
+
     num = len(yt_videos)
+
     i = 0
     ii = 0
+
     while i < num:
+
         yt_object = yt_videos[i]
-        url = yt_watch + yt_object.video_id
-
-        entity = {}
-
-        # https://github.com/pytube/pytube/issues/1674#issuecomment-1706105785
-        try:
-            yt_object.bypass_age_gate()
-        except:
-            pass
 
         try:
-            entity["title"] = yt_object.title
+
+            #
+            # Skip channels, playlists and anything
+            # that is not a video result.
+            #
+            video_id = getattr(
+                yt_object,
+                "video_id",
+                None
+            )
+
+            if not video_id:
+                i += 1
+
+                if i == num:
+
+                    i = 0
+
+                    yt_videos = (
+                        search.get_next_results()
+                    )
+
+                    if yt_videos is None:
+                        break
+
+                    num = len(yt_videos)
+
+                continue
+
+            url = yt_watch + video_id
+
+            try:
+                yt_object.bypass_age_gate()
+            except Exception:
+                pass
+
+            thumbnail = getattr(
+                yt_object,
+                "thumbnail_url",
+                None
+            )
+
+            if not thumbnail:
+                thumbnail = (
+                    f"https://i.ytimg.com/vi/"
+                    f"{video_id}/hqdefault.jpg"
+                )
+
+            entity = {}
+
+            entity["title"] = getattr(
+                yt_object,
+                "title",
+                None
+            )
+
             entity["url"] = url
-            entity["published"] = str(yt_object.publish_date)
-            entity["duration"] = yt_object.length
-            entity["description"] = yt_object.description
-            entity["id"] = yt_object.video_id
-            entity["viewCount"] = yt_object.views
-            entity["thumbnailUrl"] = yt_object.thumbnail_url
+
+            entity["published"] = str(
+                getattr(
+                    yt_object,
+                    "publish_date",
+                    None
+                )
+            )
+
+            entity["duration"] = getattr(
+                yt_object,
+                "length",
+                None
+            )
+
+            entity["description"] = getattr(
+                yt_object,
+                "description",
+                None
+            )
+
+            entity["id"] = video_id
+
+            entity["viewCount"] = getattr(
+                yt_object,
+                "views",
+                0
+            )
+
+            entity["thumbnailUrl"] = thumbnail
 
             entities.append(entity)
 
             ii += 1
-            if ii == searchLimit:
+
+            if ii >= searchLimit:
                 break
 
-        except:
-            logging.warning('Item adding skipped.\n' + traceback.format_exc())
+        except Exception:
+            logging.warning(
+                'Item adding skipped.\n' +
+                traceback.format_exc()
+            )
 
         i += 1
+
         if i == num:
-            i=0
-            yt_videos = search.get_next_results()
+
+            i = 0
+
+            try:
+                yt_videos = (
+                    search.get_next_results()
+                )
+            except Exception:
+                break
+
             if yt_videos is None:
                 break
+
             num = len(yt_videos)
 
     strategy.onSearchFinished(entities)
 
 
-def YouTube_extractDirectLinks(link, preferred_height, receiver) :
+def _parse_height(stream):
+    try:
+        if stream.resolution:
+            return int(stream.resolution.rstrip("p"))
+    except Exception:
+        pass
+
+    return 0
+
+
+def _parse_abr(stream):
+    try:
+        if stream.abr:
+            return int(
+                ''.join(
+                    ch for ch in stream.abr
+                    if ch.isdigit()
+                )
+            )
+    except Exception:
+        pass
+
+    return 0
+
+
+def YouTube_extractDirectLinks(
+    link,
+    preferred_height,
+    receiver
+):
     socket.setdefaulttimeout(30)
 
-    s=YouTube(link, 'WEB').streams.filter(progressive=True).order_by('resolution').desc()
+    try:
+        yt = YouTube(link) #, 'WEB')
+    except Exception:
+        logging.warning(
+            'Video initialization failed.\n' +
+            traceback.format_exc()
+        )
+
+        receiver.onlinksExtracted({}, 0)
+        return
+
+    streams = list(yt.streams)
+
+    #
+    # Find best audio-only stream.
+    #
+    best_audio = None
+    best_audio_abr = -1
+
+    for stream in streams:
+
+        try:
+
+            if not getattr(
+                stream,
+                "includes_audio_track",
+                False
+            ):
+                continue
+
+            if getattr(
+                stream,
+                "includes_video_track",
+                False
+            ):
+                continue
+
+            abr = _parse_abr(stream)
+
+            if abr > best_audio_abr:
+                best_audio_abr = abr
+                best_audio = stream
+
+        except Exception:
+            logging.warning(
+                'Audio stream skipped.\n' +
+                traceback.format_exc()
+            )
 
     entities = {}
     i = 0
-    for x in s:
-        entity = {}
-        entity["url"] = x.url
-        entity["resolution"] = x.resolution
-        entity["extension"] = x.subtype
 
-        entities[i] = entity
+    #
+    # Enumerate all video streams.
+    #
+    for stream in streams:
 
-        i += 1
+        try:
 
-    receiver.onlinksExtracted(entities, 0);
+            has_video = getattr(
+                stream,
+                "includes_video_track",
+                False
+            )
+
+            has_audio = getattr(
+                stream,
+                "includes_audio_track",
+                False
+            )
+
+            if not has_video:
+                continue
+
+            entity = {}
+
+            #
+            # Progressive stream.
+            #
+            if has_audio:
+
+                entity["url"] = stream.url
+
+            #
+            # Adaptive stream.
+            #
+            elif best_audio is not None:
+
+                entity["url"] = (
+                    stream.url +
+                    "|" +
+                    best_audio.url
+                )
+
+            else:
+                continue
+
+            entity["resolution"] = (
+                stream.resolution
+                or "unknown"
+            )
+
+            entity["extension"] = (
+                stream.subtype
+                or "mp4"
+            )
+
+            entity["_height"] = (
+                _parse_height(stream)
+            )
+
+            entities[i] = entity
+            i += 1
+
+        except Exception:
+            logging.warning(
+                'Item adding skipped.\n' +
+                traceback.format_exc()
+            )
+
+    try:
+        preferred_height = int(
+            preferred_height or 0
+        )
+    except (TypeError, ValueError):
+        preferred_height = 0
+
+    #
+    # Same selection algorithm as YT-DLP.py
+    #
+    best = 0
+
+    if entities:
+
+        candidates = list(
+            entities.items()
+        )
+
+        if preferred_height > 0:
+
+            exact = [
+                (index, entity)
+                for index, entity in candidates
+                if entity["_height"]
+                == preferred_height
+            ]
+
+            if exact:
+
+                best = exact[0][0]
+
+            else:
+
+                below = [
+                    (index, entity)
+                    for index, entity in candidates
+                    if 0 <
+                    entity["_height"] <
+                    preferred_height
+                ]
+
+                if below:
+
+                    best = max(
+                        below,
+                        key=lambda item: (
+                            item[1]["_height"],
+                            item[0]
+                        )
+                    )[0]
+
+                else:
+
+                    above = [
+                        (index, entity)
+                        for index, entity in candidates
+                        if entity["_height"] > 0
+                    ]
+
+                    if above:
+
+                        best = min(
+                            above,
+                            key=lambda item: (
+                                item[1]["_height"],
+                                item[0]
+                            )
+                        )[0]
+
+                    else:
+
+                        best = candidates[0][0]
+
+        else:
+
+            best = max(
+                candidates,
+                key=lambda item: (
+                    item[1]["_height"],
+                    item[0]
+                )
+            )[0]
+
+        for entity in entities.values():
+            entity.pop("_height", None)
+
+    receiver.onlinksExtracted(
+        entities,
+        best
+    )
