@@ -269,7 +269,7 @@ QImage getImage(QByteArray& imageArray)
     if (img_convert_ctx != nullptr) {
         sws_freeContext(img_convert_ctx);
     }
-    av_free(pFrame);
+    av_frame_free(&pFrame);
     avcodec_free_context(&pCodecCtx);
     avformat_close_input(&pFormatCtx);
 
