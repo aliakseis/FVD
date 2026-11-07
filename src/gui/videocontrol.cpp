@@ -96,7 +96,7 @@ void VideoControl::resizeEvent(QResizeEvent* event)
 
     ui->progressBar->move(ui->btnVolume->pos().x() + ui->btnVolume->width(),
                           (height() - ui->progressBar->height()) / 2 + 1);  // +1 for just more nice looking
-    ui->progressBar->setFixedSize(width() - ui->progressBar->pos().x() - 3 * margin, ui->progressBar->height());
+    ui->progressBar->setFixedSize(width() - ui->progressBar->pos().x() - 2 * margin, ui->progressBar->height());
 }
 
 void VideoControl::wheelEvent(QWheelEvent* event)
