@@ -927,7 +927,7 @@ std::pair<double, QString> FFmpegDecoder::getDurationAndResolution(const QString
 
 float FFmpegDecoder::aspectRatio() const
 {
-    float aspect_ratio = 0.0F;
+    float aspect_ratio = 1.0F;
     if (m_videoCodecContext != nullptr)
     {
         aspect_ratio = av_q2d(m_videoCodecContext->sample_aspect_ratio);

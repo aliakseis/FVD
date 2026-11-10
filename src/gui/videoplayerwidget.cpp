@@ -556,9 +556,9 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
             playerWidth = (int)(minPlayerHeight / aspectRatio);
         }
 
-        m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
+        m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight);
 
-        QImage previewPic = m_videoWidget->startImageButton().scaled(playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT,
+        QImage previewPic = m_videoWidget->startImageButton().scaled(playerWidth, playerHeight,
                                                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (m_videoWidget->startImageButton() == m_videoWidget->noPreviewImage())
         {
@@ -572,9 +572,8 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
     }
     else if (dec->isPlaying())
     {
-        QSize pictureSize = QSize(playerWidth, playerWidth);
         double aspectRatio = 1. / dec->aspectRatio();
-        playerHeight = pictureSize.width() * aspectRatio;
+        playerHeight = playerWidth * aspectRatio;
         // Display too big: do recalculation
         if (playerHeight > minPlayerHeight)
         {
@@ -588,7 +587,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
         }
         else
         {
-            m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight - PROGRESSBAR_VISIBLE_HEIGHT);
+            m_videoWidget->setGeometry(0, yPos, playerWidth, playerHeight);
         }
     }
 
@@ -599,6 +598,7 @@ void VideoPlayerWidget::updateLayout(bool fromPendingHeaderPaused /* = false*/)
 
     if (m_progressBar != nullptr)
     {
+        yPos += PROGRESSBAR_VISIBLE_HEIGHT;
         int progressHeight = m_progressBar->height();
         m_progressBar->move(0, yPos - (progressHeight + PROGRESSBAR_VISIBLE_HEIGHT) / 2);
         m_progressBar->resize(playerWidth, progressHeight);
