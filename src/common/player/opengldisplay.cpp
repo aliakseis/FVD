@@ -250,7 +250,7 @@ void OpenGLDisplay::initializeGL()
     // Get the texture index value of the returned v component
     impl->id_v = impl->mTextureV->textureId();
 
-    glClearColor(0.3, 0.3, 0.3, 0.0);  // set the background color
+    glClearColor(0.0, 0.0, 0.0, 1.0);  // black letterbox background
     //    qDebug("addr=%x id_y = %d id_u=%d id_v=%d\n", this, impl->id_y, impl->id_u, impl->id_v);
 }
 
@@ -261,6 +261,7 @@ void OpenGLDisplay::paintGL()
         return;
     }
 
+    glViewport(0, 0, qRound(width() * devicePixelRatioF()), qRound(height() * devicePixelRatioF()));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // Load y data texture
@@ -277,7 +278,29 @@ void OpenGLDisplay::paintGL()
 
     std::unique_lock<std::mutex> lock(impl->m_mutex);
 
-        // Use the memory mBufYuv data to create a real y data texture
+    // Keep the video aspect ratio.  The full framebuffer was cleared above,
+    // so the unused areas remain black (letterboxing/pillarboxing).
+    const int framebufferWidth = qRound(width() * devicePixelRatioF());
+    const int framebufferHeight = qRound(height() * devicePixelRatioF());
+    if (impl->mVideoW > 0 && impl->mVideoH > 0 && framebufferWidth > 0 && framebufferHeight > 0)
+    {
+        const double videoAspect = static_cast<double>(impl->mVideoW) / impl->mVideoH;
+        const double viewAspect = static_cast<double>(framebufferWidth) / framebufferHeight;
+        int viewportWidth = framebufferWidth;
+        int viewportHeight = framebufferHeight;
+
+        if (viewAspect > videoAspect)
+            viewportWidth = qRound(framebufferHeight * videoAspect);
+        else
+            viewportHeight = qRound(framebufferWidth / videoAspect);
+
+        glViewport((framebufferWidth - viewportWidth) / 2,
+                   (framebufferHeight - viewportHeight) / 2,
+                   viewportWidth,
+                   viewportHeight);
+    }
+
+    // Use the memory mBufYuv data to create a real y data texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, impl->mVideoW, impl->mVideoH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
         impl->mBufYuv);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
