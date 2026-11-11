@@ -222,9 +222,10 @@ void VideoPlayerWidget::openVideoInBrowser(bool alt)
     }
 }
 
-void VideoPlayerWidget::playDownloadEntity(DownloadEntity* entity)
+void VideoPlayerWidget::playDownloadEntity(DownloadEntity* entity, int rowNumber)
 {
     Q_ASSERT(entity);
+    m_selectedRowNumber = rowNumber;
     m_currentEntity = entity->getParent();
     emit playDownloadEntityAsynchronously(entity);
 }
@@ -298,7 +299,7 @@ void VideoPlayerWidget::startPreviewDownload()
             showSpinner();
         }
 
-        playDownloadEntity(current);
+        playDownloadEntity(current, m_selectedRowNumber);
     }
 }
 

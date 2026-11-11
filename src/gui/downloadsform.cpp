@@ -202,7 +202,8 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
             return;
         }
 
-        DownloadEntity* entity = m_model->item(m_proxyModel->mappedRow(index));
+        const int row = m_proxyModel->mappedRow(index);
+        DownloadEntity* entity = m_model->item(row);
 
         if (entity == nullptr)
         {
@@ -226,7 +227,7 @@ void DownloadsForm::onDownloadsContextMenu(const QPoint& point)
         if (act == ui->actionOpenFile)
         {
             //videoPlayer->playPauseButtonAction();
-            videoPlayer->playDownloadEntity(entity);
+            videoPlayer->playDownloadEntity(entity, row + 1);
         }
         else if (act == ui->actionOpenFolder)
         {

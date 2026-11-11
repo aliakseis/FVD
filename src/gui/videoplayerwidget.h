@@ -57,6 +57,8 @@ public:
 
     void prepareToExit();
 
+    void playDownloadEntity(DownloadEntity* entity, int rowNumber = 0);
+
     Q_PROPERTY(QObjectList MRU READ MRU WRITE setMRU)
 
 private:
@@ -71,7 +73,6 @@ protected:
     void setDefaultDisplay() override;
 
 public slots:
-    void playDownloadEntity(DownloadEntity* entity);
     void playPauseButtonAction();
 
 private slots:
