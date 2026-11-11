@@ -192,8 +192,10 @@ void VideoPlayerWidget::setEntity(RemoteVideoEntity* entity, DownloadEntity* dow
         {
             m_videoWidget->setPreviewPicture(entity);
             m_playerHeader->setVideoTitle(entity->m_videoInfo.videoTitle);
-            m_descriptionPanel->setDescription(entity->m_videoInfo.strategyName, entity->m_videoInfo.description,
-                                               entity->prefResolution(), rowNumber);
+            m_descriptionPanel->setDescription(entity->m_videoInfo.strategyName, 
+                entity->m_videoInfo.description,
+                downloadEntity? downloadEntity->currentResolution() : entity->prefResolution(),
+                rowNumber);
         }
         else
         {
@@ -765,7 +767,7 @@ enum { MAX_MRU_SIZE = 25 };
 
 void VideoPlayerWidget::onFileLoaded()
 {
-    if (m_currentDownload)
+    if (m_currentDownload != nullptr)
     {
         m_mruList.removeAll(m_currentDownload);
         m_mruList.removeAll(nullptr);
@@ -773,5 +775,13 @@ void VideoPlayerWidget::onFileLoaded()
         if (m_mruList.size() > MAX_MRU_SIZE)
             m_mruList.resize(MAX_MRU_SIZE);
         MainWindow::Instance()->askForSavingModel();
+
+        if (m_currentEntity != nullptr)
+        {
+            m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
+                m_currentEntity->m_videoInfo.description,
+                m_currentDownload->currentResolution(),
+                m_selectedRowNumber);
+        }
     }
 }
