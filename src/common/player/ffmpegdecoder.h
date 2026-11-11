@@ -85,6 +85,8 @@ public:
 
     QByteArray getRandomFrame(const QString& file, double startPercent = 0, double endPercent = 1.);
 
+    QString getResolution();
+
     std::pair<double,QString> getDurationAndResolution(const QString& file);
 
     void setDefaultImageOnClose(bool set) { m_setDefaultImageOnClose = set; }

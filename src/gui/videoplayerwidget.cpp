@@ -779,9 +779,12 @@ void VideoPlayerWidget::onFileLoaded()
 
         if (m_currentEntity != nullptr)
         {
+            QString resolution = m_currentDownload->currentResolution();
+            if (resolution.isEmpty())
+                resolution = getDecoder()->getResolution();
             m_descriptionPanel->setDescription(m_currentEntity->m_videoInfo.strategyName,
                 m_currentEntity->m_videoInfo.description,
-                m_currentDownload->currentResolution(),
+                resolution,
                 m_selectedRowNumber);
         }
     }

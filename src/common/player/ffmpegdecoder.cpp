@@ -909,17 +909,22 @@ QByteArray FFmpegDecoder::getRandomFrame(const QString& file, double startPercen
     return result;
 }
 
+QString FFmpegDecoder::getResolution()
+{
+    if (m_videoCodecContext)
+    {
+        return QStringLiteral("%1x%2").arg(m_videoCodecContext->width).arg(m_videoCodecContext->height);
+    }
+    return {};
+}
 
 std::pair<double, QString> FFmpegDecoder::getDurationAndResolution(const QString& file)
 {
     std::pair<double, QString> result{};
     if (openFileDecoder(file))
     {
-        if (m_videoCodecContext)
-        {
-            result.second = QStringLiteral("%1x%2").arg(m_videoCodecContext->width).arg(m_videoCodecContext->height);
-        }
         result.first = getDurationSecs(m_duration);
+        result.second = getResolution();
     }
     close();
     return result;
