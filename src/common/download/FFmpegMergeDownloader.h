@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IDownloader.h"
+#include "idownloader.h"
 
 #include <QObject>
 #include <QFile>
