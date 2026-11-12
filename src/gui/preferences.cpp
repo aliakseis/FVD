@@ -80,6 +80,9 @@ Preferences::Preferences(QWidget* parent)
     ui->setupUi(this);
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
+    // remove proxy settings
+    ui->tabWidget->removeTab(2);
+
     ui->listLang->setWrapping(true);
     ui->listSites->setWrapping(true);
     ui->listSites->setFlow(QListView::LeftToRight);
