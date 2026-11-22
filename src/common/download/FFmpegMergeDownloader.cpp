@@ -31,14 +31,14 @@ extern "C"
 namespace
 {
 
-static QString ffmpegErrorString(int error)
+QString ffmpegErrorString(int error)
 {
     char buffer[AV_ERROR_MAX_STRING_SIZE] = {};
     av_strerror(error, buffer, sizeof(buffer));
     return QString::fromUtf8(buffer);
 }
 
-static qint64 packetTimestampUs(const AVPacket* packet, const AVStream* stream)
+qint64 packetTimestampUs(const AVPacket* packet, const AVStream* stream)
 {
     if (!packet || !stream)
         return std::numeric_limits<qint64>::max();
@@ -54,12 +54,12 @@ static qint64 packetTimestampUs(const AVPacket* packet, const AVStream* stream)
     return static_cast<qint64>(av_rescale_q(ts, stream->time_base, AVRational{1, 1000000}));
 }
 
-static bool isAudioStream(const AVStream* stream)
+bool isAudioStream(const AVStream* stream)
 {
     return stream && stream->codecpar && stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO;
 }
 
-static bool isVideoStream(const AVStream* stream)
+bool isVideoStream(const AVStream* stream)
 {
     return stream && stream->codecpar && stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO;
 }
